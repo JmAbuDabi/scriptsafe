@@ -33,7 +33,7 @@ function thirdParty(url, taburl) {
 		if (max < pageConst.length)
 			max = pageConst.length;
 		var matchCount = 0;
-		for (var i=0;i<max;i++) {
+		for (var i = 0; i < max; i++) {
 			if (elConst[i] && pageConst[i] && elConst[i] == pageConst[i]) matchCount++;
 			else break; // exit loop as soon as something doesn't exist/match
 		}
@@ -50,7 +50,7 @@ function extractDomainFromURL(url) { // credit: NotScripts
 	if (url.indexOf("/") != -1) url = url.substr(0, url.indexOf("/"));
 	if (url.indexOf("@") != -1) url = url.substr(url.indexOf("@") + 1);
 	if (url.match(/^(?:\[[A-Fa-f0-9:.]+\])(:[0-9]+)?$/g)) {
-		if (url.indexOf("]:") != -1) return url.substr(0, url.indexOf("]:")+1);
+		if (url.indexOf("]:") != -1) return url.substr(0, url.indexOf("]:") + 1);
 		return url;
 	}
 	if (url.indexOf(":") > 0) url = url.substr(0, url.indexOf(":"));
@@ -63,10 +63,10 @@ function getDomain(url, type) {
 		var domain;
 		var len = url.length;
 		if (len > 1) {
-			if (type === undefined) domain = url[1]+'.'+url[0];
+			if (type === undefined) domain = url[1] + '.' + url[0];
 			else domain = url[1];
 			if ((url[1] == 'co' || url[1] == 'com' || url[1] == 'net') && url[0] != 'com' && len > 2) {
-				if (type === undefined) domain = url[2]+'.'+url[1]+'.'+url[0];
+				if (type === undefined) domain = url[2] + '.' + url[1] + '.' + url[0];
 				else domain = url[2];
 			}
 		}
@@ -80,15 +80,15 @@ function in_array(needle, haystack) {
 	if (binarySearch(haystack, needle) != -1) return '1';
 	for (var i in haystack) {
 		if (haystack[i].indexOf("*") == -1 && haystack[i].indexOf("?") == -1) continue;
-		if (new RegExp('^(?:'+haystack[i].replace(/\./g, '\\.').replace(/^\[/, '\\[').replace(/\]$/, '\\]').replace(/\?/g, '.').replace(/^\*\*\\./, '(?:.+\\.|^)').replace(/\*/g, '[^.]+')+')$').test(needle)) return '1';
+		if (new RegExp('^(?:' + haystack[i].replace(/\./g, '\\.').replace(/^\[/, '\\[').replace(/\]$/, '\\]').replace(/\?/g, '.').replace(/^\*\*\\./, '(?:.+\\.|^)').replace(/\*/g, '[^.]+') + ')$').test(needle)) return '1';
 	}
 	return false;
 }
 // https://github.com/Olical/binary-search/blob/master/src/binarySearch.js
 function binarySearch(list, item) {
-    var min = 0;
-    var max = list.length - 1;
-    var guess;
+	var min = 0;
+	var max = list.length - 1;
+	var guess;
 	var bitwise = (max <= 2147483647) ? true : false;
 	if (bitwise) {
 		while (min <= max) {
@@ -109,5 +109,5 @@ function binarySearch(list, item) {
 			}
 		}
 	}
-    return -1;
+	return -1;
 }
