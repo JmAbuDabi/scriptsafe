@@ -37,10 +37,15 @@
       }
    ],
    "permissions": [
-      "storage",
       "tabs",
-      "scripting",
+      "unlimitedStorage",
+      "webRequest",
+      "declarativeNetRequest",
+      "declarativeNetRequestWithHostAccess",
+      "storage",
       "notifications",
+      "privacy",
+      "scripting",
       "contextMenus"
    ],
    "host_permissions": [
