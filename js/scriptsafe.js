@@ -3,7 +3,7 @@
 // The GNU General Public License can be found in the gpl.txt file. Alternatively, see <http://www.gnu.org/licenses/>.
 // Credits and ideas: NotScripts, AdBlock Plus for Chrome, Ghostery, KB SSL Enforcer
 'use strict';
-var version = '1.0.9.3';
+var version = '2.0.0.0';
 var requestTypes, synctimer, recentstimer, reenabletimer, useragentinterval, blackList, whiteList, distrustList, trustList, sessionBlackList, sessionWhiteList, locale;
 var langs = {
 	'en_US': 'English (US)',
@@ -1044,7 +1044,7 @@ function genContextMenu() {
 	chrome.contextMenus.create({ "title": getLocale("revoketemp"), "parentId": parent, "onclick": removeTempPage });
 	chrome.contextMenus.create({ "title": getLocale("revoketempall"), "parentId": parent, "onclick": removeTempAll });
 	chrome.contextMenus.create({ "parentId": parent, "type": "separator" });
-	chrome.contextMenus.create({ "title": getLocale("options"), "parentId": parent, "onclick": function () { chrome.tabs.create({ url: chrome.extension.getURL('html/options.html') }); } });
+	chrome.contextMenus.create({ "title": getLocale("options"), "parentId": parent, "onclick": function () { chrome.tabs.create({ url: chrome.runtime.getURL('html/options.html') }); } });
 	if (localStorage["enable"] == "false") chrome.contextMenus.create({ "title": getLocale("enabless"), "parentId": parent, "onclick": function () { localStorage["enable"] = "true"; contextHandle('toggle'); } });
 	else chrome.contextMenus.create({ "title": getLocale("disable"), "parentId": parent, "onclick": function () { localStorage["enable"] = "false"; contextHandle('toggle'); } });
 }
@@ -1474,7 +1474,7 @@ function cacheFpLists() {
 	}
 }
 function initLang(lang, mode) {
-	var url = chrome.extension.getURL('_locales/' + lang + '/messages.json');
+	var url = chrome.runtime.getURL('_locales/' + lang + '/messages.json');
 	$.ajax({
 		url: url,
 		dataType: 'json',
@@ -1546,7 +1546,7 @@ function postLangLoad() {
 			syncQueue();
 		}
 		if (localStorage["updatenotify"] == "true") {
-			chrome.tabs.create({ url: chrome.extension.getURL('html/updated.html') });
+			chrome.tabs.create({ url: chrome.runtime.getURL('html/updated.html') });
 		}
 		localStorage["version"] = version;
 	}
