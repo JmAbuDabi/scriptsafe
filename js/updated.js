@@ -4,10 +4,10 @@
 var bkg = chrome.extension.getBackgroundPage();
 document.addEventListener('DOMContentLoaded', function () {
 	var version = '1.0.9.3';
-	$("#title").html("ScriptSafe v"+version);
+	$("#title").html("ScriptSafe v" + version);
 	$('#versionno').html(version);
-	$("#loadoptionspage").click(function() { location.href='options.html'; });
-	$("#closepage").click(function() { window.open('', '_self', '');window.close(); });
+	$("#loadoptionspage").click(function () { location.href = 'options.html'; });
+	$("#closepage").click(function () { window.open('', '_self', ''); window.close(); });
 	$("#disableNotification").click(disableNotification);
 	$("#loadoptionspage").val(bkg.getLocale("options"));
 	$(".i18_options").html(bkg.getLocale("options"));
