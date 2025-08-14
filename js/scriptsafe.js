@@ -84,7 +84,7 @@ function mitigate(req) {
 	if (localStorage["enable"] == "false" || (localStorage['useragentspoof'] == 'off' && localStorage['cookies'] == 'false' && localStorage['referrerspoof'] == 'off')) {
 		return;
 	}
-	for (var i = 0, forcount=req.requestHeaders.length; i < forcount; i++) {
+	for (var i = 0, forcount = req.requestHeaders.length; i < forcount; i++) {
 		if (req.requestHeaders[i].name == 'User-Agent' || req.requestHeaders[i].name == 'Referer' || req.requestHeaders[i].name == 'Cookie') {
 			switch (req.requestHeaders[i].name) {
 				case 'Cookie':
@@ -124,7 +124,7 @@ function genUserAgent(force) {
 				if (localStorage['useragentinterval'] == 'off') userAgent = userAgents[0]; // use only first user agent string if set to off
 				else {
 					if (localStorage['useragentinterval'] == 'interval') {
-						useragentinterval = window.setInterval(function() { genUserAgent(1) }, localStorage['useragentintervalmins']*60*1000);
+						useragentinterval = window.setInterval(function () { genUserAgent(1) }, localStorage['useragentintervalmins'] * 60 * 1000);
 						if (force) userAgent = userAgents[Math.floor(Math.random() * uaCount)];
 					} else if (localStorage['useragentinterval'] == 'request') {
 						userAgent = userAgents[Math.floor(Math.random() * uaCount)];
@@ -160,79 +160,79 @@ function genUserAgent(force) {
 		else if (localStorage['useragentspoof_os'] == 'openbsd32') os = 'X11; U; OpenBSD i686';
 		else if (localStorage['useragentspoof_os'] == 'chromeos') os = 'X11; U; CrOS i686 0.13.507';
 		if (localStorage['useragentspoof'] == 'chrome63')
-			userAgent = 'Mozilla/5.0 ('+os+') AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.84 Safari/537.36';
+			userAgent = 'Mozilla/5.0 (' + os + ') AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.84 Safari/537.36';
 		else if (localStorage['useragentspoof'] == 'chrome62')
-			userAgent = 'Mozilla/5.0 ('+os+') AppleWebKit/537.36 (KHTML, like Gecko) Chrome/62.0.3202.94 Safari/537.36';
+			userAgent = 'Mozilla/5.0 (' + os + ') AppleWebKit/537.36 (KHTML, like Gecko) Chrome/62.0.3202.94 Safari/537.36';
 		else if (localStorage['useragentspoof'] == 'chrome55')
-			userAgent = 'Mozilla/5.0 ('+os+') AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.87 Safari/537.36';
+			userAgent = 'Mozilla/5.0 (' + os + ') AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.87 Safari/537.36';
 		else if (localStorage['useragentspoof'] == 'chrome50')
-			userAgent = 'Mozilla/5.0 ('+os+') AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.94 Safari/537.36 OPR/37.0.2178.43';
+			userAgent = 'Mozilla/5.0 (' + os + ') AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.94 Safari/537.36 OPR/37.0.2178.43';
 		else if (localStorage['useragentspoof'] == 'chrome14')
-			userAgent = 'Mozilla/5.0 ('+os+') AppleWebKit/535.1 (KHTML, like Gecko) Chrome/14.0.835.94 Safari/535.1';
+			userAgent = 'Mozilla/5.0 (' + os + ') AppleWebKit/535.1 (KHTML, like Gecko) Chrome/14.0.835.94 Safari/535.1';
 		else if (localStorage['useragentspoof'] == 'chrome13')
-			userAgent = 'Mozilla/5.0 ('+os+') AppleWebKit/535.1 (KHTML, like Gecko) Chrome/13.0.782.43 Safari/535.1';
+			userAgent = 'Mozilla/5.0 (' + os + ') AppleWebKit/535.1 (KHTML, like Gecko) Chrome/13.0.782.43 Safari/535.1';
 		else if (localStorage['useragentspoof'] == 'chrome12')
-			userAgent = 'Mozilla/5.0 ('+os+') AppleWebKit/534.30 (KHTML, like Gecko) Chrome/12.0.750.0 Safari/534.30';
+			userAgent = 'Mozilla/5.0 (' + os + ') AppleWebKit/534.30 (KHTML, like Gecko) Chrome/12.0.750.0 Safari/534.30';
 		else if (localStorage['useragentspoof'] == 'opera49')
-			userAgent = 'Mozilla/5.0 ('+os+') AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.78 Safari/537.36 OPR/47.0.2631.39';
+			userAgent = 'Mozilla/5.0 (' + os + ') AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.78 Safari/537.36 OPR/47.0.2631.39';
 		else if (localStorage['useragentspoof'] == 'opera42')
-			userAgent = 'Mozilla/5.0 ('+os+') AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.75 Safari/537.36 OPR/42.0.2393.85';
+			userAgent = 'Mozilla/5.0 (' + os + ') AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.75 Safari/537.36 OPR/42.0.2393.85';
 		else if (localStorage['useragentspoof'] == 'opera37')
-			userAgent = 'Mozilla/5.0 ('+os+') Presto/2.9.181 Version/12.00';
+			userAgent = 'Mozilla/5.0 (' + os + ') Presto/2.9.181 Version/12.00';
 		else if (localStorage['useragentspoof'] == 'opera12')
-			userAgent = 'Opera/9.80 ('+os+') Presto/2.9.181 Version/12.00';
+			userAgent = 'Opera/9.80 (' + os + ') Presto/2.9.181 Version/12.00';
 		else if (localStorage['useragentspoof'] == 'opera11')
-			userAgent = 'Opera/9.80 ('+os+') Presto/2.9.168 Version/11.50';
+			userAgent = 'Opera/9.80 (' + os + ') Presto/2.9.168 Version/11.50';
 		else if (localStorage['useragentspoof'] == 'firefox57')
-			userAgent = 'Mozilla/5.0 ('+os+'; rv:57.0) Gecko/20100101 Firefox/57.0';
+			userAgent = 'Mozilla/5.0 (' + os + '; rv:57.0) Gecko/20100101 Firefox/57.0';
 		else if (localStorage['useragentspoof'] == 'firefox50')
-			userAgent = 'Mozilla/5.0 ('+os+'; rv:50.0) Gecko/20100101 Firefox/50.0';
+			userAgent = 'Mozilla/5.0 (' + os + '; rv:50.0) Gecko/20100101 Firefox/50.0';
 		else if (localStorage['useragentspoof'] == 'firefox48')
-			userAgent = 'Mozilla/5.0 ('+os+'; rv:48.0) Gecko/20100101 Firefox/48.0';
+			userAgent = 'Mozilla/5.0 (' + os + '; rv:48.0) Gecko/20100101 Firefox/48.0';
 		else if (localStorage['useragentspoof'] == 'firefox46')
-			userAgent = 'Mozilla/5.0 ('+os+'; rv:44.0) Gecko/20100101 Firefox/44.0';
+			userAgent = 'Mozilla/5.0 (' + os + '; rv:44.0) Gecko/20100101 Firefox/44.0';
 		else if (localStorage['useragentspoof'] == 'firefox6')
-			userAgent = 'Mozilla/5.0 ('+os+'; rv:6.0a2) Gecko/20110613 Firefox/6.0a2';
+			userAgent = 'Mozilla/5.0 (' + os + '; rv:6.0a2) Gecko/20110613 Firefox/6.0a2';
 		else if (localStorage['useragentspoof'] == 'firefox5')
-			userAgent = 'Mozilla/5.0 ('+os+'; rv:5.0) Gecko/20100101 Firefox/5.0';
+			userAgent = 'Mozilla/5.0 (' + os + '; rv:5.0) Gecko/20100101 Firefox/5.0';
 		else if (localStorage['useragentspoof'] == 'firefox4')
-			userAgent = 'Mozilla/5.0 ('+os+'; rv:2.0.1) Gecko/20110606 Firefox/4.0.1';
+			userAgent = 'Mozilla/5.0 (' + os + '; rv:2.0.1) Gecko/20110606 Firefox/4.0.1';
 		else if (localStorage['useragentspoof'] == 'firefox3')
-			userAgent = 'Mozilla/5.0 ('+os+'; rv:1.9.2.9) Gecko/20100913 Firefox/3.6.9';
+			userAgent = 'Mozilla/5.0 (' + os + '; rv:1.9.2.9) Gecko/20100913 Firefox/3.6.9';
 		else if (localStorage['useragentspoof'] == 'edge')
- 			userAgent = 'Mozilla/5.0 ('+os+') AppleWebKit/537.36 (KHTML, like Gecko) 42.0.2311.135 Safari/537.36 Edge/12.246';
+			userAgent = 'Mozilla/5.0 (' + os + ') AppleWebKit/537.36 (KHTML, like Gecko) 42.0.2311.135 Safari/537.36 Edge/12.246';
 		else if (localStorage['useragentspoof'] == 'ie11')
-			userAgent = 'Mozilla/5.0 ('+os+'; Trident/7.0; rv:11.0) like Gecko';
+			userAgent = 'Mozilla/5.0 (' + os + '; Trident/7.0; rv:11.0) like Gecko';
 		else if (localStorage['useragentspoof'] == 'ie10')
-			userAgent = 'Mozilla/5.0 (compatible; MSIE 10.0; '+os+'; Trident/6.0)';
+			userAgent = 'Mozilla/5.0 (compatible; MSIE 10.0; ' + os + '; Trident/6.0)';
 		else if (localStorage['useragentspoof'] == 'ie9')
-			userAgent = 'Mozilla/5.0 (compatible; MSIE 9.0; '+os+')';
+			userAgent = 'Mozilla/5.0 (compatible; MSIE 9.0; ' + os + ')';
 		else if (localStorage['useragentspoof'] == 'ie8')
-			userAgent = 'Mozilla/4.0 (compatible; MSIE 8.0; '+os+')';
+			userAgent = 'Mozilla/4.0 (compatible; MSIE 8.0; ' + os + ')';
 		else if (localStorage['useragentspoof'] == 'ie7')
-			userAgent = 'Mozilla/4.0(compatible; MSIE 7.0; '+os+')';
+			userAgent = 'Mozilla/4.0(compatible; MSIE 7.0; ' + os + ')';
 		else if (localStorage['useragentspoof'] == 'ie61')
-			userAgent = 'Mozilla/4.0 (compatible; MSIE 6.1; '+os+')';
+			userAgent = 'Mozilla/4.0 (compatible; MSIE 6.1; ' + os + ')';
 		else if (localStorage['useragentspoof'] == 'ie60')
-			userAgent = 'Mozilla/4.0 (compatible; MSIE 6.0; '+os+')';
+			userAgent = 'Mozilla/4.0 (compatible; MSIE 6.0; ' + os + ')';
 		else if (localStorage['useragentspoof'] == 'safari8')
-			userAgent = 'Mozilla/5.0 ('+os+') AppleWebKit/600.7.12 (KHTML, like Gecko) Version/8.0.7 Safari/600.7.12';
+			userAgent = 'Mozilla/5.0 (' + os + ') AppleWebKit/600.7.12 (KHTML, like Gecko) Version/8.0.7 Safari/600.7.12';
 		else if (localStorage['useragentspoof'] == 'safari7')
-			userAgent = 'Mozilla/5.0 ('+os+') AppleWebKit/537.75.14 (KHTML, like Gecko) Version/7.0.3 Safari/7046A194A';
+			userAgent = 'Mozilla/5.0 (' + os + ') AppleWebKit/537.75.14 (KHTML, like Gecko) Version/7.0.3 Safari/7046A194A';
 		else if (localStorage['useragentspoof'] == 'safari5')
-			userAgent = 'Mozilla/5.0 ('+os+') AppleWebKit/533.21.1 (KHTML, like Gecko) Version/5.0.5 Safari/533.21.1';
+			userAgent = 'Mozilla/5.0 (' + os + ') AppleWebKit/533.21.1 (KHTML, like Gecko) Version/5.0.5 Safari/533.21.1';
 		else if (localStorage['useragentspoof'] == 'palemoon256')
-			userAgent = 'Mozilla/5.0 ('+os+'; rv:25.6) Gecko/20150723 PaleMoon/25.6.0';
+			userAgent = 'Mozilla/5.0 (' + os + '; rv:25.6) Gecko/20150723 PaleMoon/25.6.0';
 		else if (localStorage['useragentspoof'] == 'palemoon25')
-			userAgent = 'Mozilla/5.0 ('+os+'; rv:25.1) Gecko/20130308 PaleMoon/25.1';
+			userAgent = 'Mozilla/5.0 (' + os + '; rv:25.1) Gecko/20130308 PaleMoon/25.1';
 		else if (localStorage['useragentspoof'] == 'vivaldi111')
-			userAgent = 'Mozilla/5.0 ('+os+') AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.91 Safari/537.36 Vivaldi/1.92.917.35';
+			userAgent = 'Mozilla/5.0 (' + os + ') AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.91 Safari/537.36 Vivaldi/1.92.917.35';
 		else if (localStorage['useragentspoof'] == 'vivaldi')
-			userAgent = 'Mozilla/5.0 ('+os+') AppleWebKit/537.36 (KHTML, like Gecko) Chrome/40.0.2214.89 Safari/537.36 Vivaldi/1.0.83.38';
+			userAgent = 'Mozilla/5.0 (' + os + ') AppleWebKit/537.36 (KHTML, like Gecko) Chrome/40.0.2214.89 Safari/537.36 Vivaldi/1.0.83.38';
 		else if (localStorage['useragentspoof'] == 'midori')
-			userAgent = 'Mozilla/5.0 ('+os+') AppleWebKit/538.15 (KHTML, like Gecko) Chrome/18.0.1025.133 Safari/538.15 Midori/0.5';
+			userAgent = 'Mozilla/5.0 (' + os + ') AppleWebKit/538.15 (KHTML, like Gecko) Chrome/18.0.1025.133 Safari/538.15 Midori/0.5';
 		else if (localStorage['useragentspoof'] == 'qupzilla')
-			userAgent = 'Mozilla/5.0 ('+os+') AppleWebKit/533.3 (KHTML, like Gecko) Qupzilla/1.1.5';
+			userAgent = 'Mozilla/5.0 (' + os + ') AppleWebKit/533.3 (KHTML, like Gecko) Qupzilla/1.1.5';
 	}
 }
 function removeParams(str) {
@@ -252,7 +252,7 @@ function inlineblock(req) {
 	if (req.tabId == -1 || req.url === 'undefined' || localStorage["enable"] == "false") {
 		return;
 	}
-    var headers = req.responseHeaders;
+	var headers = req.responseHeaders;
 	if (req.type == 'main_frame') {
 		var domainCheckStatus = domainCheck(req.url, 1);
 		if (experimental == '1' && localStorage['preservesamedomain'] == 'false' && localStorage['script'] == 'true' && enabled(req.url) == 'true') {
@@ -267,10 +267,10 @@ function inlineblock(req) {
 			updateRecents('allowed');
 		}
 	}
-    return { responseHeaders: headers };
+	return { responseHeaders: headers };
 }
 function ScriptSafe(req) {
-	if (req.tabId == -1 || req.url === 'undefined' || localStorage["enable"] == "false" || req.url.substring(0,4) != 'http') {
+	if (req.tabId == -1 || req.url === 'undefined' || localStorage["enable"] == "false" || req.url.substring(0, 4) != 'http') {
 		resetTabData(req.tabId, req.url);
 		return { cancel: false };
 	}
@@ -313,7 +313,7 @@ function ScriptSafe(req) {
 	if (elementStatusCheck && ((localStorage['preservesamedomain'] != 'false' && (thirdPartyCheck || domainCheckStatus == '1' || baddiesCheck)) || localStorage['preservesamedomain'] == 'false')) {
 		if (typeof ITEMS[req.tabId]['blocked'] === 'undefined') ITEMS[req.tabId]['blocked'] = [];
 		if (!UrlInList(cleanedUrl, ITEMS[req.tabId]['blocked'])) {
-			if (extractedReqDomain.substr(0,4) == 'www.') extractedReqDomain = extractedReqDomain.substr(4);
+			if (extractedReqDomain.substr(0, 4) == 'www.') extractedReqDomain = extractedReqDomain.substr(4);
 			ITEMS[req.tabId]['blocked'].push([cleanedUrl, reqtype.toUpperCase(), extractedReqDomain, domainCheckStatus, tabDomainCheckStatus, baddiesCheck, false]);
 			recentlog['blocked'].push([new Date().getTime(), req.url, reqtype.toUpperCase(), extractedReqDomain, ITEMS[req.tabId]['url'], domainCheckStatus, tabDomainCheckStatus, baddiesCheck, false]);
 			updateRecents('blocked');
@@ -328,7 +328,7 @@ function ScriptSafe(req) {
 	} else {
 		if (typeof ITEMS[req.tabId]['allowed'] === 'undefined') ITEMS[req.tabId]['allowed'] = [];
 		if (!UrlInList(cleanedUrl, ITEMS[req.tabId]['allowed'])) {
-			if (extractedReqDomain.substr(0,4) == 'www.') extractedReqDomain = extractedReqDomain.substr(4);
+			if (extractedReqDomain.substr(0, 4) == 'www.') extractedReqDomain = extractedReqDomain.substr(4);
 			ITEMS[req.tabId]['allowed'].push([cleanedUrl, reqtype.toUpperCase(), extractedReqDomain, domainCheckStatus, baddiesCheck]);
 			recentlog['allowed'].push([new Date().getTime(), req.url, reqtype.toUpperCase(), extractedReqDomain, ITEMS[req.tabId]['url'], domainCheckStatus, baddiesCheck]);
 			updateRecents('allowed');
@@ -340,12 +340,12 @@ function ScriptSafe(req) {
 }
 function updateRecents(list) {
 	window.clearTimeout(recentstimer);
-	recentstimer = window.setTimeout(function() { setRecents(list) }, 1000);
+	recentstimer = window.setTimeout(function () { setRecents(list) }, 1000);
 }
 function setRecents(list) {
 	var recentLimit = 25;
 	var recentsLength = recentlog[list].length;
-	if (recentsLength > recentLimit) recentlog[list] = recentlog[list].slice(recentsLength-recentLimit);
+	if (recentsLength > recentLimit) recentlog[list] = recentlog[list].slice(recentsLength - recentLimit);
 }
 function getRecents(list) {
 	setRecents(list);
@@ -362,7 +362,7 @@ function utmClean(url) {
 		if (paramstart != -1) {
 			if (url.indexOf("utm_") > paramstart) {
 				sanitized = sanitized.replace(/[\?\&]utm_(?:cid|reader|term|content|source|medium|campaign|name)=[^&#]+/ig, "");
-				if (sanitized.charAt(paramstart) == "&") sanitized = sanitized.substring(0, paramstart)+"?"+sanitized.substring(paramstart+1);
+				if (sanitized.charAt(paramstart) == "&") sanitized = sanitized.substring(0, paramstart) + "?" + sanitized.substring(paramstart + 1);
 			}
 		}
 		sanitized = sanitized.replace(/#utm_(?:cid|reader|term|content|source|medium|campaign)=.+/i, "");
@@ -383,7 +383,7 @@ function hashTrackingClean(url) {
 }
 function enabled(url) {
 	var domainCheckStatus = domainCheck(url);
-	if (localStorage["enable"] == "true" && domainCheckStatus != '0' && (domainCheckStatus == '1' || (localStorage["mode"] == "block" && domainCheckStatus == '-1')) && url.indexOf('https://chrome.google.com/webstore') == -1 && (url.substring(0,4) == 'http' || url == 'chrome://newtab/'))
+	if (localStorage["enable"] == "true" && domainCheckStatus != '0' && (domainCheckStatus == '1' || (localStorage["mode"] == "block" && domainCheckStatus == '-1')) && url.indexOf('https://chrome.google.com/webstore') == -1 && (url.substring(0, 4) == 'http' || url == 'chrome://newtab/'))
 		return 'true';
 	return 'false';
 }
@@ -442,7 +442,7 @@ function trustCheck(domain) {
 }
 function topHandler(domain, mode) {
 	if (domain) {
-		if (!domain.match(/^((25[0-5]|2[0-4][0-9]|1[0-9]{2}|[0-9]{1,2})\.){3}(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[0-9]{1,2})$/g) && !domain.match(/^(?:\[[A-Fa-f0-9:.]+\])(:[0-9]+)?$/g)) domain = '**.'+getDomain(domain);
+		if (!domain.match(/^((25[0-5]|2[0-4][0-9]|1[0-9]{2}|[0-9]{1,2})\.){3}(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[0-9]{1,2})$/g) && !domain.match(/^(?:\[[A-Fa-f0-9:.]+\])(:[0-9]+)?$/g)) domain = '**.' + getDomain(domain);
 		if (mode != '0' && mode != '1') fpDomainHandler(domain, mode, 1);
 		else domainHandler(domain, mode);
 		changed = true;
@@ -460,38 +460,38 @@ function haystackSearch(needle, haystack) {
 	}
 	return keys;
 }
-function domainHandler(domain,action,listtype) {
+function domainHandler(domain, action, listtype) {
 	if (listtype === undefined)
 		listtype = 0;
 	if (domain) {
 		action = parseInt(action);
 		// Initialize local storage
 		if (listtype == 0) {
-			if (typeof(localStorage['whiteList'])==='undefined') localStorage['whiteList'] = JSON.stringify([]);
-			if (typeof(localStorage['blackList'])==='undefined') localStorage['blackList'] = JSON.stringify([]);
+			if (typeof (localStorage['whiteList']) === 'undefined') localStorage['whiteList'] = JSON.stringify([]);
+			if (typeof (localStorage['blackList']) === 'undefined') localStorage['blackList'] = JSON.stringify([]);
 			var tempWhitelist = JSON.parse(localStorage['whiteList']);
 			var tempBlacklist = JSON.parse(localStorage['blackList']);
 		} else if (listtype == 1) {
-			if (typeof(sessionStorage['whiteList'])==='undefined') sessionStorage['whiteList'] = JSON.stringify([]);
-			if (typeof(sessionStorage['blackList'])==='undefined') sessionStorage['blackList'] = JSON.stringify([]);
+			if (typeof (sessionStorage['whiteList']) === 'undefined') sessionStorage['whiteList'] = JSON.stringify([]);
+			if (typeof (sessionStorage['blackList']) === 'undefined') sessionStorage['blackList'] = JSON.stringify([]);
 			var tempWhitelist = JSON.parse(sessionStorage['whiteList']);
 			var tempBlacklist = JSON.parse(sessionStorage['blackList']);
 		}
 		// Remove domain from whitelist and blacklist
 		var pos = tempWhitelist.indexOf(domain);
-		if (pos != -1) tempWhitelist.splice(pos,1);
+		if (pos != -1) tempWhitelist.splice(pos, 1);
 		pos = tempBlacklist.indexOf(domain);
-		if (pos != -1) tempBlacklist.splice(pos,1);
-		if (domain.substr(0,4)=='www.') {
+		if (pos != -1) tempBlacklist.splice(pos, 1);
+		if (domain.substr(0, 4) == 'www.') {
 			domain = domain.substr(4);
 			pos = tempWhitelist.indexOf(domain);
-			if (pos != -1) tempWhitelist.splice(pos,1);
+			if (pos != -1) tempWhitelist.splice(pos, 1);
 			pos = tempBlacklist.indexOf(domain);
-			if (pos != -1) tempBlacklist.splice(pos,1);
+			if (pos != -1) tempBlacklist.splice(pos, 1);
 		}
 		if (listtype == 0 && action != 2) {
 			var tempDomain;
-			if (domain.substr(0,3)=='**.') {
+			if (domain.substr(0, 3) == '**.') {
 				tempDomain = domain.substr(3);
 				var whiteInstances = haystackSearch(tempDomain, tempWhitelist);
 				var blackInstances = haystackSearch(tempDomain, tempBlacklist);
@@ -500,32 +500,32 @@ function domainHandler(domain,action,listtype) {
 				if (whiteInstancesCount || blackInstancesCount) {
 					var lingo = '';
 					if (action == 1) lingo = 'dis';
-					if (confirm('ScriptSafe detected '+(whiteInstancesCount+blackInstancesCount)+' existing rule(s) for '+tempDomain+' ('+whiteInstancesCount+' whitelist and '+blackInstancesCount+' blacklist).\r\nDo you want to delete them before '+lingo+'trusting the entire '+tempDomain+' domain in order to avoid conflicts?\r\nNote: this might not necessarily remove all conflicting entries, particularly if they use regex (e.g. d?main.com).')) {
+					if (confirm('ScriptSafe detected ' + (whiteInstancesCount + blackInstancesCount) + ' existing rule(s) for ' + tempDomain + ' (' + whiteInstancesCount + ' whitelist and ' + blackInstancesCount + ' blacklist).\r\nDo you want to delete them before ' + lingo + 'trusting the entire ' + tempDomain + ' domain in order to avoid conflicts?\r\nNote: this might not necessarily remove all conflicting entries, particularly if they use regex (e.g. d?main.com).')) {
 						if (whiteInstancesCount) {
-							for (var x=0; x<whiteInstancesCount; x++) {
-								tempWhitelist.splice(tempWhitelist.indexOf(whiteInstances[x]),1);
+							for (var x = 0; x < whiteInstancesCount; x++) {
+								tempWhitelist.splice(tempWhitelist.indexOf(whiteInstances[x]), 1);
 							}
 						}
 						if (blackInstancesCount) {
-							for (var x=0; x<blackInstancesCount; x++) {
-								tempBlacklist.splice(tempBlacklist.indexOf(blackInstances[x]),1);
+							for (var x = 0; x < blackInstancesCount; x++) {
+								tempBlacklist.splice(tempBlacklist.indexOf(blackInstances[x]), 1);
 							}
 						}
 					} else {
-						if (!confirm('Do you still want to proceed '+lingo+'trusting the entire '+tempDomain+' domain?')) {
+						if (!confirm('Do you still want to proceed ' + lingo + 'trusting the entire ' + tempDomain + ' domain?')) {
 							return false;
 						}
 					}
 				}
 			} else {
-				tempDomain = '**.'+getDomain(domain);
+				tempDomain = '**.' + getDomain(domain);
 			}
 			var pos = tempWhitelist.indexOf(tempDomain);
-			if (pos != -1) tempWhitelist.splice(pos,1);
+			if (pos != -1) tempWhitelist.splice(pos, 1);
 			pos = tempBlacklist.indexOf(tempDomain);
-			if (pos != -1) tempBlacklist.splice(pos,1);
+			if (pos != -1) tempBlacklist.splice(pos, 1);
 		}
-		switch(action) {
+		switch (action) {
 			case 0:	// Whitelist
 				tempWhitelist.push(domain);
 				break;
@@ -552,53 +552,53 @@ function domainHandler(domain,action,listtype) {
 	}
 	return false;
 }
-function fpDomainHandler(domain,listtype,action,temp) {
+function fpDomainHandler(domain, listtype, action, temp) {
 	if (temp === undefined)
 		temp = 0;
 	if (domain) {
 		action = parseInt(action);
 		// Initialize local storage
 		if (temp == 0) {
-			if (typeof(localStorage[listtype])==='undefined') localStorage[listtype] = JSON.stringify([]);
+			if (typeof (localStorage[listtype]) === 'undefined') localStorage[listtype] = JSON.stringify([]);
 			var tempList = JSON.parse(localStorage[listtype]);
 		} else if (temp == 1) {
-			if (typeof(localStorage[listtype])==='undefined') sessionStorage[listtype] = JSON.stringify([]);
+			if (typeof (localStorage[listtype]) === 'undefined') sessionStorage[listtype] = JSON.stringify([]);
 			var tempList = JSON.parse(sessionStorage[listtype]);
 		}
 		// Remove domain from list
 		var pos = tempList.indexOf(domain);
-		if (pos != -1) tempList.splice(pos,1);
-		if (domain.substr(0,4)=='www.') {
+		if (pos != -1) tempList.splice(pos, 1);
+		if (domain.substr(0, 4) == 'www.') {
 			domain = domain.substr(4);
 			pos = tempList.indexOf(domain);
-			if (pos != -1) tempList.splice(pos,1);
+			if (pos != -1) tempList.splice(pos, 1);
 		}
 		if (action != -1) {
 			var tempDomain;
-			if (domain.substr(0,3)=='**.') {
+			if (domain.substr(0, 3) == '**.') {
 				tempDomain = domain.substr(3);
 				var instances = haystackSearch(tempDomain, tempList);
 				var instancesCount = instances.length;
 				if (instancesCount) {
-					if (confirm('ScriptSafe detected '+instancesCount+' existing rule(s) for '+tempDomain+'.\r\nDo you want to delete them before trusting the entire '+tempDomain+' domain in order to avoid conflicts?\r\nNote: this might not necessarily remove all conflicting entries, particularly if they use regex (e.g. d?main.com).')) {
+					if (confirm('ScriptSafe detected ' + instancesCount + ' existing rule(s) for ' + tempDomain + '.\r\nDo you want to delete them before trusting the entire ' + tempDomain + ' domain in order to avoid conflicts?\r\nNote: this might not necessarily remove all conflicting entries, particularly if they use regex (e.g. d?main.com).')) {
 						if (instancesCount) {
-							for (var x=0; x<instancesCount; x++) {
-								tempList.splice(tempList.indexOf(instances[x]),1);
+							for (var x = 0; x < instancesCount; x++) {
+								tempList.splice(tempList.indexOf(instances[x]), 1);
 							}
 						}
 					} else {
-						if (!confirm('Do you still want to proceed trusting the entire '+tempDomain+' domain?')) {
+						if (!confirm('Do you still want to proceed trusting the entire ' + tempDomain + ' domain?')) {
 							return false;
 						}
 					}
 				}
 			} else {
-				tempDomain = '**.'+getDomain(domain);
+				tempDomain = '**.' + getDomain(domain);
 			}
 			var pos = tempList.indexOf(tempDomain);
-			if (pos != -1) tempList.splice(pos,1);
+			if (pos != -1) tempList.splice(pos, 1);
 		}
-		switch(action) {
+		switch (action) {
 			case 1:	// Add
 				tempList.push(domain);
 				break;
@@ -734,19 +734,19 @@ function setDefaultOptions(force) {
 	if ((force && force == '2') || typeof sessionStorage['fpClientRectangles'] === "undefined") sessionStorage['fpClientRectangles'] = JSON.stringify([]);
 	if ((force && force == '2') || typeof sessionStorage['fpClipboard'] === "undefined") sessionStorage['fpClipboard'] = JSON.stringify([]);
 	if ((force && force == '2') || typeof sessionStorage['fpBrowserPlugins'] === "undefined") sessionStorage['fpBrowserPlugins'] = JSON.stringify([]);
-	chrome.browserAction.setBadgeBackgroundColor({color:[208, 0, 24, 255]});
+	chrome.browserAction.setBadgeBackgroundColor({ color: [208, 0, 24, 255] });
 }
 function updateCount(tabId) {
 	var TAB_ITEMS = ITEMS[tabId] || (ITEMS[tabId] = [0]);
 	var TAB_BLOCKED_COUNT = ++TAB_ITEMS[0];
 	chrome.browserAction.setBadgeBackgroundColor({ color: [208, 0, 24, 255], tabId: tabId });
-	chrome.browserAction.setBadgeText({tabId: tabId, text: TAB_BLOCKED_COUNT + ''});
+	chrome.browserAction.setBadgeText({ tabId: tabId, text: TAB_BLOCKED_COUNT + '' });
 }
 function initCount(tabId) {
 	var TAB_ITEMS = ITEMS[tabId] || (ITEMS[tabId] = [0]);
 	var TAB_BLOCKED_COUNT = TAB_ITEMS[0];
 	chrome.browserAction.setBadgeBackgroundColor({ color: [208, 0, 24, 255], tabId: tabId });
-	if (TAB_BLOCKED_COUNT != 0) chrome.browserAction.setBadgeText({tabId: tabId, text: TAB_BLOCKED_COUNT + ''});
+	if (TAB_BLOCKED_COUNT != 0) chrome.browserAction.setBadgeText({ tabId: tabId, text: TAB_BLOCKED_COUNT + '' });
 }
 function removeHash(str) {
 	var hashindex = str.indexOf("#");
@@ -784,20 +784,20 @@ function statuschanger(duration) {
 	window.clearTimeout(reenabletimer);
 	if (localStorage['enable'] == 'true') {
 		localStorage['enable'] = 'false';
-		chrome.browserAction.setIcon({path: "../img/IconDisabled.png"});
+		chrome.browserAction.setIcon({ path: "../img/IconDisabled.png" });
 		if (duration) {
 			duration = duration * 60 * 1000;
-			reenabletimer = setTimeout(function() { localStorage['enable'] = 'true'; }, duration);
+			reenabletimer = setTimeout(function () { localStorage['enable'] = 'true'; }, duration);
 		}
 	} else {
 		localStorage['enable'] = 'true';
-		chrome.browserAction.setIcon({path: "../img/IconForbidden.png"});
+		chrome.browserAction.setIcon({ path: "../img/IconForbidden.png" });
 	}
 	reinitContext();
 }
 function tempHandler(request) {
 	if (typeof request.url === 'object') {
-		for (var i=0, forcount=request.url.length;i<forcount;i++) {
+		for (var i = 0, forcount = request.url.length; i < forcount; i++) {
 			if (request.url[i][0] != 'no.script' && request.url[i][0] != 'web.bug') {
 				var baddiesStatus = baddies(request.url[i], localStorage['annoyancesmode'], localStorage['antisocial']);
 				if ((localStorage['annoyances'] == 'true' && localStorage['annoyancesmode'] == 'strict' && baddiesStatus == 1) || (localStorage['antisocial'] == 'true' && baddiesStatus == '2')) {
@@ -821,7 +821,7 @@ function tempHandler(request) {
 }
 function removeTempHandler(request) {
 	if (typeof request.url === 'object') {
-		for (var i=0, forcount=request.url.length;i<forcount;i++) {
+		for (var i = 0, forcount = request.url.length; i < forcount; i++) {
 			domainHandler(request.url[i], 2, 1);
 		}
 	} else {
@@ -836,10 +836,10 @@ function getSessionList() {
 function checkTemp(domain) {
 	return in_array(domain, getSessionList());
 }
-chrome.tabs.onRemoved.addListener(function(tabid) {
+chrome.tabs.onRemoved.addListener(function (tabid) {
 	if (typeof ITEMS[tabid] !== 'undefined') delete ITEMS[tabid];
 });
-chrome.tabs.onUpdated.addListener(function(tabid, changeinfo, tab) {
+chrome.tabs.onUpdated.addListener(function (tabid, changeinfo, tab) {
 	if (localStorage['enable'] == 'true') {
 		if (changeinfo.status == 'loading') {
 			var icontype = "Allowed";
@@ -848,52 +848,52 @@ chrome.tabs.onUpdated.addListener(function(tabid, changeinfo, tab) {
 			var extractedDomain = extractDomainFromURL(tab.url);
 			if (in_array(extractedDomain, sessionWhiteList) || in_array(extractedDomain, sessionBlackList))
 				icontype = "Temp";
-			chrome.browserAction.setIcon({path: "../img/Icon"+icontype+".png", tabId: tabid});
+			chrome.browserAction.setIcon({ path: "../img/Icon" + icontype + ".png", tabId: tabid });
 		} else if (changeinfo.status == "complete") {
 			if (typeof ITEMS[tabid] !== 'undefined') {
 				changed = true;
 				if (localStorage['mode'] == 'block' && typeof ITEMS[tabid]['allowed'] !== 'undefined') {
-					for (var i=0, forcount=ITEMS[tabid]['allowed'].length; i<forcount; i++) {
+					for (var i = 0, forcount = ITEMS[tabid]['allowed'].length; i < forcount; i++) {
 						if (in_array(extractDomainFromURL(ITEMS[tabid]['allowed'][i][0]), sessionWhiteList)) {
-							chrome.browserAction.setIcon({path: "../img/IconTemp.png", tabId: tabid});
+							chrome.browserAction.setIcon({ path: "../img/IconTemp.png", tabId: tabid });
 							break;
 						}
 					}
 				} else if (localStorage['mode'] == 'allow' && typeof ITEMS[tabid]['blocked'] !== 'undefined') {
-					for (var i=0, forcount=ITEMS[tabid]['blocked'].length; i<forcount; i++) {
+					for (var i = 0, forcount = ITEMS[tabid]['blocked'].length; i < forcount; i++) {
 						if (in_array(extractDomainFromURL(ITEMS[tabid]['blocked'][i][0]), sessionBlackList)) {
-							chrome.browserAction.setIcon({path: "../img/IconTemp.png", tabId: tabid});
+							chrome.browserAction.setIcon({ path: "../img/IconTemp.png", tabId: tabid });
 							break;
 						}
 					}
 				}
 			}
 		}
-	} else chrome.browserAction.setIcon({path: "../img/IconDisabled.png", tabId: tabid});
+	} else chrome.browserAction.setIcon({ path: "../img/IconDisabled.png", tabId: tabid });
 });
-chrome.runtime.onConnect.addListener(function(port) {
-	port.onMessage.addListener(function(msg) {
+chrome.runtime.onConnect.addListener(function (port) {
+	port.onMessage.addListener(function (msg) {
 		if (port.name == 'popuplifeline') {
 			if (msg.url && msg.tid) {
-				popup=[msg.url, msg.tid];
+				popup = [msg.url, msg.tid];
 			}
 		}
 	});
-	port.onDisconnect.addListener(function() {
+	port.onDisconnect.addListener(function () {
 		if (popup.length > 0) {
-			if (localStorage['refresh'] == 'true') chrome.tabs.update(popup[1], {url: popup[0]});
-			popup=[];
+			if (localStorage['refresh'] == 'true') chrome.tabs.update(popup[1], { url: popup[0] });
+			popup = [];
 		}
 	});
 });
-chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
+chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
 	if (request.reqtype == 'get-settings') {
 		var fpListStatus = [];
 		var extractedDomain = extractDomainFromURL(sender.tab.url);
 		for (var i in fpTypes) {
 			fpListStatus[fpTypes[i]] = enabledfp(extractedDomain, fpTypes[i]);
 		}
-		sendResponse({status: localStorage['enable'], enable: enabled(sender.tab.url), fp_canvas: fpListStatus['fpCanvas'], fp_canvasfont: fpListStatus['fpCanvasFont'], fp_audio: fpListStatus['fpAudio'], fp_webgl: fpListStatus['fpWebGL'], fp_battery: fpListStatus['fpBattery'], fp_device: fpListStatus['fpDevice'], fp_gamepad: fpListStatus['fpGamepad'], fp_webvr: fpListStatus['fpWebVR'], fp_bluetooth: fpListStatus['fpBluetooth'], fp_clientrectangles: fpListStatus['fpClientRectangles'], fp_clipboard: fpListStatus['fpClipboard'], fp_browserplugins: fpListStatus['fpBrowserPlugins'], experimental: experimental, mode: localStorage['mode'], annoyancesmode: localStorage['annoyancesmode'], antisocial: localStorage['antisocial'], whitelist: whiteList, blacklist: blackList, whitelistSession: sessionWhiteList, blackListSession: sessionBlackList, script: localStorage['script'], noscript: localStorage['noscript'], object: localStorage['object'], applet: localStorage['applet'], embed: localStorage['embed'], iframe: localStorage['iframe'], frame: localStorage['frame'], audio: localStorage['audio'], video: localStorage['video'], image: localStorage['image'], annoyances: localStorage['annoyances'], preservesamedomain: localStorage['preservesamedomain'], canvas: localStorage['canvas'], canvasfont: localStorage['canvasfont'], audioblock: localStorage['audioblock'], webgl: localStorage['webgl'], battery: localStorage['battery'], webrtcdevice: localStorage['webrtcdevice'], gamepad: localStorage['gamepad'], webvr: localStorage['webvr'], bluetooth: localStorage['bluetooth'], clientrects: localStorage['clientrects'], timezone: localStorage['timezone'], browserplugins: localStorage['browserplugins'], keyboard: localStorage['keyboard'], keydelta: localStorage['keydelta'], webbugs: localStorage['webbugs'], referrer: localStorage['referrer'], referrerspoofdenywhitelisted: localStorage['referrerspoofdenywhitelisted'], linktarget: localStorage['linktarget'], paranoia: localStorage['paranoia'], clipboard: localStorage['clipboard'], dataurl: localStorage['dataurl'], useragent: userAgent, uaspoofallow: localStorage['uaspoofallow']});
+		sendResponse({ status: localStorage['enable'], enable: enabled(sender.tab.url), fp_canvas: fpListStatus['fpCanvas'], fp_canvasfont: fpListStatus['fpCanvasFont'], fp_audio: fpListStatus['fpAudio'], fp_webgl: fpListStatus['fpWebGL'], fp_battery: fpListStatus['fpBattery'], fp_device: fpListStatus['fpDevice'], fp_gamepad: fpListStatus['fpGamepad'], fp_webvr: fpListStatus['fpWebVR'], fp_bluetooth: fpListStatus['fpBluetooth'], fp_clientrectangles: fpListStatus['fpClientRectangles'], fp_clipboard: fpListStatus['fpClipboard'], fp_browserplugins: fpListStatus['fpBrowserPlugins'], experimental: experimental, mode: localStorage['mode'], annoyancesmode: localStorage['annoyancesmode'], antisocial: localStorage['antisocial'], whitelist: whiteList, blacklist: blackList, whitelistSession: sessionWhiteList, blackListSession: sessionBlackList, script: localStorage['script'], noscript: localStorage['noscript'], object: localStorage['object'], applet: localStorage['applet'], embed: localStorage['embed'], iframe: localStorage['iframe'], frame: localStorage['frame'], audio: localStorage['audio'], video: localStorage['video'], image: localStorage['image'], annoyances: localStorage['annoyances'], preservesamedomain: localStorage['preservesamedomain'], canvas: localStorage['canvas'], canvasfont: localStorage['canvasfont'], audioblock: localStorage['audioblock'], webgl: localStorage['webgl'], battery: localStorage['battery'], webrtcdevice: localStorage['webrtcdevice'], gamepad: localStorage['gamepad'], webvr: localStorage['webvr'], bluetooth: localStorage['bluetooth'], clientrects: localStorage['clientrects'], timezone: localStorage['timezone'], browserplugins: localStorage['browserplugins'], keyboard: localStorage['keyboard'], keydelta: localStorage['keydelta'], webbugs: localStorage['webbugs'], referrer: localStorage['referrer'], referrerspoofdenywhitelisted: localStorage['referrerspoofdenywhitelisted'], linktarget: localStorage['linktarget'], paranoia: localStorage['paranoia'], clipboard: localStorage['clipboard'], dataurl: localStorage['dataurl'], useragent: userAgent, uaspoofallow: localStorage['uaspoofallow'] });
 		if (typeof ITEMS[sender.tab.id] === 'undefined') {
 			resetTabData(sender.tab.id, sender.tab.url);
 		} else {
@@ -921,7 +921,7 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 				else if (i == 'fpClientRectangles') fptype = 'Client Rectangles';
 				else if (i == 'fpClipboard') fptype = 'Clipboard Interference';
 				else if (i == 'fpBrowserPlugins') fptype = 'Browser Plugins Enumeration';
-				if (extractedDomain.substr(0,4) == 'www.') extractedDomain = extractedDomain.substr(4);
+				if (extractedDomain.substr(0, 4) == 'www.') extractedDomain = extractedDomain.substr(4);
 				ITEMS[sender.tab.id]['allowed'].push([cleanedUrl, fptype, extractedDomain, fpListStatus[i], false, true]);
 				recentlog['allowed'].push([new Date().getTime(), sender.tab.url, fptype, extractedDomain, sender.tab.url, fpListStatus[i], false, true]);
 				updateRecents('allowed');
@@ -943,7 +943,7 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 				break;
 			}
 		}
-		sendResponse({status: localStorage['enable'], enable: enableval, mode: localStorage['mode'], annoyancesmode: localStorage['annoyancesmode'], antisocial: localStorage['antisocial'], annoyances: localStorage['annoyances'], closepage: localStorage['classicoptions'], rating: localStorage['rating'], temp: getSessionList(), tempfp: sessionfplist, blockeditems: ITEMS[request.tid]['blocked'], alloweditems: ITEMS[request.tid]['allowed'], domainsort: localStorage['domainsort']});
+		sendResponse({ status: localStorage['enable'], enable: enableval, mode: localStorage['mode'], annoyancesmode: localStorage['annoyancesmode'], antisocial: localStorage['antisocial'], annoyances: localStorage['annoyances'], closepage: localStorage['classicoptions'], rating: localStorage['rating'], temp: getSessionList(), tempfp: sessionfplist, blockeditems: ITEMS[request.tid]['blocked'], alloweditems: ITEMS[request.tid]['allowed'], domainsort: localStorage['domainsort'] });
 		changed = true;
 	} else if (request.reqtype == 'update-blocked') {
 		if (request.src) {
@@ -951,7 +951,7 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 			if (typeof ITEMS[sender.tab.id]['blocked'] === 'undefined') ITEMS[sender.tab.id]['blocked'] = [];
 			if (!UrlInList(cleanedUrl, ITEMS[sender.tab.id]['blocked']) || request.node == 'NOSCRIPT' || request.node == 'Canvas Fingerprint' || request.node == 'Canvas Font Access' || request.node == 'Audio Fingerprint' || request.node == 'WebGL Fingerprint' || request.node == 'Battery Fingerprint' || request.node == 'Device Enumeration' || request.node == 'Gamepad Enumeration' || request.node == 'WebVR Enumeration' || request.node == 'Bluetooth Enumeration' || request.node == 'Spoofed Timezone' || request.node == 'Client Rectangles' || request.node == 'Clipboard Interference' || request.node == 'Data URL' || request.node == 'Browser Plugins Enumeration') {
 				var extractedDomain = extractDomainFromURL(request.src);
-				if (extractedDomain.substr(0,4) == 'www.') extractedDomain = extractedDomain.substr(4);
+				if (extractedDomain.substr(0, 4) == 'www.') extractedDomain = extractedDomain.substr(4);
 				var extractedTabDomain = extractDomainFromURL(ITEMS[sender.tab.id]['url']);
 				if (request.node == 'NOSCRIPT') {
 					ITEMS[sender.tab.id]['blocked'].push([request.src, request.node, request.src, '-1', '-1', false, false]);
@@ -978,7 +978,7 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 			var cleanedUrl = removeParams(request.src);
 			if (!UrlInList(cleanedUrl, ITEMS[sender.tab.id]['allowed'])) {
 				var extractedDomain = extractDomainFromURL(request.src);
-				if (extractedDomain.substr(0,4) == 'www.') extractedDomain = extractedDomain.substr(4);
+				if (extractedDomain.substr(0, 4) == 'www.') extractedDomain = extractedDomain.substr(4);
 				var allowedDomainCheck = domainCheck(request.src, 1);
 				var allowedBaddieCheck = baddies(request.src, localStorage['annoyancesmode'], localStorage['antisocial'], 2)
 				ITEMS[sender.tab.id]['allowed'].push([cleanedUrl, request.node, extractedDomain, domainCheck(request.src, 1), allowedBaddieCheck]);
@@ -1003,9 +1003,9 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 		fpDomainHandler(request.url, request.list, -1, 1);
 		changed = true;
 	} else if (request.reqtype == 'refresh-page-icon') {
-		if (request.type == '0') chrome.browserAction.setIcon({path: "../img/IconAllowed.png", tabId: request.tid});
-		else if (request.type == '1') chrome.browserAction.setIcon({path: "../img/IconForbidden.png", tabId: request.tid});
-		else if (request.type == '2') chrome.browserAction.setIcon({path: "../img/IconTemp.png", tabId: request.tid});
+		if (request.type == '0') chrome.browserAction.setIcon({ path: "../img/IconAllowed.png", tabId: request.tid });
+		else if (request.type == '1') chrome.browserAction.setIcon({ path: "../img/IconForbidden.png", tabId: request.tid });
+		else if (request.type == '2') chrome.browserAction.setIcon({ path: "../img/IconTemp.png", tabId: request.tid });
 	} else
 		sendResponse({});
 });
@@ -1013,43 +1013,43 @@ chrome.runtime.onUpdateAvailable.addListener(function (details) {
 	// do nothing, wait for user to reload browser before updating.
 });
 chrome.commands.onCommand.addListener(function (command) {
-    if (command === "temppage") {
+	if (command === "temppage") {
 		tempPage();
-    } else if (command === "removetemppage") {
+	} else if (command === "removetemppage") {
 		removeTempPage();
-    } else if (command === "removetempall") {
+	} else if (command === "removetempall") {
 		removeTempAll();
-    }
+	}
 });
 function reinitContext() {
-	chrome.contextMenus.removeAll(function() {
+	chrome.contextMenus.removeAll(function () {
 		if (localStorage['showcontext'] == 'true') genContextMenu();
 	});
 }
 function genContextMenu() {
-	var parent = chrome.contextMenus.create({"title": "ScriptSafe", "contexts": ["page"]});
+	var parent = chrome.contextMenus.create({ "title": "ScriptSafe", "contexts": ["page"] });
 	if (localStorage['mode'] == 'block') {
-		chrome.contextMenus.create({"title": getLocale("allow"), "parentId": parent, "onclick": function() { contextHandle('allow'); }});
-		chrome.contextMenus.create({"title": getLocale("allow")+' ('+getLocale("temp")+')', "parentId": parent, "onclick": function() { contextHandle('allowtemp'); }});
-		chrome.contextMenus.create({"title": getLocale("allowallblocked"), "parentId": parent, "onclick": tempPage});
-		chrome.contextMenus.create({"title": getLocale("trust"), "parentId": parent, "onclick": function() { contextHandle('trust'); }});
+		chrome.contextMenus.create({ "title": getLocale("allow"), "parentId": parent, "onclick": function () { contextHandle('allow'); } });
+		chrome.contextMenus.create({ "title": getLocale("allow") + ' (' + getLocale("temp") + ')', "parentId": parent, "onclick": function () { contextHandle('allowtemp'); } });
+		chrome.contextMenus.create({ "title": getLocale("allowallblocked"), "parentId": parent, "onclick": tempPage });
+		chrome.contextMenus.create({ "title": getLocale("trust"), "parentId": parent, "onclick": function () { contextHandle('trust'); } });
 	} else {
-		chrome.contextMenus.create({"title": getLocale("deny"), "parentId": parent, "onclick": function() { contextHandle('block'); }});
-		chrome.contextMenus.create({"title": getLocale("deny")+' ('+getLocale("temp")+')', "parentId": parent, "onclick": function() { contextHandle('blocktemp'); }});
-		chrome.contextMenus.create({"title": getLocale("blockallallowed"), "parentId": parent, "onclick": tempPage});
-		chrome.contextMenus.create({"title": getLocale("distrust"), "parentId": parent, "onclick": function() { contextHandle('distrust'); }});
+		chrome.contextMenus.create({ "title": getLocale("deny"), "parentId": parent, "onclick": function () { contextHandle('block'); } });
+		chrome.contextMenus.create({ "title": getLocale("deny") + ' (' + getLocale("temp") + ')', "parentId": parent, "onclick": function () { contextHandle('blocktemp'); } });
+		chrome.contextMenus.create({ "title": getLocale("blockallallowed"), "parentId": parent, "onclick": tempPage });
+		chrome.contextMenus.create({ "title": getLocale("distrust"), "parentId": parent, "onclick": function () { contextHandle('distrust'); } });
 	}
-	chrome.contextMenus.create({"parentId": parent, "type": "separator"});
-	chrome.contextMenus.create({"title": getLocale("clear"), "parentId": parent, "onclick": function() { contextHandle('clear'); }});
-	chrome.contextMenus.create({"title": getLocale("revoketemp"), "parentId": parent, "onclick": removeTempPage});
-	chrome.contextMenus.create({"title": getLocale("revoketempall"), "parentId": parent, "onclick": removeTempAll});
-	chrome.contextMenus.create({"parentId": parent, "type": "separator"});
-	chrome.contextMenus.create({"title": getLocale("options"), "parentId": parent, "onclick": function() { chrome.tabs.create({ url: chrome.extension.getURL('html/options.html')}); }});
-	if (localStorage["enable"] == "false") chrome.contextMenus.create({"title": getLocale("enabless"), "parentId": parent, "onclick": function() { localStorage["enable"] = "true"; contextHandle('toggle'); }});
-	else chrome.contextMenus.create({"title": getLocale("disable"), "parentId": parent, "onclick": function() { localStorage["enable"] = "false"; contextHandle('toggle'); }});
+	chrome.contextMenus.create({ "parentId": parent, "type": "separator" });
+	chrome.contextMenus.create({ "title": getLocale("clear"), "parentId": parent, "onclick": function () { contextHandle('clear'); } });
+	chrome.contextMenus.create({ "title": getLocale("revoketemp"), "parentId": parent, "onclick": removeTempPage });
+	chrome.contextMenus.create({ "title": getLocale("revoketempall"), "parentId": parent, "onclick": removeTempAll });
+	chrome.contextMenus.create({ "parentId": parent, "type": "separator" });
+	chrome.contextMenus.create({ "title": getLocale("options"), "parentId": parent, "onclick": function () { chrome.tabs.create({ url: chrome.extension.getURL('html/options.html') }); } });
+	if (localStorage["enable"] == "false") chrome.contextMenus.create({ "title": getLocale("enabless"), "parentId": parent, "onclick": function () { localStorage["enable"] = "true"; contextHandle('toggle'); } });
+	else chrome.contextMenus.create({ "title": getLocale("disable"), "parentId": parent, "onclick": function () { localStorage["enable"] = "false"; contextHandle('toggle'); } });
 }
 function contextHandle(mode) {
-	chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+	chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
 		if (tabs[0].url.indexOf('http') == 0) {
 			var tabdomain = extractDomainFromURL(tabs[0].url);
 			var domainCheckStatus = domainCheck(tabs[0].url);
@@ -1059,12 +1059,12 @@ function contextHandle(mode) {
 			} else if (mode == 'block') {
 				domainHandler(tabdomain, 2, 1);
 				domainHandler(tabdomain, 1);
-			} else if (mode == 'allowtemp' && domainCheckStatus == '-1') tempHandler({reqtype: "temp", url: tabdomain, mode: 'block'});
-			else if (mode == 'blocktemp' && domainCheckStatus == '-1') tempHandler({reqtype: "temp", url: tabdomain, mode: 'allow'});
+			} else if (mode == 'allowtemp' && domainCheckStatus == '-1') tempHandler({ reqtype: "temp", url: tabdomain, mode: 'block' });
+			else if (mode == 'blocktemp' && domainCheckStatus == '-1') tempHandler({ reqtype: "temp", url: tabdomain, mode: 'allow' });
 			else if (mode == 'trust') topHandler(tabdomain, 0);
 			else if (mode == 'distrust') topHandler(tabdomain, 1);
 			else if (mode == 'clear') {
-				if (trustCheck(tabdomain)) domainHandler('**.'+getDomain(tabdomain), 2);
+				if (trustCheck(tabdomain)) domainHandler('**.' + getDomain(tabdomain), 2);
 				else {
 					domainHandler(tabdomain, 2, 1);
 					domainHandler(tabdomain, 2);
@@ -1072,44 +1072,44 @@ function contextHandle(mode) {
 			} else if (mode == 'toggle') reinitContext();
 			if (localStorage['refresh'] == 'true') chrome.tabs.reload(tabs[0].id);
 		}
-	}); 
+	});
 }
 function tempPage() {
-	chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+	chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
 		var tempMode = localStorage['mode'];
-		if (typeof ITEMS[tabs[0].id][tempMode+'ed'] === 'undefined') return;
+		if (typeof ITEMS[tabs[0].id][tempMode + 'ed'] === 'undefined') return;
 		var tempDomainList = [];
 		if (domainCheck(tabs[0].url, 2) == '-1') {
 			if ((tempMode == 'block' && enabled(tabs[0].url) == 'true') || (tempMode == 'allow' && enabled(tabs[0].url) == 'false'))
 				tempDomainList.push(extractDomainFromURL(tabs[0].url));
 		}
-		ITEMS[tabs[0].id][tempMode+'ed'].map(function(items) {
+		ITEMS[tabs[0].id][tempMode + 'ed'].map(function (items) {
 			if (items[3] == '-1') tempDomainList.push(items[2]);
 		});
-		tempHandler({reqtype: "temp", url: tempDomainList, mode: tempMode});
+		tempHandler({ reqtype: "temp", url: tempDomainList, mode: tempMode });
 		if (localStorage['refresh'] == 'true') chrome.tabs.reload(tabs[0].id);
 	});
 }
 function removeTempPage() {
-	chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+	chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
 		var tempMode;
 		if (localStorage['mode'] == 'block') tempMode = 'allow';
 		else tempMode = 'block';
-		if (typeof ITEMS[tabs[0].id][tempMode+'ed'] === 'undefined') return;
+		if (typeof ITEMS[tabs[0].id][tempMode + 'ed'] === 'undefined') return;
 		var tempDomainList = [];
 		if (domainCheck(tabs[0].url, 2) == '-1') {
 			if ((tempMode == 'block' && enabled(tabs[0].url) == 'true') || (tempMode == 'allow' && enabled(tabs[0].url) == 'false'))
 				tempDomainList.push(extractDomainFromURL(tabs[0].url));
 		}
-		ITEMS[tabs[0].id][tempMode+'ed'].map(function(items) {
+		ITEMS[tabs[0].id][tempMode + 'ed'].map(function (items) {
 			tempDomainList.push(items[2]);
 		});
-		removeTempHandler({reqtype: "remove-temp", url: tempDomainList});
+		removeTempHandler({ reqtype: "remove-temp", url: tempDomainList });
 		if (localStorage['refresh'] == 'true') chrome.tabs.reload(tabs[0].id);
 	});
 }
 function removeTempAll() {
-	chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+	chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
 		revokeTemp();
 		if (localStorage['refresh'] == 'true') chrome.tabs.reload(tabs[0].id);
 	});
@@ -1144,18 +1144,18 @@ function freshSync(force) {
 			for (var k in localStorage) {
 				if (localStorage.hasOwnProperty(k)) {
 					// legacy syncing method - start
-						if (k != "version" && k != "sync" && k != "scriptsafe_settings" && k != "lastSync" && k != "whiteList" && k != "blackList" && k != "useragent" && k != "whiteListCount" && k != "blackListCount" && k != "whiteListCount2" && k != "blackListCount2" && k != "useragentCount2" && k.substr(0, 10) != "whiteList_" && k.substr(0, 10) != "blackList_" && k.substr(0, 2) != "zb" && k.substr(0, 2) != "zw" && k.substr(0, 2) != "sw" && k.substr(0, 2) != "sb" && k.substr(0, 2) != "sf" && k.substr(0, 2) != "su") {
-					// legacy syncing method - end
-					// new syncing method - start
+					if (k != "version" && k != "sync" && k != "scriptsafe_settings" && k != "lastSync" && k != "whiteList" && k != "blackList" && k != "useragent" && k != "whiteListCount" && k != "blackListCount" && k != "whiteListCount2" && k != "blackListCount2" && k != "useragentCount2" && k.substr(0, 10) != "whiteList_" && k.substr(0, 10) != "blackList_" && k.substr(0, 2) != "zb" && k.substr(0, 2) != "zw" && k.substr(0, 2) != "sw" && k.substr(0, 2) != "sb" && k.substr(0, 2) != "sf" && k.substr(0, 2) != "su") {
+						// legacy syncing method - end
+						// new syncing method - start
 						//if (k != "version" && k != "sync" && k != "scriptsafe_settings" && k != "lastSync" && k != "whiteList" && k != "blackList" && k != "useragent" && k != "whiteListCount" && k != "blackListCount" && k != "whiteListCount2" && k != "blackListCount2" && k != "useragentCount2" && k.substr(0, 10) != "whiteList_" && k.substr(0, 10) != "blackList_" && k.substr(0, 2) != "zb" && k.substr(0, 2) != "zw" && k.substr(0, 2) != "sw" && k.substr(0, 2) != "sb" && k.substr(0, 2) != "sf" && k.substr(0, 2) != "su" && k.substr(0, 2) != "fp") {
-					// new syncing method - end
-						simplesettings += k+"|"+localStorage[k]+"~";
-					// new syncing method - start
+						// new syncing method - end
+						simplesettings += k + "|" + localStorage[k] + "~";
+						// new syncing method - start
 						/*
 						} else if (k.substr(0, 2) == "fp" && k != "fpCount") {
 							fpsettings += k+"|"+localStorage[k]+"~";
 						*/
-					// new syncing method - end
+						// new syncing method - end
 					}
 					if (k.substr(0, 2) == "zw") zarr['zw'].push(k);
 					else if (k.substr(0, 2) == "zb") zarr['zb'].push(k);
@@ -1165,55 +1165,55 @@ function freshSync(force) {
 					else if (k.substr(0, 2) == "su") zarr['su'].push(k);
 				}
 			}
-			settingssync['scriptsafe_settings'] = simplesettings.slice(0,-1);
+			settingssync['scriptsafe_settings'] = simplesettings.slice(0, -1);
 			if (zarr['zw'].length) {
-				for (var x = 0, forcount=zarr['zw'].length; x < forcount; x++) delete localStorage[zarr['zw'][x]];
+				for (var x = 0, forcount = zarr['zw'].length; x < forcount; x++) delete localStorage[zarr['zw'][x]];
 			}
 			if (zarr['sw'].length) {
-				for (var x = 0, forcount=zarr['sw'].length; x < forcount; x++) delete localStorage[zarr['sw'][x]];
+				for (var x = 0, forcount = zarr['sw'].length; x < forcount; x++) delete localStorage[zarr['sw'][x]];
 			}
 			// legacy syncing method - start
-				jsonstr = JSON.parse(localStorage['whiteList']).toString();
-				i = 0;
-				limit = (chrome.storage.sync.QUOTA_BYTES_PER_ITEM - Math.ceil(jsonstr.length/(chrome.storage.sync.QUOTA_BYTES_PER_ITEM - 4)) - 4);
-				while (jsonstr.length > 0) {
-					segment = jsonstr.substr(0, limit);
-					settingssync["zw" + i] = segment;
-					jsonstr = jsonstr.substr(limit);
-					i++;
-				}
-				settingssync['whiteListCount'] = i;
+			jsonstr = JSON.parse(localStorage['whiteList']).toString();
+			i = 0;
+			limit = (chrome.storage.sync.QUOTA_BYTES_PER_ITEM - Math.ceil(jsonstr.length / (chrome.storage.sync.QUOTA_BYTES_PER_ITEM - 4)) - 4);
+			while (jsonstr.length > 0) {
+				segment = jsonstr.substr(0, limit);
+				settingssync["zw" + i] = segment;
+				jsonstr = jsonstr.substr(limit);
+				i++;
+			}
+			settingssync['whiteListCount'] = i;
 			// legacy syncing method - end
 			// new syncing method - start
-				/*
-				jsonstr = ssCompress(JSON.parse(localStorage['whiteList']).toString());
-				i = 0;
-				while (jsonstr.length > 0) {
-					segment = jsonstr.substr(0, newlimit);
-					settingssync["sw" + i] = milliseconds+segment;
-					jsonstr = jsonstr.substr(newlimit);
-					i++;
-				}
-				settingssync['whiteListCount2'] = i;
-				if (zarr['zb'].length) {
-					for (var x = 0, forcount=zarr['zb'].length; x < forcount; x++) delete localStorage[zarr['zb'][x]];
-				}
-				if (zarr['sb'].length) {
-					for (var x = 0, forcount=zarr['sb'].length; x < forcount; x++) delete localStorage[zarr['sb'][x]];
-				}
-				*/
+			/*
+			jsonstr = ssCompress(JSON.parse(localStorage['whiteList']).toString());
+			i = 0;
+			while (jsonstr.length > 0) {
+				segment = jsonstr.substr(0, newlimit);
+				settingssync["sw" + i] = milliseconds+segment;
+				jsonstr = jsonstr.substr(newlimit);
+				i++;
+			}
+			settingssync['whiteListCount2'] = i;
+			if (zarr['zb'].length) {
+				for (var x = 0, forcount=zarr['zb'].length; x < forcount; x++) delete localStorage[zarr['zb'][x]];
+			}
+			if (zarr['sb'].length) {
+				for (var x = 0, forcount=zarr['sb'].length; x < forcount; x++) delete localStorage[zarr['sb'][x]];
+			}
+			*/
 			// new syncing method - end
 			// legacy syncing method - start
-				i = 0;
-				jsonstr = JSON.parse(localStorage['blackList']).toString();
-				limit = (chrome.storage.sync.QUOTA_BYTES_PER_ITEM - Math.ceil(jsonstr.length/(chrome.storage.sync.QUOTA_BYTES_PER_ITEM - 4)) - 4);
-				while (jsonstr.length > 0) {
-					segment = jsonstr.substr(0, limit);
-					settingssync["zb" + i] = segment;
-					jsonstr = jsonstr.substr(limit);
-					i++;
-				}
-				settingssync['blackListCount'] = i;
+			i = 0;
+			jsonstr = JSON.parse(localStorage['blackList']).toString();
+			limit = (chrome.storage.sync.QUOTA_BYTES_PER_ITEM - Math.ceil(jsonstr.length / (chrome.storage.sync.QUOTA_BYTES_PER_ITEM - 4)) - 4);
+			while (jsonstr.length > 0) {
+				segment = jsonstr.substr(0, limit);
+				settingssync["zb" + i] = segment;
+				jsonstr = jsonstr.substr(limit);
+				i++;
+			}
+			settingssync['blackListCount'] = i;
 			// legacy syncing method - end
 			// new syncing method - start
 			/*
@@ -1242,12 +1242,12 @@ function freshSync(force) {
 			// new syncing method - end
 			jsonstr = ssCompress(JSON.parse(localStorage['useragent']).toString());
 			if (zarr['su'].length) {
-				for (var x = 0, forcount=zarr['su'].length; x < forcount; x++) delete localStorage[zarr['su'][x]];
+				for (var x = 0, forcount = zarr['su'].length; x < forcount; x++) delete localStorage[zarr['su'][x]];
 			}
 			i = 0;
 			while (jsonstr.length > 0) {
 				segment = jsonstr.substr(0, newlimit);
-				settingssync["su" + i] = milliseconds+segment;
+				settingssync["su" + i] = milliseconds + segment;
 				jsonstr = jsonstr.substr(newlimit);
 				i++;
 			}
@@ -1257,18 +1257,18 @@ function freshSync(force) {
 			if (chrome.storage.sync.QUOTA_BYTES < JSON.stringify(settingssync).length) {
 				alert('ScriptSafe cannot sync your settings as it is greater than the total limit.\r\nHowever, you can manually export and import your settings by going to the Options page.');
 			} else {
-				chrome.storage.sync.clear(function() {
-					chrome.storage.sync.set(settingssync, function() {
-						if (chrome.extension.lastError){
+				chrome.storage.sync.clear(function () {
+					chrome.storage.sync.set(settingssync, function () {
+						if (chrome.extension.lastError) {
 							alert(chrome.extension.lastError.message);
 						} else {
-							if (localStorage['syncnotify'] == 'true') chrome.notifications.create('syncnotify', {'type': 'basic', 'iconUrl': '../img/icon48.png', 'title': 'ScriptSafe - '+getLocale("exportsuccesstitle"), 'message': getLocale("exportsuccess")}, function(callback) { return true; } );
+							if (localStorage['syncnotify'] == 'true') chrome.notifications.create('syncnotify', { 'type': 'basic', 'iconUrl': '../img/icon48.png', 'title': 'ScriptSafe - ' + getLocale("exportsuccesstitle"), 'message': getLocale("exportsuccess") }, function (callback) { return true; });
 						}
 					});
 				});
 			}
 		} else {
-			synctimer = window.setTimeout(function() { syncQueue() }, 10000);
+			synctimer = window.setTimeout(function () { syncQueue() }, 10000);
 		}
 		return true;
 	} else {
@@ -1282,15 +1282,15 @@ function importSyncHandle(mode) {
 	if (storageapi) {
 		if (mode == '1' || localStorage['syncenable'] == 'true' || localStorage['sync'] == 'false') {
 			window.clearTimeout(synctimer);
-			chrome.storage.sync.get(null, function(changes) {
+			chrome.storage.sync.get(null, function (changes) {
 				if (typeof changes['lastSync'] !== 'undefined') {
 					if ((mode == '0' && changes['lastSync'] > localStorage['lastSync']) || (mode == '1' && changes['lastSync'] >= localStorage['lastSync'])) {
 						if (confirm(getLocale("syncdetect"))) {
 							localStorage['syncenable'] = 'true';
 							localStorage['sync'] = 'true';
 							importSync(changes);
-							if (mode == '1') window.setTimeout(function() { window.clearTimeout(synctimer); }, 5000);
-							if (localStorage['syncfromnotify'] == 'true') chrome.notifications.create('syncnotify', {'type': 'basic', 'iconUrl': '../img/icon48.png', 'title': 'ScriptSafe - '+getLocale("importsuccesstitle"), 'message': getLocale("importsuccess")}, function(callback) { updated = true; return true; });
+							if (mode == '1') window.setTimeout(function () { window.clearTimeout(synctimer); }, 5000);
+							if (localStorage['syncfromnotify'] == 'true') chrome.notifications.create('syncnotify', { 'type': 'basic', 'iconUrl': '../img/icon48.png', 'title': 'ScriptSafe - ' + getLocale("importsuccesstitle"), 'message': getLocale("importsuccess") }, function (callback) { updated = true; return true; });
 							return true;
 						} else {
 							if (mode != '1') {
@@ -1322,7 +1322,7 @@ function importSync(changes) {
 		} else if (key == 'scriptsafe_settings') {
 			var settings = changes[key].split("~");
 			if (settings.length > 0) {
-				$.each(settings, function(i, v) {
+				$.each(settings, function (i, v) {
 					if ($.trim(v) != "") {
 						var settingentry = $.trim(v).split("|");
 						if ($.trim(settingentry[1]) != '') {
@@ -1343,11 +1343,11 @@ function listsSync() {
 	if (optionExists('fpCount')) {
 		var concatlist = '';
 		var listerror = false;
-		for (var i = 0, forcount=localStorage['fpCount']; i < forcount; i++) {
-			if (localStorage['sf'+i]) {
-				if (localStorage['sf'+i].substr(0, 13) == localStorage['lastSync']) concatlist += localStorage['sf'+i].substr(13);
+		for (var i = 0, forcount = localStorage['fpCount']; i < forcount; i++) {
+			if (localStorage['sf' + i]) {
+				if (localStorage['sf' + i].substr(0, 13) == localStorage['lastSync']) concatlist += localStorage['sf' + i].substr(13);
 				else listerror = true;
-				delete localStorage['sf'+i];
+				delete localStorage['sf' + i];
 			}
 		}
 		if (!listerror) {
@@ -1355,7 +1355,7 @@ function listsSync() {
 				concatlist = ssDecompress(concatlist);
 				var settings = concatlist.split("~");
 				if (settings.length > 0) {
-					$.each(settings, function(i, v) {
+					$.each(settings, function (i, v) {
 						if ($.trim(v) != "") {
 							var settingentry = $.trim(v).split("|");
 							if ($.trim(settingentry[1]) != '') {
@@ -1375,50 +1375,50 @@ function listsSync() {
 	cacheFpLists();
 }
 function listsSyncParse(type) {
-	if (optionExists(type+'Count') || optionExists(type+'Count2')) {
-		var lsName = type.substr(0,1);
+	if (optionExists(type + 'Count') || optionExists(type + 'Count2')) {
+		var lsName = type.substr(0, 1);
 		var concatlist = '';
 		var concatlistarr = [];
 		var counttype;
 		var listerror = false;
-		if (optionExists(type+'Count2')) counttype = type+'Count2';
-		else counttype = type+'Count';
+		if (optionExists(type + 'Count2')) counttype = type + 'Count2';
+		else counttype = type + 'Count';
 		concatlist = '';
 		if (localStorage[counttype] != '0') {
-			for (var i = 0, forcount=localStorage[counttype]; i < forcount; i++) {
-				if (counttype == type+'Count2') {
-					if (localStorage['s'+lsName+i]) {
-						if (localStorage['s'+lsName+i].substr(0, 13) == localStorage['lastSync']) concatlist += localStorage['s'+lsName+i].substr(13);
+			for (var i = 0, forcount = localStorage[counttype]; i < forcount; i++) {
+				if (counttype == type + 'Count2') {
+					if (localStorage['s' + lsName + i]) {
+						if (localStorage['s' + lsName + i].substr(0, 13) == localStorage['lastSync']) concatlist += localStorage['s' + lsName + i].substr(13);
 						else {
 							listerror = true;
 						}
-						delete localStorage['s'+lsName+i];
+						delete localStorage['s' + lsName + i];
 					} else {
 						listerror = true;
 					}
-				} else if (counttype == type+'Count') {
-					if (localStorage['z'+lsName+i]) {
-						concatlist += localStorage['z'+lsName+i];
-						delete localStorage['z'+lsName+i];
+				} else if (counttype == type + 'Count') {
+					if (localStorage['z' + lsName + i]) {
+						concatlist += localStorage['z' + lsName + i];
+						delete localStorage['z' + lsName + i];
 					} else {
 						listerror = true;
 					}
 				}
 			}
 			if (!listerror) {
-				if (counttype == type+'Count2') concatlist = ssDecompress(concatlist);
+				if (counttype == type + 'Count2') concatlist = ssDecompress(concatlist);
 				concatlistarr = concatlist.split(",");
 			}
 		}
 		if (!listerror) {
-			if (concatlist == '' || concatlistarr.length == 0) localStorage[type+''] = JSON.stringify([]);
-			else localStorage[type+''] = JSON.stringify(concatlistarr);
+			if (concatlist == '' || concatlistarr.length == 0) localStorage[type + ''] = JSON.stringify([]);
+			else localStorage[type + ''] = JSON.stringify(concatlistarr);
 		} else {
-			alert('Incomplete '+type.toLowerCase()+' data was detected. Very large lists are known to cause issues with syncing.\r\nAs a safety precaution, your '+type.toLowerCase()+' has not been updated and syncing has been disabled on this device to prevent overwriting data on other devices.\r\nPlease consider manually exporting your latest settings and importing it into your other devices from the Options page.');
+			alert('Incomplete ' + type.toLowerCase() + ' data was detected. Very large lists are known to cause issues with syncing.\r\nAs a safety precaution, your ' + type.toLowerCase() + ' has not been updated and syncing has been disabled on this device to prevent overwriting data on other devices.\r\nPlease consider manually exporting your latest settings and importing it into your other devices from the Options page.');
 			localStorage['syncenable'] = 'false';
 		}
-		if (optionExists(type+'Count2')) delete localStorage[type+'Count2'];
-		if (optionExists(type+'Count')) delete localStorage[type+'Count'];
+		if (optionExists(type + 'Count2')) delete localStorage[type + 'Count2'];
+		if (optionExists(type + 'Count')) delete localStorage[type + 'Count'];
 	}
 }
 function getUpdated() {
@@ -1442,8 +1442,8 @@ function cacheLists() {
 	var tempList = JSON.parse(localStorage['whiteList']);
 	var tempDomain = [];
 	var tempWildDomain = [];
-	tempList.map(function(domain) {
-		if (domain.substr(0,3) == '**.') tempWildDomain.push(domain);
+	tempList.map(function (domain) {
+		if (domain.substr(0, 3) == '**.') tempWildDomain.push(domain);
 		tempDomain.push(domain);
 	});
 	tempDomain = tempDomain.sort();
@@ -1453,8 +1453,8 @@ function cacheLists() {
 	tempList = JSON.parse(localStorage['blackList']);
 	tempDomain = [];
 	tempWildDomain = [];
-	tempList.map(function(domain) {
-		if (domain.substr(0,3) == '**.') tempWildDomain.push(domain);
+	tempList.map(function (domain) {
+		if (domain.substr(0, 3) == '**.') tempWildDomain.push(domain);
 		tempDomain.push(domain);
 	});
 	tempDomain = tempDomain.sort();
@@ -1466,7 +1466,7 @@ function cacheFpLists() {
 	for (var i in fpTypes) {
 		var tempList = JSON.parse(localStorage[fpTypes[i]]);
 		var tempDomain = [];
-		tempList.map(function(domain) {
+		tempList.map(function (domain) {
 			tempDomain.push(domain);
 		});
 		tempDomain = tempDomain.sort();
@@ -1479,12 +1479,12 @@ function initLang(lang, mode) {
 		url: url,
 		dataType: 'json',
 		async: true,
-		success: function(data) {
+		success: function (data) {
 			locale = data;
 			if (mode == '1') postLangLoad();
 			else reinitContext();
 		},
-		error: function(){
+		error: function () {
 			locale = false;
 			if (mode == '1') postLangLoad();
 			else reinitContext();
@@ -1507,7 +1507,7 @@ if (!optionExists("locale")) {
 	localStorage['locale'] = 'en_US';
 	if (uiLang != 'en' && uiLang != 'en_GB' && uiLang != 'en_US') {
 		if (typeof langs[uiLang] !== 'undefined') {
-			if (confirm('ScriptSafe detected that your browser is currently set to '+langs[uiLang]+'.\r\nWould you like to use ScriptSafe in '+langs[uiLang]+'?\r\nIf you click on "Cancel", English (US) will be set.')) {
+			if (confirm('ScriptSafe detected that your browser is currently set to ' + langs[uiLang] + '.\r\nWould you like to use ScriptSafe in ' + langs[uiLang] + '?\r\nIf you click on "Cancel", English (US) will be set.')) {
 				localStorage['locale'] = uiLang;
 			}
 		}
@@ -1526,8 +1526,8 @@ function postLangLoad() {
 				var tempList = JSON.parse(localStorage['blackList']);
 				var tempNewList = [];
 				if (tempList.length) {
-					tempList.map(function(domain) {
-						if (domain.substr(0,2) == '*.') tempNewList.push('*'+domain);
+					tempList.map(function (domain) {
+						if (domain.substr(0, 2) == '*.') tempNewList.push('*' + domain);
 						else tempNewList.push(domain);
 					});
 					localStorage['blackList'] = JSON.stringify(tempNewList);
@@ -1535,8 +1535,8 @@ function postLangLoad() {
 				tempList = JSON.parse(localStorage['whiteList']);
 				if (tempList.length) {
 					tempNewList = [];
-					tempList.map(function(domain) {
-						if (domain.substr(0,2) == '*.') tempNewList.push('*'+domain);
+					tempList.map(function (domain) {
+						if (domain.substr(0, 2) == '*.') tempNewList.push('*' + domain);
 						else tempNewList.push(domain);
 					});
 					localStorage['whiteList'] = JSON.stringify(tempNewList);
@@ -1546,7 +1546,7 @@ function postLangLoad() {
 			syncQueue();
 		}
 		if (localStorage["updatenotify"] == "true") {
-			chrome.tabs.create({ url: chrome.extension.getURL('html/updated.html')});
+			chrome.tabs.create({ url: chrome.extension.getURL('html/updated.html') });
 		}
 		localStorage["version"] = version;
 	}
@@ -1559,19 +1559,19 @@ function postLangLoad() {
 		var requestUrls = ["http://*/*", "https://*/*"];
 		refreshRequestTypes();
 		if (typeof chrome.webRequest !== 'undefined') {
-			chrome.webRequest.onBeforeRequest.addListener(ScriptSafe, {"types": requestTypes, "urls": requestUrls}, ['blocking']);
-			chrome.webRequest.onBeforeSendHeaders.addListener(mitigate, {"types": requestTypes, "urls": requestUrls}, ['requestHeaders', 'blocking']);
-			chrome.webRequest.onHeadersReceived.addListener(inlineblock, {"types": requestTypes, "urls": requestUrls}, ['responseHeaders', 'blocking']);
+			chrome.webRequest.onBeforeRequest.addListener(ScriptSafe, { "types": requestTypes, "urls": requestUrls }, ['blocking']);
+			chrome.webRequest.onBeforeSendHeaders.addListener(mitigate, { "types": requestTypes, "urls": requestUrls }, ['requestHeaders', 'blocking']);
+			chrome.webRequest.onHeadersReceived.addListener(inlineblock, { "types": requestTypes, "urls": requestUrls }, ['responseHeaders', 'blocking']);
 		}
 	}
 	if (storageapi) {
-		chrome.storage.onChanged.addListener(function(changes, namespace) {
+		chrome.storage.onChanged.addListener(function (changes, namespace) {
 			if (namespace == 'sync' && localStorage['syncenable'] == 'true') {
 				if (typeof changes['lastSync'] !== 'undefined') {
 					if (changes['lastSync'].newValue && changes['lastSync'].newValue > localStorage['lastSync']) {
-						chrome.storage.sync.get(null, function(changes) {
+						chrome.storage.sync.get(null, function (changes) {
 							importSync(changes);
-							if (localStorage['syncfromnotify'] == 'true') chrome.notifications.create('syncnotify', {'type': 'basic', 'iconUrl': '../img/icon48.png', 'title': 'ScriptSafe - '+getLocale("importsuccesstitle"), 'message': getLocale("importsuccess")}, function(callback) { updated = true; return true; });
+							if (localStorage['syncfromnotify'] == 'true') chrome.notifications.create('syncnotify', { 'type': 'basic', 'iconUrl': '../img/icon48.png', 'title': 'ScriptSafe - ' + getLocale("importsuccesstitle"), 'message': getLocale("importsuccess") }, function (callback) { updated = true; return true; });
 						});
 					}
 				}
