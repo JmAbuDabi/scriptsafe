@@ -2,24 +2,26 @@
 // Distributed under the terms of the GNU General Public License
 // The GNU General Public License can be found in the gpl.txt file. Alternatively, see <http://www.gnu.org/licenses/>.
 'use strict';
-var version = '1.0.9.3';
-var bkg = chrome.extension.getBackgroundPage();
+var version = '2.0.0.0';
+var bkg = getBackgroundPage();
 var syncstatus;
-document.addEventListener('DOMContentLoaded', function () {
-	loadOptions();
+
+document.addEventListener('DOMContentLoaded', async function () {
+	await loadOptions();
 	$(".closepage").click(closeOptions);
 	$(".refreshpage").click(function (e) { chrome.tabs.reload(); });
 });
+
 function closeOptions() {
 	window.open('', '_self', ''); window.close();
 }
 function padZeros(val) {
 	return val < 10 ? '0' + val : val;
 }
-function loadOptions() {
+async function loadOptions() {
 	$("#title").html("ScriptSafe v" + version);
-	var allowedarr = JSON.parse(bkg.getRecents('allowed'));
-	var blockedarr = JSON.parse(bkg.getRecents('blocked'));
+	var allowedarr = JSON.parse(await bkg.getRecents('allowed'));
+	var blockedarr = JSON.parse(await bkg.getRecents('blocked'));
 	var blockedarrcount = blockedarr.length;
 	var annoyances = localStorage['annoyances'];
 	var annoyancesmode = localStorage['annoyancesmode'];
@@ -62,24 +64,24 @@ function loadOptions() {
 			var itemdomainfriendly = itemdomain.replace(/[.\[\]:]/g, "_");
 			var fpitemdomainfriendly = fpitemdomain.replace(/[.\[\]:]/g, "_");
 			var clearBtn = '';
-			if (blockedarr[i][5] == '1') clearBtn = '<span class="box box4" title="Clear Domain from List">' + bkg.getLocale("clear") + '</span>';
+			if (blockedarr[i][5] == '1') clearBtn = '<span class="box box4" title="Clear Domain from List">' + await bkg.getLocale("clear") + '</span>';
 			if (blockedarr[i][2] == 'NOSCRIPT' || blockedarr[i][2] == 'WEBBUG') {
 				$("#blocked > table > tbody").append('<tr rel="' + itemdomainfriendly + '"><td>' + padZeros(entryTime.getHours()) + ':' + padZeros(entryTime.getMinutes()) + ':' + padZeros(entryTime.getSeconds()) + '</td><td title="' + blockedarr[i][1].replace(/"/g, "'") + '">' + truncate(blockedarr[i][1]) + '</td><td>' + blockedarr[i][2] + '</td><td title="' + blockedarr[i][4] + '">' + truncate(blockedarr[i][4]) + '</td><td class="text-right" data-domain="' + itemdomain + '">&nbsp;</td>');
 			} else if (blockedarr[i][7] && ((annoyances == 'true' && annoyancesmode == 'strict' && blockedarr[i][5] == '-1' && blockedarr[i][7] == '1') || (antisocial == 'true' && blockedarr[i][7] == '2'))) {
 				var unwantedType = '';
-				if (blockedarr[i][7] == '1') unwantedType = bkg.getLocale("unwanted");
-				else if (blockedarr[i][7] == '2') unwantedType = bkg.getLocale("antisocialpopup");
+				if (blockedarr[i][7] == '1') unwantedType = await bkg.getLocale("unwanted");
+				else if (blockedarr[i][7] == '2') unwantedType = await bkg.getLocale("antisocialpopup");
 				$("#blocked > table > tbody").append('<tr rel="' + itemdomainfriendly + '"><td>' + padZeros(entryTime.getHours()) + ':' + padZeros(entryTime.getMinutes()) + ':' + padZeros(entryTime.getSeconds()) + '</td><td title="' + blockedarr[i][1].replace(/"/g, "'") + '">' + truncate(blockedarr[i][1]) + '</td><td>' + blockedarr[i][2] + '</td><td title="' + blockedarr[i][4] + '">' + truncate(blockedarr[i][4]) + '</td><td class="text-right choices" data-domain="' + itemdomain + '" rel="' + blockedarr[i][3] + '"><span class="box box2 x_blacklist selected" rel="1" title="' + unwantedType + '">' + unwantedType + '</span></td>');
 			} else if (blockedarr[i][8]) {
-				$("#blocked > table > tbody").append('<tr rel="' + fpitemdomainfriendly + '"><td>' + padZeros(entryTime.getHours()) + ':' + padZeros(entryTime.getMinutes()) + ':' + padZeros(entryTime.getSeconds()) + '</td><td title="' + blockedarr[i][1].replace(/"/g, "'") + '">' + truncate(blockedarr[i][1]) + '</td><td>' + blockedarr[i][2] + '</td><td title="' + blockedarr[i][4] + '">' + truncate(blockedarr[i][4]) + '</td><td class="text-right fpchoices" data-domain="' + itemdomain + '" rel="' + blockedarr[i][3] + '">' + clearBtn + '<span class="box box1 x_whitelist" rel="0" title="Allow Domain">' + bkg.getLocale("allow") + '</span><span class="box box3 x_bypass" rel="2" title="Temporary">' + bkg.getLocale("temp") + '</span></td>');
+				$("#blocked > table > tbody").append('<tr rel="' + fpitemdomainfriendly + '"><td>' + padZeros(entryTime.getHours()) + ':' + padZeros(entryTime.getMinutes()) + ':' + padZeros(entryTime.getSeconds()) + '</td><td title="' + blockedarr[i][1].replace(/"/g, "'") + '">' + truncate(blockedarr[i][1]) + '</td><td>' + blockedarr[i][2] + '</td><td title="' + blockedarr[i][4] + '">' + truncate(blockedarr[i][4]) + '</td><td class="text-right fpchoices" data-domain="' + itemdomain + '" rel="' + blockedarr[i][3] + '">' + clearBtn + '<span class="box box1 x_whitelist" rel="0" title="Allow Domain">' + await bkg.getLocale("allow") + '</span><span class="box box3 x_bypass" rel="2" title="Temporary">' + await bkg.getLocale("temp") + '</span></td>');
 			} else {
 				var unwantedType = '';
-				if (blockedarr[i][7] == '1') unwantedType = '<span class="box box2 x_blacklist selected" rel="1" title="' + bkg.getLocale("unwanted") + '">' + bkg.getLocale("unwanted") + '</span>';
-				else if (blockedarr[i][7] == '2') unwantedType = '<span class="box box2 x_blacklist selected" rel="1" title="' + bkg.getLocale("antisocialpopup") + '">' + bkg.getLocale("antisocialpopup") + '</span>';
-				$("#blocked > table > tbody").append('<tr rel="' + itemdomainfriendly + '"><td>' + padZeros(entryTime.getHours()) + ':' + padZeros(entryTime.getMinutes()) + ':' + padZeros(entryTime.getSeconds()) + '</td><td title="' + blockedarr[i][1].replace(/"/g, "'") + '">' + truncate(blockedarr[i][1]) + '</td><td>' + blockedarr[i][2] + '</td><td title="' + blockedarr[i][4] + '">' + truncate(blockedarr[i][4]) + '</td><td class="text-right choices" data-domain="' + itemdomain + '" rel="' + blockedarr[i][3] + '">' + clearBtn + '<span class="box box1 x_whitelist" rel="0" title="Allow Domain">' + bkg.getLocale("allow") + '</span><span class="box box1 x_trust" rel="3" title="Trust Entire Domain">' + bkg.getLocale("trust") + '</span>' + unwantedType + '<span class="box box3 x_bypass" rel="2" title="Temporary">' + bkg.getLocale("temp") + '</span></td>');
+				if (blockedarr[i][7] == '1') unwantedType = '<span class="box box2 x_blacklist selected" rel="1" title="' + await bkg.getLocale("unwanted") + '">' + await bkg.getLocale("unwanted") + '</span>';
+				else if (blockedarr[i][7] == '2') unwantedType = '<span class="box box2 x_blacklist selected" rel="1" title="' + await bkg.getLocale("antisocialpopup") + '">' + await bkg.getLocale("antisocialpopup") + '</span>';
+				$("#blocked > table > tbody").append('<tr rel="' + itemdomainfriendly + '"><td>' + padZeros(entryTime.getHours()) + ':' + padZeros(entryTime.getMinutes()) + ':' + padZeros(entryTime.getSeconds()) + '</td><td title="' + blockedarr[i][1].replace(/"/g, "'") + '">' + truncate(blockedarr[i][1]) + '</td><td>' + blockedarr[i][2] + '</td><td title="' + blockedarr[i][4] + '">' + truncate(blockedarr[i][4]) + '</td><td class="text-right choices" data-domain="' + itemdomain + '" rel="' + blockedarr[i][3] + '">' + clearBtn + '<span class="box box1 x_whitelist" rel="0" title="Allow Domain">' + await bkg.getLocale("allow") + '</span><span class="box box1 x_trust" rel="3" title="Trust Entire Domain">' + await bkg.getLocale("trust") + '</span>' + unwantedType + '<span class="box box3 x_bypass" rel="2" title="Temporary">' + await bkg.getLocale("temp") + '</span></td>');
 			}
 			if (mode == 'allow') {
-				if (bkg.checkTemp(itemdomain)) {
+				if (await bkg.checkTemp(itemdomain)) {
 					$("#blocked [rel='" + itemdomainfriendly + "'] .x_bypass").addClass("selected");
 					$("#blocked [rel='" + itemdomainfriendly + "'] .box4").hide();
 				}
@@ -119,14 +121,14 @@ function loadOptions() {
 			var itemdomainfriendly = itemdomain.replace(/[.\[\]:]/g, "_");
 			var fpitemdomainfriendly = fpitemdomain.replace(/[.\[\]:]/g, "_");
 			var clearBtn = '';
-			if (allowedarr[i][5] == '0' || (allowedarr[i][7] && allowedarr[i][5] == '1')) clearBtn = '<span class="box box4" title="Clear Domain from List">' + bkg.getLocale("clear") + '</span>';
+			if (allowedarr[i][5] == '0' || (allowedarr[i][7] && allowedarr[i][5] == '1')) clearBtn = '<span class="box box4" title="Clear Domain from List">' + await bkg.getLocale("clear") + '</span>';
 			if (allowedarr[i][7]) {
-				$("#allowed > table > tbody").append('<tr rel="' + fpitemdomainfriendly + '"><td>' + padZeros(entryTime.getHours()) + ':' + padZeros(entryTime.getMinutes()) + ':' + padZeros(entryTime.getSeconds()) + '</td><td title="' + allowedarr[i][1].replace(/"/g, "'") + '">' + truncate(allowedarr[i][1]) + '</td><td>' + allowedarr[i][2] + '</td><td title="' + allowedarr[i][4] + '">' + truncate(allowedarr[i][4]) + '</td><td class="text-right fpchoices" data-domain="' + itemdomain + '" rel="' + allowedarr[i][3] + '">' + clearBtn + '<span class="box box3 x_bypass" rel="2" title="Temporary">' + bkg.getLocale("temp") + '</span></td>');
+				$("#allowed > table > tbody").append('<tr rel="' + fpitemdomainfriendly + '"><td>' + padZeros(entryTime.getHours()) + ':' + padZeros(entryTime.getMinutes()) + ':' + padZeros(entryTime.getSeconds()) + '</td><td title="' + allowedarr[i][1].replace(/"/g, "'") + '">' + truncate(allowedarr[i][1]) + '</td><td>' + allowedarr[i][2] + '</td><td title="' + allowedarr[i][4] + '">' + truncate(allowedarr[i][4]) + '</td><td class="text-right fpchoices" data-domain="' + itemdomain + '" rel="' + allowedarr[i][3] + '">' + clearBtn + '<span class="box box3 x_bypass" rel="2" title="Temporary">' + await bkg.getLocale("temp") + '</span></td>');
 			} else {
-				$("#allowed > table > tbody").append('<tr rel="' + itemdomainfriendly + '"><td>' + padZeros(entryTime.getHours()) + ':' + padZeros(entryTime.getMinutes()) + ':' + padZeros(entryTime.getSeconds()) + '</td><td title="' + allowedarr[i][1].replace(/"/g, "'") + '">' + truncate(allowedarr[i][1]) + '</td><td>' + allowedarr[i][2] + '</td><td title="' + allowedarr[i][4] + '">' + truncate(allowedarr[i][4]) + '</td><td class="text-right choices" data-domain="' + itemdomain + '" rel="' + allowedarr[i][3] + '">' + clearBtn + '<span class="box box2 x_blacklist" rel="1" title="Deny">' + bkg.getLocale("deny") + '</span><span class="box box2 x_trust" rel="4" title="Distrust Entire Domain">' + bkg.getLocale("distrust") + '</span><span class="box box3 x_bypass" rel="2" title="Temporary">' + bkg.getLocale("temp") + '</span></td>');
+				$("#allowed > table > tbody").append('<tr rel="' + itemdomainfriendly + '"><td>' + padZeros(entryTime.getHours()) + ':' + padZeros(entryTime.getMinutes()) + ':' + padZeros(entryTime.getSeconds()) + '</td><td title="' + allowedarr[i][1].replace(/"/g, "'") + '">' + truncate(allowedarr[i][1]) + '</td><td>' + allowedarr[i][2] + '</td><td title="' + allowedarr[i][4] + '">' + truncate(allowedarr[i][4]) + '</td><td class="text-right choices" data-domain="' + itemdomain + '" rel="' + allowedarr[i][3] + '">' + clearBtn + '<span class="box box2 x_blacklist" rel="1" title="Deny">' + await bkg.getLocale("deny") + '</span><span class="box box2 x_trust" rel="4" title="Distrust Entire Domain">' + await bkg.getLocale("distrust") + '</span><span class="box box3 x_bypass" rel="2" title="Temporary">' + await bkg.getLocale("temp") + '</span></td>');
 			}
 			if (mode == 'block') {
-				if (bkg.checkTemp(itemdomain)) {
+				if (await bkg.checkTemp(itemdomain)) {
 					$("#allowed [rel='" + itemdomainfriendly + "'] .x_bypass").addClass("selected");
 					$("#allowed [rel='" + itemdomainfriendly + "'] .box4").hide();
 				}
@@ -144,15 +146,15 @@ function truncate(str) {
 function notification(msg) {
 	$('#message').html(msg).stop().fadeIn("slow").delay(2000).fadeOut("slow")
 }
-function processCommand() {
-	syncstatus = bkg.freshSync();
+async function processCommand() {
+	syncstatus = await bkg.freshSync();
 	if (syncstatus) {
-		notification(bkg.getLocale("settingssavesync"));
+		notification(await bkg.getLocale("settingssavesync"));
 	} else {
-		notification(bkg.getLocale("settingssave"));
+		notification(await bkg.getLocale("settingssave"));
 	}
 }
-function handleclick() {
+const handleclick = async function () {
 	var listType = $(this).parent().parent().parent().parent().parent().attr('id');
 	var url = $(this).parent().attr('rel');
 	var val = $(this).attr('rel');
@@ -175,13 +177,13 @@ function handleclick() {
 		else if (fpType == 'clipboard.interference') fpList = 'fpClipboard';
 		else if (fpType == 'browser.plugins.enumeration') fpList = 'fpBrowserPlugins';
 		if (clear) {
-			bkg.fpDomainHandler('**.' + bkg.getDomain(url), fpList, -1);
-			bkg.fpDomainHandler(url, fpList, -1);
+			await bkg.fpDomainHandler('**.' + await bkg.getDomain(url), fpList, -1);
+			await bkg.fpDomainHandler(url, fpList, -1);
 			$(this).hide();
 			$("#" + listType + " .fpchoices[rel='" + url + "'][data-domain='" + fpType + "'] .box4").hide();
 		} else {
 			if (val < 2) {
-				bkg.fpDomainHandler(url, fpList, -1, 1);
+				await bkg.fpDomainHandler(url, fpList, -1, 1);
 				chrome.runtime.sendMessage({ reqtype: "save-fp", url: url, list: fpList });
 				$(this).addClass("selected");
 				$("#" + listType + " .fpchoices[rel='" + url + "'][data-domain='" + fpType + "'] .x_whitelist").addClass("selected");
@@ -199,19 +201,19 @@ function handleclick() {
 		}
 	} else {
 		if (clear) {
-			var trustType = bkg.trustCheck(url);
+			var trustType = await bkg.trustCheck(url);
 			if (trustType) {
-				bkg.domainHandler('**.' + bkg.getDomain(url), 2);
-				bkg.domainHandler('**.' + bkg.getDomain(url), 2, 1);
+				await bkg.domainHandler('**.' + await bkg.getDomain(url), 2);
+				await bkg.domainHandler('**.' + await bkg.getDomain(url), 2, 1);
 			} else {
-				bkg.domainHandler(url, 2);
-				bkg.domainHandler(url, 2, 1);
+				await bkg.domainHandler(url, 2);
+				await bkg.domainHandler(url, 2, 1);
 			}
 			$(this).hide();
 			$("#" + listType + " .choices[rel='" + url + "'] .box4").hide();
 		} else {
 			if (val < 2) {
-				bkg.domainHandler(url, '2', '1');
+				await bkg.domainHandler(url, '2', '1');
 				chrome.runtime.sendMessage({ reqtype: "save", url: url, list: val });
 				$(this).addClass("selected");
 				$("#" + listType + " .choices[rel='" + url + "'] .x_whitelist").addClass("selected");
@@ -229,18 +231,38 @@ function handleclick() {
 					$("#" + listType + " .choices[rel='" + url + "'] .x_bypass").addClass("selected");
 				}
 			} else if (val == 3) {
-				bkg.topHandler(url, 0);
+				await bkg.topHandler(url, 0);
 				val = 0;
 				$(this).addClass("selected");
 				$(".box1", $(this).parent()).addClass("selected");
 			} else if (val == 4) {
-				bkg.topHandler(url, 1);
+				await bkg.topHandler(url, 1);
 				val = 1;
 				$(this).addClass("selected");
 				$(".box4", $(this).parent()).addClass("selected");
 			}
 		}
 	}
-	bkg.clearRecents();
-	notification(bkg.getLocale("settingssave"));
+	await bkg.clearRecents();
+	notification(await bkg.getLocale("settingssave"));
+};
+
+function getBackgroundPage() {
+	return new Proxy({}, {
+		get(_, method) {
+			return (...args) => {
+				return new Promise((resolve, reject) => {
+					chrome.runtime.sendMessage({ method, args }, (response) => {
+						if (chrome.runtime.lastError) {
+							return reject(new Error(chrome.runtime.lastError.message));
+						}
+						if (response?.error) {
+							return reject(new Error(response.error));
+						}
+						resolve(response?.result);
+					});
+				});
+			};
+		}
+	});
 }
