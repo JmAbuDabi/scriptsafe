@@ -1,6 +1,6 @@
 // Custom antisocial list below.
 
-var antisocial1 = [
+export const antisocial1 = [
 'addthis.com',
 'addthiscdn.com',
 'addtoany.com',
@@ -24,7 +24,7 @@ var antisocial1 = [
 'wibiya.com'
 ];
 
-var antisocial2 = [
+export const antisocial2 = [
 'api.facebook.com',
 'api.pinterest.com',
 'api.solidopinion.com',
@@ -57,7 +57,7 @@ var antisocial2 = [
 //		hpHOSTS (ad/tracking servers): http://hosts-file.net/ad_servers.txt
 // Above projects merged, duplicates removed, list optimized to reduce file size and false positives :)
 
-var yoyo1 = [
+export const yoyo1 = [
 '00fun.com',
 '00zasdf.pw',
 '0427d7.se',
@@ -7548,7 +7548,7 @@ var yoyo1 = [
 'zyxyfy.com'
 ];
 
-var yoyo2 = [
+export const yoyo2 = [
 '0.r.msn.com',
 '005.free-counter.co.uk',
 '006.free-adult-counters.x-xtra.com',
