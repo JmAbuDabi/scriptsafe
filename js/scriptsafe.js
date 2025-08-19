@@ -2,10 +2,10 @@
 // Distributed under the terms of the GNU General Public License
 // The GNU General Public License can be found in the gpl.txt file. Alternatively, see <http://www.gnu.org/licenses/>.
 // Credits and ideas: NotScripts, AdBlock Plus for Chrome, Ghostery, KB SSL Enforcer
-'use strict';
-var version = '2.0.0.0';
-var requestTypes, synctimer, recentstimer, reenabletimer, useragentinterval, blackList, whiteList, distrustList, trustList, sessionBlackList, sessionWhiteList, locale;
-var langs = {
+import { version, getDomain, extractDomainFromURL } from "./common.js";
+
+let requestTypes, synctimer, recentstimer, reenabletimer, useragentinterval, blackList, whiteList, distrustList, trustList, sessionBlackList, sessionWhiteList, locale;
+let langs = {
 	'en_US': 'English (US)',
 	'en_GB': 'English (UK)',
 	'zh_CN': 'Chinese (Simplified)',
@@ -25,21 +25,21 @@ var langs = {
 	'es': 'Spanish',
 	'sv': 'Swedish'
 }
-var fpTypes = ['fpCanvas', 'fpCanvasFont', 'fpAudio', 'fpWebGL', 'fpBattery', 'fpDevice', 'fpGamepad', 'fpWebVR', 'fpBluetooth', 'fpClientRectangles', 'fpClipboard', 'fpBrowserPlugins'];
-var fpLists = [];
-var fpListsSession = [];
-var popup = [];
-var recentlog = [];
+let fpTypes = ['fpCanvas', 'fpCanvasFont', 'fpAudio', 'fpWebGL', 'fpBattery', 'fpDevice', 'fpGamepad', 'fpWebVR', 'fpBluetooth', 'fpClientRectangles', 'fpClipboard', 'fpBrowserPlugins'];
+let fpLists = [];
+let fpListsSession = [];
+let popup = [];
+let recentlog = [];
 recentlog['allowed'] = [];
 recentlog['blocked'] = [];
-var changed = false;
-var ITEMS = {};
-var experimental = 0;
-var storageapi = false;
-var webrtcsupport = false;
-var updated = false;
-var userAgent = '';
-function refreshRequestTypes() {
+let changed = false;
+let ITEMS = {};
+let experimental = 0;
+let storageapi = false;
+let webrtcsupport = false;
+let updated = false;
+let userAgent = '';
+export function refreshRequestTypes() {
 	clearRecents();
 	genUserAgent(1);
 	requestTypes = ['main_frame'];
@@ -66,7 +66,7 @@ function initWebRTC() {
 		});
 	}
 }
-function getWebRTC() {
+export function getWebRTC() {
 	return webrtcsupport;
 }
 function testWebRTC(rtcstatus) {
@@ -393,7 +393,7 @@ function enabledfp(domainname, fptype) {
 	if (in_array(domainname, fpListsSession[fptype])) return '2';
 	return '-1';
 }
-function domainCheck(domain, req) {
+export function domainCheck(domain, req) {
 	if (req === undefined) {
 		var baddiesCheck = baddies(domain, localStorage['annoyancesmode'], localStorage['antisocial']);
 		if (((localStorage['annoyances'] == 'true' && localStorage['annoyancesmode'] == 'strict' && baddiesCheck == '1') || (localStorage['antisocial'] == 'true' && baddiesCheck == '2') || (localStorage['annoyances'] == 'true' && localStorage['annoyancesmode'] == 'relaxed' && baddiesCheck))) return '1';
@@ -410,7 +410,7 @@ function domainCheck(domain, req) {
 	}
 	return '-1';
 }
-function domainSort(hosts) {
+export function domainSort(hosts) {
 	var sorted_hosts = new Array();
 	var split_hosts = new Array();
 	if (hosts.length > 0) {
@@ -552,7 +552,7 @@ function domainHandler(domain, action, listtype) {
 	}
 	return false;
 }
-function fpDomainHandler(domain, listtype, action, temp) {
+export function fpDomainHandler(domain, listtype, action, temp) {
 	if (temp === undefined)
 		temp = 0;
 	if (domain) {
@@ -625,7 +625,7 @@ function optionExists(opt) {
 function defaultOptionValue(opt, val) {
 	if (!optionExists(opt)) localStorage[opt] = val;
 }
-function setDefaultOptions(force) {
+export function setDefaultOptions(force) {
 	var settingNames = {
 		"version": version,
 		"sync": "false",
@@ -836,10 +836,10 @@ function getSessionList() {
 function checkTemp(domain) {
 	return in_array(domain, getSessionList());
 }
-chrome.tabs.onRemoved.addListener(function (tabid) {
+chrome.tabs.onRemoved.addListener(function(tabid) {
 	if (typeof ITEMS[tabid] !== 'undefined') delete ITEMS[tabid];
 });
-chrome.tabs.onUpdated.addListener(function (tabid, changeinfo, tab) {
+chrome.tabs.onUpdated.addListener(function(tabid, changeinfo, tab) {
 	if (localStorage['enable'] == 'true') {
 		if (changeinfo.status == 'loading') {
 			var icontype = "Allowed";
@@ -848,52 +848,52 @@ chrome.tabs.onUpdated.addListener(function (tabid, changeinfo, tab) {
 			var extractedDomain = extractDomainFromURL(tab.url);
 			if (in_array(extractedDomain, sessionWhiteList) || in_array(extractedDomain, sessionBlackList))
 				icontype = "Temp";
-			chrome.browserAction.setIcon({ path: "../img/Icon" + icontype + ".png", tabId: tabid });
+			chrome.browserAction.setIcon({path: "../img/Icon"+icontype+".png", tabId: tabid});
 		} else if (changeinfo.status == "complete") {
 			if (typeof ITEMS[tabid] !== 'undefined') {
 				changed = true;
 				if (localStorage['mode'] == 'block' && typeof ITEMS[tabid]['allowed'] !== 'undefined') {
-					for (var i = 0, forcount = ITEMS[tabid]['allowed'].length; i < forcount; i++) {
+					for (var i=0, forcount=ITEMS[tabid]['allowed'].length; i<forcount; i++) {
 						if (in_array(extractDomainFromURL(ITEMS[tabid]['allowed'][i][0]), sessionWhiteList)) {
-							chrome.browserAction.setIcon({ path: "../img/IconTemp.png", tabId: tabid });
+							chrome.browserAction.setIcon({path: "../img/IconTemp.png", tabId: tabid});
 							break;
 						}
 					}
 				} else if (localStorage['mode'] == 'allow' && typeof ITEMS[tabid]['blocked'] !== 'undefined') {
-					for (var i = 0, forcount = ITEMS[tabid]['blocked'].length; i < forcount; i++) {
+					for (var i=0, forcount=ITEMS[tabid]['blocked'].length; i<forcount; i++) {
 						if (in_array(extractDomainFromURL(ITEMS[tabid]['blocked'][i][0]), sessionBlackList)) {
-							chrome.browserAction.setIcon({ path: "../img/IconTemp.png", tabId: tabid });
+							chrome.browserAction.setIcon({path: "../img/IconTemp.png", tabId: tabid});
 							break;
 						}
 					}
 				}
 			}
 		}
-	} else chrome.browserAction.setIcon({ path: "../img/IconDisabled.png", tabId: tabid });
+	} else chrome.browserAction.setIcon({path: "../img/IconDisabled.png", tabId: tabid});
 });
-chrome.runtime.onConnect.addListener(function (port) {
-	port.onMessage.addListener(function (msg) {
+chrome.runtime.onConnect.addListener(function(port) {
+	port.onMessage.addListener(function(msg) {
 		if (port.name == 'popuplifeline') {
 			if (msg.url && msg.tid) {
-				popup = [msg.url, msg.tid];
+				popup=[msg.url, msg.tid];
 			}
 		}
 	});
-	port.onDisconnect.addListener(function () {
+	port.onDisconnect.addListener(function() {
 		if (popup.length > 0) {
-			if (localStorage['refresh'] == 'true') chrome.tabs.update(popup[1], { url: popup[0] });
-			popup = [];
+			if (localStorage['refresh'] == 'true') chrome.tabs.update(popup[1], {url: popup[0]});
+			popup=[];
 		}
 	});
 });
-chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
+chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 	if (request.reqtype == 'get-settings') {
 		var fpListStatus = [];
 		var extractedDomain = extractDomainFromURL(sender.tab.url);
 		for (var i in fpTypes) {
 			fpListStatus[fpTypes[i]] = enabledfp(extractedDomain, fpTypes[i]);
 		}
-		sendResponse({ status: localStorage['enable'], enable: enabled(sender.tab.url), fp_canvas: fpListStatus['fpCanvas'], fp_canvasfont: fpListStatus['fpCanvasFont'], fp_audio: fpListStatus['fpAudio'], fp_webgl: fpListStatus['fpWebGL'], fp_battery: fpListStatus['fpBattery'], fp_device: fpListStatus['fpDevice'], fp_gamepad: fpListStatus['fpGamepad'], fp_webvr: fpListStatus['fpWebVR'], fp_bluetooth: fpListStatus['fpBluetooth'], fp_clientrectangles: fpListStatus['fpClientRectangles'], fp_clipboard: fpListStatus['fpClipboard'], fp_browserplugins: fpListStatus['fpBrowserPlugins'], experimental: experimental, mode: localStorage['mode'], annoyancesmode: localStorage['annoyancesmode'], antisocial: localStorage['antisocial'], whitelist: whiteList, blacklist: blackList, whitelistSession: sessionWhiteList, blackListSession: sessionBlackList, script: localStorage['script'], noscript: localStorage['noscript'], object: localStorage['object'], applet: localStorage['applet'], embed: localStorage['embed'], iframe: localStorage['iframe'], frame: localStorage['frame'], audio: localStorage['audio'], video: localStorage['video'], image: localStorage['image'], annoyances: localStorage['annoyances'], preservesamedomain: localStorage['preservesamedomain'], canvas: localStorage['canvas'], canvasfont: localStorage['canvasfont'], audioblock: localStorage['audioblock'], webgl: localStorage['webgl'], battery: localStorage['battery'], webrtcdevice: localStorage['webrtcdevice'], gamepad: localStorage['gamepad'], webvr: localStorage['webvr'], bluetooth: localStorage['bluetooth'], clientrects: localStorage['clientrects'], timezone: localStorage['timezone'], browserplugins: localStorage['browserplugins'], keyboard: localStorage['keyboard'], keydelta: localStorage['keydelta'], webbugs: localStorage['webbugs'], referrer: localStorage['referrer'], referrerspoofdenywhitelisted: localStorage['referrerspoofdenywhitelisted'], linktarget: localStorage['linktarget'], paranoia: localStorage['paranoia'], clipboard: localStorage['clipboard'], dataurl: localStorage['dataurl'], useragent: userAgent, uaspoofallow: localStorage['uaspoofallow'] });
+		sendResponse({status: localStorage['enable'], enable: enabled(sender.tab.url), fp_canvas: fpListStatus['fpCanvas'], fp_canvasfont: fpListStatus['fpCanvasFont'], fp_audio: fpListStatus['fpAudio'], fp_webgl: fpListStatus['fpWebGL'], fp_battery: fpListStatus['fpBattery'], fp_device: fpListStatus['fpDevice'], fp_gamepad: fpListStatus['fpGamepad'], fp_webvr: fpListStatus['fpWebVR'], fp_bluetooth: fpListStatus['fpBluetooth'], fp_clientrectangles: fpListStatus['fpClientRectangles'], fp_clipboard: fpListStatus['fpClipboard'], fp_browserplugins: fpListStatus['fpBrowserPlugins'], experimental: experimental, mode: localStorage['mode'], annoyancesmode: localStorage['annoyancesmode'], antisocial: localStorage['antisocial'], whitelist: whiteList, blacklist: blackList, whitelistSession: sessionWhiteList, blackListSession: sessionBlackList, script: localStorage['script'], noscript: localStorage['noscript'], object: localStorage['object'], applet: localStorage['applet'], embed: localStorage['embed'], iframe: localStorage['iframe'], frame: localStorage['frame'], audio: localStorage['audio'], video: localStorage['video'], image: localStorage['image'], annoyances: localStorage['annoyances'], preservesamedomain: localStorage['preservesamedomain'], canvas: localStorage['canvas'], canvasfont: localStorage['canvasfont'], audioblock: localStorage['audioblock'], webgl: localStorage['webgl'], battery: localStorage['battery'], webrtcdevice: localStorage['webrtcdevice'], gamepad: localStorage['gamepad'], webvr: localStorage['webvr'], bluetooth: localStorage['bluetooth'], clientrects: localStorage['clientrects'], timezone: localStorage['timezone'], browserplugins: localStorage['browserplugins'], keyboard: localStorage['keyboard'], keydelta: localStorage['keydelta'], webbugs: localStorage['webbugs'], referrer: localStorage['referrer'], referrerspoofdenywhitelisted: localStorage['referrerspoofdenywhitelisted'], linktarget: localStorage['linktarget'], paranoia: localStorage['paranoia'], clipboard: localStorage['clipboard'], dataurl: localStorage['dataurl'], useragent: userAgent, uaspoofallow: localStorage['uaspoofallow']});
 		if (typeof ITEMS[sender.tab.id] === 'undefined') {
 			resetTabData(sender.tab.id, sender.tab.url);
 		} else {
@@ -921,7 +921,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
 				else if (i == 'fpClientRectangles') fptype = 'Client Rectangles';
 				else if (i == 'fpClipboard') fptype = 'Clipboard Interference';
 				else if (i == 'fpBrowserPlugins') fptype = 'Browser Plugins Enumeration';
-				if (extractedDomain.substr(0, 4) == 'www.') extractedDomain = extractedDomain.substr(4);
+				if (extractedDomain.substr(0,4) == 'www.') extractedDomain = extractedDomain.substr(4);
 				ITEMS[sender.tab.id]['allowed'].push([cleanedUrl, fptype, extractedDomain, fpListStatus[i], false, true]);
 				recentlog['allowed'].push([new Date().getTime(), sender.tab.url, fptype, extractedDomain, sender.tab.url, fpListStatus[i], false, true]);
 				updateRecents('allowed');
@@ -943,7 +943,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
 				break;
 			}
 		}
-		sendResponse({ status: localStorage['enable'], enable: enableval, mode: localStorage['mode'], annoyancesmode: localStorage['annoyancesmode'], antisocial: localStorage['antisocial'], annoyances: localStorage['annoyances'], closepage: localStorage['classicoptions'], rating: localStorage['rating'], temp: getSessionList(), tempfp: sessionfplist, blockeditems: ITEMS[request.tid]['blocked'], alloweditems: ITEMS[request.tid]['allowed'], domainsort: localStorage['domainsort'] });
+		sendResponse({status: localStorage['enable'], enable: enableval, mode: localStorage['mode'], annoyancesmode: localStorage['annoyancesmode'], antisocial: localStorage['antisocial'], annoyances: localStorage['annoyances'], closepage: localStorage['classicoptions'], rating: localStorage['rating'], temp: getSessionList(), tempfp: sessionfplist, blockeditems: ITEMS[request.tid]['blocked'], alloweditems: ITEMS[request.tid]['allowed'], domainsort: localStorage['domainsort']});
 		changed = true;
 	} else if (request.reqtype == 'update-blocked') {
 		if (request.src) {
@@ -951,7 +951,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
 			if (typeof ITEMS[sender.tab.id]['blocked'] === 'undefined') ITEMS[sender.tab.id]['blocked'] = [];
 			if (!UrlInList(cleanedUrl, ITEMS[sender.tab.id]['blocked']) || request.node == 'NOSCRIPT' || request.node == 'Canvas Fingerprint' || request.node == 'Canvas Font Access' || request.node == 'Audio Fingerprint' || request.node == 'WebGL Fingerprint' || request.node == 'Battery Fingerprint' || request.node == 'Device Enumeration' || request.node == 'Gamepad Enumeration' || request.node == 'WebVR Enumeration' || request.node == 'Bluetooth Enumeration' || request.node == 'Spoofed Timezone' || request.node == 'Client Rectangles' || request.node == 'Clipboard Interference' || request.node == 'Data URL' || request.node == 'Browser Plugins Enumeration') {
 				var extractedDomain = extractDomainFromURL(request.src);
-				if (extractedDomain.substr(0, 4) == 'www.') extractedDomain = extractedDomain.substr(4);
+				if (extractedDomain.substr(0,4) == 'www.') extractedDomain = extractedDomain.substr(4);
 				var extractedTabDomain = extractDomainFromURL(ITEMS[sender.tab.id]['url']);
 				if (request.node == 'NOSCRIPT') {
 					ITEMS[sender.tab.id]['blocked'].push([request.src, request.node, request.src, '-1', '-1', false, false]);
@@ -978,7 +978,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
 			var cleanedUrl = removeParams(request.src);
 			if (!UrlInList(cleanedUrl, ITEMS[sender.tab.id]['allowed'])) {
 				var extractedDomain = extractDomainFromURL(request.src);
-				if (extractedDomain.substr(0, 4) == 'www.') extractedDomain = extractedDomain.substr(4);
+				if (extractedDomain.substr(0,4) == 'www.') extractedDomain = extractedDomain.substr(4);
 				var allowedDomainCheck = domainCheck(request.src, 1);
 				var allowedBaddieCheck = baddies(request.src, localStorage['annoyancesmode'], localStorage['antisocial'], 2)
 				ITEMS[sender.tab.id]['allowed'].push([cleanedUrl, request.node, extractedDomain, domainCheck(request.src, 1), allowedBaddieCheck]);
@@ -1003,9 +1003,9 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
 		fpDomainHandler(request.url, request.list, -1, 1);
 		changed = true;
 	} else if (request.reqtype == 'refresh-page-icon') {
-		if (request.type == '0') chrome.browserAction.setIcon({ path: "../img/IconAllowed.png", tabId: request.tid });
-		else if (request.type == '1') chrome.browserAction.setIcon({ path: "../img/IconForbidden.png", tabId: request.tid });
-		else if (request.type == '2') chrome.browserAction.setIcon({ path: "../img/IconTemp.png", tabId: request.tid });
+		if (request.type == '0') chrome.browserAction.setIcon({path: "../img/IconAllowed.png", tabId: request.tid});
+		else if (request.type == '1') chrome.browserAction.setIcon({path: "../img/IconForbidden.png", tabId: request.tid});
+		else if (request.type == '2') chrome.browserAction.setIcon({path: "../img/IconTemp.png", tabId: request.tid});
 	} else
 		sendResponse({});
 });
@@ -1120,7 +1120,7 @@ function ssCompress(str) {
 function ssDecompress(str) {
 	return pako.inflate(atob(str), { to: 'string' });
 }
-function freshSync(force) {
+export function freshSync(force) {
 	if (storageapi && localStorage['syncenable'] == 'true') {
 		window.clearTimeout(synctimer);
 		if (force) {
@@ -1278,17 +1278,17 @@ function freshSync(force) {
 function syncQueue() {
 	freshSync(true);
 }
-function importSyncHandle(mode) {
+export async function importSyncHandle(mode) {
 	if (storageapi) {
 		if (mode == '1' || localStorage['syncenable'] == 'true' || localStorage['sync'] == 'false') {
 			window.clearTimeout(synctimer);
-			chrome.storage.sync.get(null, function (changes) {
+			chrome.storage.sync.get(null, async function (changes) {
 				if (typeof changes['lastSync'] !== 'undefined') {
 					if ((mode == '0' && changes['lastSync'] > localStorage['lastSync']) || (mode == '1' && changes['lastSync'] >= localStorage['lastSync'])) {
 						if (confirm(getLocale("syncdetect"))) {
 							localStorage['syncenable'] = 'true';
 							localStorage['sync'] = 'true';
-							importSync(changes);
+							await importSync(changes);
 							if (mode == '1') window.setTimeout(function () { window.clearTimeout(synctimer); }, 5000);
 							if (localStorage['syncfromnotify'] == 'true') chrome.notifications.create('syncnotify', { 'type': 'basic', 'iconUrl': '../img/icon48.png', 'title': 'ScriptSafe - ' + getLocale("importsuccesstitle"), 'message': getLocale("importsuccess") }, function (callback) { updated = true; return true; });
 							return true;
@@ -1315,14 +1315,14 @@ function importSyncHandle(mode) {
 		return false;
 	}
 }
-function importSync(changes) {
+async function importSync(changes) {
 	for (var key in changes) {
 		if (key != 'scriptsafe_settings') {
 			localStorage[key] = changes[key];
 		} else if (key == 'scriptsafe_settings') {
 			var settings = changes[key].split("~");
 			if (settings.length > 0) {
-				$.each(settings, function (i, v) {
+				$.each(settings, function (i, v) { //$$$
 					if ($.trim(v) != "") {
 						var settingentry = $.trim(v).split("|");
 						if ($.trim(settingentry[1]) != '') {
@@ -1333,7 +1333,7 @@ function importSync(changes) {
 			}
 		}
 	}
-	initLang(localStorage['locale'], 0);
+	await initLang(localStorage['locale'], 0);
 	listsSync();
 }
 function listsSync() {
@@ -1421,10 +1421,10 @@ function listsSyncParse(type) {
 		if (optionExists(type + 'Count')) delete localStorage[type + 'Count'];
 	}
 }
-function getUpdated() {
+export function getUpdated() {
 	return updated;
 }
-function setUpdated() {
+export function setUpdated() {
 	updated = false;
 }
 function triggerUpdated() {
@@ -1438,7 +1438,7 @@ function init() {
 	cacheFpLists();
 	if (localStorage['showcontext'] == 'true') genContextMenu();
 }
-function cacheLists() {
+export function cacheLists() {
 	var tempList = JSON.parse(localStorage['whiteList']);
 	var tempDomain = [];
 	var tempWildDomain = [];
@@ -1473,25 +1473,26 @@ function cacheFpLists() {
 		fpLists[fpTypes[i]] = tempDomain;
 	}
 }
-function initLang(lang, mode) {
+export async function initLang(lang, mode) {
 	var url = chrome.runtime.getURL('_locales/' + lang + '/messages.json');
-	$.ajax({
-		url: url,
-		dataType: 'json',
-		async: true,
-		success: function (data) {
-			locale = data;
-			if (mode == '1') postLangLoad();
-			else reinitContext();
-		},
-		error: function () {
-			locale = false;
-			if (mode == '1') postLangLoad();
-			else reinitContext();
-		}
-	});
+	try {
+		const responce = await fetch(url);
+		if (!responce.ok) throw new Error('Failed to load locale');
+		const data = await responce.json();
+		locale = data;
+
+	} catch (error) {
+		console.error('Error loading locale:', error);
+		locale = false;
+	}
+
+	if (mode == '1') {
+		await postLangLoad();
+	} else {
+		reinitContext();
+	}
 }
-function getLocale(str) {
+export function getLocale(str) {
 	if (locale) {
 		if (typeof locale[str] === 'undefined') return chrome.i18n.getMessage(str);
 		return locale[str].message;
@@ -1499,7 +1500,7 @@ function getLocale(str) {
 		return chrome.i18n.getMessage(str);
 	}
 }
-function getLangs() {
+export function getLangs() {
 	return langs;
 }
 var uiLang = chrome.i18n.getUILanguage().replace(/-/g, '_');
@@ -1518,7 +1519,7 @@ if (!optionExists("locale")) {
 	}
 }
 initLang(localStorage['locale'], 1);
-function postLangLoad() {
+async function postLangLoad() {
 	if (!optionExists("version") || localStorage["version"] != version) {
 		// One-time update existing whitelist/blacklist for new regex support introduced in v1.0.7.0
 		if (!optionExists("tempregexflag")) {
@@ -1569,15 +1570,15 @@ function postLangLoad() {
 			if (namespace == 'sync' && localStorage['syncenable'] == 'true') {
 				if (typeof changes['lastSync'] !== 'undefined') {
 					if (changes['lastSync'].newValue && changes['lastSync'].newValue > localStorage['lastSync']) {
-						chrome.storage.sync.get(null, function (changes) {
-							importSync(changes);
+						chrome.storage.sync.get(null, async function (changes) {
+							await importSync(changes);
 							if (localStorage['syncfromnotify'] == 'true') chrome.notifications.create('syncnotify', { 'type': 'basic', 'iconUrl': '../img/icon48.png', 'title': 'ScriptSafe - ' + getLocale("importsuccesstitle"), 'message': getLocale("importsuccess") }, function (callback) { updated = true; return true; });
 						});
 					}
 				}
 			}
 		});
-		importSyncHandle(0);
+		await importSyncHandle(0);
 	}
 	init();
 }

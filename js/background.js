@@ -1,4 +1,9 @@
-const api = {}
+import * as ScriptSafe from './scriptsafe.js';
+
+
+const api = {
+	...ScriptSafe
+};
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 	const { method, args } = message;
