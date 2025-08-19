@@ -1,8 +1,9 @@
 // ScriptSafe - Copyright (C) andryou
 // Distributed under the terms of the GNU General Public License
 // The GNU General Public License can be found in the gpl.txt file. Alternatively, see <http://www.gnu.org/licenses/>.
-'use strict';
-function baddies(src, amode, antisocial, lookupmode) {
+import { yoyo1, yoyo2, antisocial1, antisocial2 } from './yoyo.js';
+
+export function baddies(src, amode, antisocial, lookupmode) {
 	lookupmode = lookupmode || 1;
 	var dmn = extractDomainFromURL(src);
 	var topDomain = getDomain(dmn);
@@ -15,7 +16,7 @@ function baddies(src, amode, antisocial, lookupmode) {
 	}
 	return false;
 }
-function thirdParty(url, taburl) {
+export function thirdParty(url, taburl) {
 	if (url) {
 		var url = extractDomainFromURL(url);
 		var documentHost;
@@ -44,7 +45,7 @@ function thirdParty(url, taburl) {
 	}
 	return false; // doesn't have a URL
 }
-function extractDomainFromURL(url) { // credit: NotScripts
+export function extractDomainFromURL(url) { // credit: NotScripts
 	if (!url) return "";
 	if (url.indexOf("://") != -1) url = url.substr(url.indexOf("://") + 3);
 	if (url.indexOf("/") != -1) url = url.substr(0, url.indexOf("/"));
@@ -56,7 +57,7 @@ function extractDomainFromURL(url) { // credit: NotScripts
 	if (url.indexOf(":") > 0) url = url.substr(0, url.indexOf(":"));
 	return url;
 }
-function getDomain(url, type) {
+export function getDomain(url, type) {
 	if (url && !url.match(/^((25[0-5]|2[0-4][0-9]|1[0-9]{2}|[0-9]{1,2})\.){3}(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[0-9]{1,2})$/g) && !url.match(/^(?:\[[A-Fa-f0-9:.]+\])(:[0-9]+)?$/g) && url.indexOf(".") != -1) {
 		if (url[0] == '*' && url[1] == '*' && url[2] == '.') return url.substr(3);
 		url = url.split(".").reverse();
@@ -74,7 +75,7 @@ function getDomain(url, type) {
 	}
 	return url;
 }
-function in_array(needle, haystack) {
+export function in_array(needle, haystack) {
 	if (!haystack || !needle) return false;
 	if (needle.indexOf('www.') == 0) needle = needle.substring(4);
 	if (binarySearch(haystack, needle) != -1) return '1';
