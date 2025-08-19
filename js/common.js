@@ -3,6 +3,8 @@
 // The GNU General Public License can be found in the gpl.txt file. Alternatively, see <http://www.gnu.org/licenses/>.
 import { yoyo1, yoyo2, antisocial1, antisocial2 } from './yoyo.js';
 
+export const version = "2.0.0.0";
+
 export function baddies(src, amode, antisocial, lookupmode) {
 	lookupmode = lookupmode || 1;
 	var dmn = extractDomainFromURL(src);
@@ -111,4 +113,24 @@ function binarySearch(list, item) {
 		}
 	}
 	return -1;
+}
+
+export function getBackgroundPage() {
+	return new Proxy({}, {
+		get(_, method) {
+			return (...args) => {
+				return new Promise((resolve, reject) => {
+					chrome.runtime.sendMessage({ method, args }, (response) => {
+						if (chrome.runtime.lastError) {
+							return reject(new Error(`Method: ${method}, Args: ${JSON.stringify(args)}, Error: ${chrome.runtime.lastError.message}`))
+						}
+						if (response?.error) {
+							return reject(new Error(response.error));
+						}
+						resolve(response?.result);
+					});
+				});
+			};
+		}
+	});
 }
