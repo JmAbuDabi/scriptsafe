@@ -57,7 +57,7 @@ var SETTINGS = {
 document.addEventListener("beforeload", saveBeforeloadEvent, true); // eventually remove
 if (window.self != window.top) iframe = 1;
 chrome.runtime.sendMessage({reqtype: "get-settings", iframe: iframe}, function(response) {
-    document.removeEventListener("beforeload", saveBeforeloadEvent, true); // eventually remove
+	document.removeEventListener("beforeload", saveBeforeloadEvent, true); // eventually remove
 	if (typeof response === 'object' && response.status == 'true') {
 		SETTINGS['MODE'] = response.mode;
 		SETTINGS['ANNOYANCES'] = response.annoyances;
@@ -437,11 +437,11 @@ function fingerprintProtection() {
 	}, "'"+SETTINGS['CANVAS']+"','"+SETTINGS['CANVASFONT']+"','"+SETTINGS['AUDIOBLOCK']+"','"+SETTINGS['BATTERY']+"','"+SETTINGS['WEBGL']+"','"+SETTINGS['WEBRTCDEVICE']+"','"+SETTINGS['GAMEPAD']+"','"+SETTINGS['WEBVR']+"','"+SETTINGS['BLUETOOTH']+"','"+SETTINGS['TIMEZONE']+"','"+SETTINGS['CLIENTRECTS']+"','"+SETTINGS['CLIPBOARD']+"', '"+SETTINGS['BROWSERPLUGINS']+"'");
 }
 function clipboardProtect(el) {
-    var arr = ['copy', 'cut', 'paste', 'selectstart', 'contextmenu', 'mousedown', 'mouseup'];
-    for (var i = 0; i < arr.length; i++) {
-        if (el['on' + arr[i]]) el['on' + arr[i]] = null;
-        el.addEventListener(arr[i], function(e){ if (!clipboard) { clipboard = true; chrome.runtime.sendMessage({reqtype: "update-blocked", src: window.location.href+" ("+e.type+"())", node: 'Clipboard Interference'}); } e.stopPropagation(); }, true);
-    };
+	var arr = ['copy', 'cut', 'paste', 'selectstart', 'contextmenu', 'mousedown', 'mouseup'];
+	for (var i = 0; i < arr.length; i++) {
+		if (el['on' + arr[i]]) el['on' + arr[i]] = null;
+		el.addEventListener(arr[i], function(e){ if (!clipboard) { clipboard = true; chrome.runtime.sendMessage({reqtype: "update-blocked", src: window.location.href+" ("+e.type+"())", node: 'Clipboard Interference'}); } e.stopPropagation(); }, true);
+	};
 }
 function loaded() {
 	ScriptSafe();
@@ -688,11 +688,11 @@ function randomDelay() {
 	while (Date.now() < zzz) {};
 }
 function injectAnon(f, val) {
-    var script = document.createElement("script");
+	var script = document.createElement("script");
 	val = val || '';
 	script.type = "text/javascript";
-    script.textContent = "(" + f + ")("+val+");";
-    document.documentElement.appendChild(script);
+	script.textContent = "(" + f + ")("+val+");";
+	document.documentElement.appendChild(script);
 }
 /* Fallback Inline Script Handling (if Chrome doesn't support chrome.webRequest API) / */
 function mitigate() { // credit: NotScripts
