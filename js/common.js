@@ -156,3 +156,25 @@ export const localStore = {
 		});
 	}
 };
+export const sessionStore = {
+	setItem(key, value) {
+		return new Promise(resolve => {
+			chrome.storage.session.set({ [key]: value }, () => resolve());
+		});
+	},
+	getItem(key) {
+		return new Promise(resolve => {
+			chrome.storage.session.get(key, (result) => resolve(result[key]));
+		});
+	},
+	removeItem(key) {
+		return new Promise(resolve => {
+			chrome.storage.session.remove(key, () => resolve());
+		});
+	},
+	clear() {
+		return new Promise(resolve => {
+			chrome.storage.session.clear(() => resolve());
+		});
+	}
+};

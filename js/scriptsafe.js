@@ -2,7 +2,7 @@
 // Distributed under the terms of the GNU General Public License
 // The GNU General Public License can be found in the gpl.txt file. Alternatively, see <http://www.gnu.org/licenses/>.
 // Credits and ideas: NotScripts, AdBlock Plus for Chrome, Ghostery, KB SSL Enforcer
-import { version, localStore, getDomain, extractDomainFromURL } from "./common.js";
+import { version, localStore, sessionStore, getDomain, extractDomainFromURL } from "./common.js";
 
 let requestTypes, synctimer, recentstimer, reenabletimer, useragentinterval, blackList, whiteList, distrustList, trustList, sessionBlackList, sessionWhiteList, locale;
 let langs = {
@@ -472,10 +472,10 @@ async function domainHandler(domain, action, listtype) {
 			var tempWhitelist = JSON.parse(await localStore.getItem('whiteList'));
 			var tempBlacklist = JSON.parse(await localStore.getItem('blackList'));
 		} else if (listtype == 1) {
-			if (typeof (sessionStorage['whiteList']) === 'undefined') sessionStorage['whiteList'] = JSON.stringify([]);
-			if (typeof (sessionStorage['blackList']) === 'undefined') sessionStorage['blackList'] = JSON.stringify([]);
-			var tempWhitelist = JSON.parse(sessionStorage['whiteList']);
-			var tempBlacklist = JSON.parse(sessionStorage['blackList']);
+			if (typeof (await sessionStore.getItem('whiteList')) === 'undefined') await sessionStore.setItem('whiteList', JSON.stringify([]));
+			if (typeof (await sessionStore.getItem('blackList')) === 'undefined') await sessionStore.setItem('blackList', JSON.stringify([]));
+			var tempWhitelist = JSON.parse(await sessionStore.getItem('whiteList'));
+			var tempBlacklist = JSON.parse(await sessionStore.getItem('blackList'));
 		}
 		// Remove domain from whitelist and blacklist
 		var pos = tempWhitelist.indexOf(domain);
@@ -540,8 +540,8 @@ async function domainHandler(domain, action, listtype) {
 			await localStore.setItem('blackList', JSON.stringify(tempBlacklist));
 			await cacheLists();
 		} else if (listtype == 1) {
-			sessionStorage['whiteList'] = JSON.stringify(tempWhitelist);
-			sessionStorage['blackList'] = JSON.stringify(tempBlacklist);
+			await sessionStore.setItem('whiteList', JSON.stringify(tempWhitelist));
+			await sessionStore.setItem('blackList', JSON.stringify(tempBlacklist));
 			tempWhitelist = tempWhitelist.sort();
 			sessionWhiteList = tempWhitelist;
 			tempBlacklist = tempBlacklist.sort();
@@ -562,8 +562,8 @@ export async function fpDomainHandler(domain, listtype, action, temp) {
 			if (typeof (await localStore.getItem(listtype)) === 'undefined') await localStore.setItem(listtype, JSON.stringify([]));
 			var tempList = JSON.parse(await localStore.getItem(listtype));
 		} else if (temp == 1) {
-			if (typeof (await localStore.getItem(listtype)) === 'undefined') sessionStorage[listtype] = JSON.stringify([]);
-			var tempList = JSON.parse(sessionStorage[listtype]);
+			if (typeof (await localStore.getItem(listtype)) === 'undefined') await sessionStore.setItem(listtype, JSON.stringify([]));
+			var tempList = JSON.parse(await sessionStore.getItem(listtype));
 		}
 		// Remove domain from list
 		var pos = tempList.indexOf(domain);
@@ -610,7 +610,7 @@ export async function fpDomainHandler(domain, listtype, action, temp) {
 			tempList = tempList.sort();
 			fpLists[listtype] = tempList;
 		} else if (temp == 1) {
-			sessionStorage[listtype] = JSON.stringify(tempList);
+			await sessionStore.setItem(listtype, JSON.stringify(tempList));
 			tempList = tempList.sort();
 			fpListsSession[listtype] = tempList;
 		}
@@ -720,20 +720,20 @@ export async function setDefaultOptions(force) {
 	if ((force && force == '2') || !await optionExists("fpClipboard")) await localStore.setItem('fpClipboard', JSON.stringify([]));
 	if ((force && force == '2') || !await optionExists("fpBrowserPlugins")) await localStore.setItem('fpBrowserPlugins', JSON.stringify([]));
 	if ((force && force == '2') || !await optionExists("useragent")) await localStore.setItem('useragent', JSON.stringify([]));
-	if ((force && force == '2') || typeof sessionStorage['blackList'] === "undefined") sessionStorage['blackList'] = JSON.stringify([]);
-	if ((force && force == '2') || typeof sessionStorage['whiteList'] === "undefined") sessionStorage['whiteList'] = JSON.stringify([]);
-	if ((force && force == '2') || typeof sessionStorage['fpCanvas'] === "undefined") sessionStorage['fpCanvas'] = JSON.stringify([]);
-	if ((force && force == '2') || typeof sessionStorage['fpCanvasFont'] === "undefined") sessionStorage['fpCanvasFont'] = JSON.stringify([]);
-	if ((force && force == '2') || typeof sessionStorage['fpAudio'] === "undefined") sessionStorage['fpAudio'] = JSON.stringify([]);
-	if ((force && force == '2') || typeof sessionStorage['fpWebGL'] === "undefined") sessionStorage['fpWebGL'] = JSON.stringify([]);
-	if ((force && force == '2') || typeof sessionStorage['fpBattery'] === "undefined") sessionStorage['fpBattery'] = JSON.stringify([]);
-	if ((force && force == '2') || typeof sessionStorage['fpDevice'] === "undefined") sessionStorage['fpDevice'] = JSON.stringify([]);
-	if ((force && force == '2') || typeof sessionStorage['fpGamepad'] === "undefined") sessionStorage['fpGamepad'] = JSON.stringify([]);
-	if ((force && force == '2') || typeof sessionStorage['fpWebVR'] === "undefined") sessionStorage['fpWebVR'] = JSON.stringify([]);
-	if ((force && force == '2') || typeof sessionStorage['fpBluetooth'] === "undefined") sessionStorage['fpBluetooth'] = JSON.stringify([]);
-	if ((force && force == '2') || typeof sessionStorage['fpClientRectangles'] === "undefined") sessionStorage['fpClientRectangles'] = JSON.stringify([]);
-	if ((force && force == '2') || typeof sessionStorage['fpClipboard'] === "undefined") sessionStorage['fpClipboard'] = JSON.stringify([]);
-	if ((force && force == '2') || typeof sessionStorage['fpBrowserPlugins'] === "undefined") sessionStorage['fpBrowserPlugins'] = JSON.stringify([]);
+	if ((force && force == '2') || typeof (await sessionStore.getItem('blackList')) === "undefined") await sessionStore.setItem('blackList', JSON.stringify([]));
+	if ((force && force == '2') || typeof (await sessionStore.getItem('whiteList')) === "undefined") await sessionStore.setItem('whiteList', JSON.stringify([]));
+	if ((force && force == '2') || typeof (await sessionStore.getItem('fpCanvas')) === "undefined") await sessionStore.setItem('fpCanvas', JSON.stringify([]));
+	if ((force && force == '2') || typeof (await sessionStore.getItem('fpCanvasFont')) === "undefined") await sessionStore.setItem('fpCanvasFont', JSON.stringify([]));
+	if ((force && force == '2') || typeof (await sessionStore.getItem('fpAudio')) === "undefined") await sessionStore.setItem('fpAudio', JSON.stringify([]));
+	if ((force && force == '2') || typeof (await sessionStore.getItem('fpWebGL')) === "undefined") await sessionStore.setItem('fpWebGL', JSON.stringify([]));
+	if ((force && force == '2') || typeof (await sessionStore.getItem('fpBattery')) === "undefined") await sessionStore.setItem('fpBattery', JSON.stringify([]));
+	if ((force && force == '2') || typeof (await sessionStore.getItem('fpDevice')) === "undefined") await sessionStore.setItem('fpDevice', JSON.stringify([]));
+	if ((force && force == '2') || typeof (await sessionStore.getItem('fpGamepad')) === "undefined") await sessionStore.setItem('fpGamepad', JSON.stringify([]));
+	if ((force && force == '2') || typeof (await sessionStore.getItem('fpWebVR')) === "undefined") await sessionStore.setItem('fpWebVR', JSON.stringify([]));
+	if ((force && force == '2') || typeof (await sessionStore.getItem('fpBluetooth')) === "undefined") await sessionStore.setItem('fpBluetooth', JSON.stringify([]));
+	if ((force && force == '2') || typeof (await sessionStore.getItem('fpClientRectangles')) === "undefined") await sessionStore.setItem('fpClientRectangles', JSON.stringify([]));
+	if ((force && force == '2') || typeof (await sessionStore.getItem('fpClipboard')) === "undefined") await sessionStore.setItem('fpClipboard', JSON.stringify([]));
+	if ((force && force == '2') || typeof (await sessionStore.getItem('fpBrowserPlugins')) === "undefined") await sessionStore.setItem('fpBrowserPlugins', JSON.stringify([]));
 	chrome.browserAction.setBadgeBackgroundColor({ color: [208, 0, 24, 255] });
 }
 function updateCount(tabId) {
@@ -761,24 +761,24 @@ function resetTabData(id, url) {
 		ITEMS[id]['allowed'] = [];
 	}
 }
-function revokeTemp() {
+async function revokeTemp() {
 	sessionBlackList = '';
 	sessionWhiteList = '';
 	fpListsSession = [];
-	sessionStorage['blackList'] = JSON.stringify([]);
-	sessionStorage['whiteList'] = JSON.stringify([]);
-	sessionStorage['fpCanvas'] = JSON.stringify([]);
-	sessionStorage['fpCanvasFont'] = JSON.stringify([]);
-	sessionStorage['fpAudio'] = JSON.stringify([]);
-	sessionStorage['fpWebGL'] = JSON.stringify([]);
-	sessionStorage['fpBattery'] = JSON.stringify([]);
-	sessionStorage['fpDevice'] = JSON.stringify([]);
-	sessionStorage['fpGamepad'] = JSON.stringify([]);
-	sessionStorage['fpWebVR'] = JSON.stringify([]);
-	sessionStorage['fpBluetooth'] = JSON.stringify([]);
-	sessionStorage['fpClientRectangles'] = JSON.stringify([]);
-	sessionStorage['fpClipboard'] = JSON.stringify([]);
-	sessionStorage['fpBrowserPlugins'] = JSON.stringify([]);
+	await sessionStore.setItem('blackList', JSON.stringify([]));
+	await sessionStore.setItem('whiteList', JSON.stringify([]));
+	await sessionStore.setItem('fpCanvas', JSON.stringify([]));
+	await sessionStore.setItem('fpCanvasFont', JSON.stringify([]));
+	await sessionStore.setItem('fpAudio', JSON.stringify([]));
+	await sessionStore.setItem('fpWebGL', JSON.stringify([]));
+	await sessionStore.setItem('fpBattery', JSON.stringify([]));
+	await sessionStore.setItem('fpDevice', JSON.stringify([]));
+	await sessionStore.setItem('fpGamepad', JSON.stringify([]));
+	await sessionStore.setItem('fpWebVR', JSON.stringify([]));
+	await sessionStore.setItem('fpBluetooth', JSON.stringify([]));
+	await sessionStore.setItem('fpClientRectangles', JSON.stringify([]));
+	await sessionStore.setItem('fpClipboard', JSON.stringify([]));
+	await sessionStore.setItem('fpBrowserPlugins', JSON.stringify([]));
 }
 async function statuschanger(duration) {
 	window.clearTimeout(reenabletimer);
@@ -1112,7 +1112,7 @@ function removeTempPage() {
 }
 function removeTempAll() {
 	chrome.tabs.query({ active: true, currentWindow: true }, async function (tabs) {
-		revokeTemp();
+		await revokeTemp();
 		if (await localStore.getItem('refresh') == 'true') chrome.tabs.reload(tabs[0].id);
 	});
 }
