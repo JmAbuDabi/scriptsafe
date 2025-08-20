@@ -748,19 +748,19 @@ export async function setDefaultOptions(force) {
 	if ((force && force == '2') || typeof (await sessionStore.getItem('fpClientRectangles')) === "undefined") await sessionStore.setItem('fpClientRectangles', JSON.stringify([]));
 	if ((force && force == '2') || typeof (await sessionStore.getItem('fpClipboard')) === "undefined") await sessionStore.setItem('fpClipboard', JSON.stringify([]));
 	if ((force && force == '2') || typeof (await sessionStore.getItem('fpBrowserPlugins')) === "undefined") await sessionStore.setItem('fpBrowserPlugins', JSON.stringify([]));
-	chrome.browserAction.setBadgeBackgroundColor({ color: [208, 0, 24, 255] });
+	chrome.action.setBadgeBackgroundColor({ color: [208, 0, 24, 255] });
 }
 function updateCount(tabId) {
 	var TAB_ITEMS = ITEMS[tabId] || (ITEMS[tabId] = [0]);
 	var TAB_BLOCKED_COUNT = ++TAB_ITEMS[0];
-	chrome.browserAction.setBadgeBackgroundColor({ color: [208, 0, 24, 255], tabId: tabId });
-	chrome.browserAction.setBadgeText({ tabId: tabId, text: TAB_BLOCKED_COUNT + '' });
+	chrome.action.setBadgeBackgroundColor({ color: [208, 0, 24, 255], tabId: tabId });
+	chrome.action.setBadgeText({ tabId: tabId, text: TAB_BLOCKED_COUNT + '' });
 }
 function initCount(tabId) {
 	var TAB_ITEMS = ITEMS[tabId] || (ITEMS[tabId] = [0]);
 	var TAB_BLOCKED_COUNT = TAB_ITEMS[0];
-	chrome.browserAction.setBadgeBackgroundColor({ color: [208, 0, 24, 255], tabId: tabId });
-	if (TAB_BLOCKED_COUNT != 0) chrome.browserAction.setBadgeText({ tabId: tabId, text: TAB_BLOCKED_COUNT + '' });
+	chrome.action.setBadgeBackgroundColor({ color: [208, 0, 24, 255], tabId: tabId });
+	if (TAB_BLOCKED_COUNT != 0) chrome.action.setBadgeText({ tabId: tabId, text: TAB_BLOCKED_COUNT + '' });
 }
 function removeHash(str) {
 	var hashindex = str.indexOf("#");
@@ -798,14 +798,14 @@ async function statuschanger(duration) {
 	window.clearTimeout(reenabletimer);
 	if (await localStore.getItem('enable') == 'true') {
 		await localStore.setItem('enable', 'false');
-		chrome.browserAction.setIcon({ path: "../img/IconDisabled.png" });
+		chrome.action.setIcon({ path: "../img/IconDisabled.png" });
 		if (duration) {
 			duration = duration * 60 * 1000;
 			reenabletimer = setTimeout(async function () { await localStore.setItem('enable', 'true'); }, duration);
 		}
 	} else {
 		await localStore.setItem('enable', 'true');
-		chrome.browserAction.setIcon({ path: "../img/IconForbidden.png" });
+		chrome.action.setIcon({ path: "../img/IconForbidden.png" });
 	}
 	reinitContext();
 }
@@ -862,28 +862,28 @@ chrome.tabs.onUpdated.addListener(async function (tabid, changeinfo, tab) {
 			var extractedDomain = extractDomainFromURL(tab.url);
 			if (in_array(extractedDomain, sessionWhiteList) || in_array(extractedDomain, sessionBlackList))
 				icontype = "Temp";
-			chrome.browserAction.setIcon({ path: "../img/Icon" + icontype + ".png", tabId: tabid });
+			chrome.action.setIcon({ path: "../img/Icon" + icontype + ".png", tabId: tabid });
 		} else if (changeinfo.status == "complete") {
 			if (typeof ITEMS[tabid] !== 'undefined') {
 				changed = true;
 				if (await localStore.getItem('mode') == 'block' && typeof ITEMS[tabid]['allowed'] !== 'undefined') {
 					for (var i = 0, forcount = ITEMS[tabid]['allowed'].length; i < forcount; i++) {
 						if (in_array(extractDomainFromURL(ITEMS[tabid]['allowed'][i][0]), sessionWhiteList)) {
-							chrome.browserAction.setIcon({ path: "../img/IconTemp.png", tabId: tabid });
+							chrome.action.setIcon({ path: "../img/IconTemp.png", tabId: tabid });
 							break;
 						}
 					}
 				} else if (await localStore.getItem('mode') == 'allow' && typeof ITEMS[tabid]['blocked'] !== 'undefined') {
 					for (var i = 0, forcount = ITEMS[tabid]['blocked'].length; i < forcount; i++) {
 						if (in_array(extractDomainFromURL(ITEMS[tabid]['blocked'][i][0]), sessionBlackList)) {
-							chrome.browserAction.setIcon({ path: "../img/IconTemp.png", tabId: tabid });
+							chrome.action.setIcon({ path: "../img/IconTemp.png", tabId: tabid });
 							break;
 						}
 					}
 				}
 			}
 		}
-	} else chrome.browserAction.setIcon({ path: "../img/IconDisabled.png", tabId: tabid });
+	} else chrome.action.setIcon({ path: "../img/IconDisabled.png", tabId: tabid });
 });
 chrome.runtime.onConnect.addListener(function (port) {
 	port.onMessage.addListener(function (msg) {
@@ -1019,9 +1019,9 @@ chrome.runtime.onMessage.addListener(async function (request, sender, sendRespon
 		await fpDomainHandler(request.url, request.list, -1, 1);
 		changed = true;
 	} else if (request.reqtype == 'refresh-page-icon') {
-		if (request.type == '0') chrome.browserAction.setIcon({ path: "../img/IconAllowed.png", tabId: request.tid });
-		else if (request.type == '1') chrome.browserAction.setIcon({ path: "../img/IconForbidden.png", tabId: request.tid });
-		else if (request.type == '2') chrome.browserAction.setIcon({ path: "../img/IconTemp.png", tabId: request.tid });
+		if (request.type == '0') chrome.action.setIcon({ path: "../img/IconAllowed.png", tabId: request.tid });
+		else if (request.type == '1') chrome.action.setIcon({ path: "../img/IconForbidden.png", tabId: request.tid });
+		else if (request.type == '2') chrome.action.setIcon({ path: "../img/IconTemp.png", tabId: request.tid });
 	} else
 		sendResponse({});
 });
