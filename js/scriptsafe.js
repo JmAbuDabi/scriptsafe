@@ -2,7 +2,8 @@
 // Distributed under the terms of the GNU General Public License
 // The GNU General Public License can be found in the gpl.txt file. Alternatively, see <http://www.gnu.org/licenses/>.
 // Credits and ideas: NotScripts, AdBlock Plus for Chrome, Ghostery, KB SSL Enforcer
-import { version, localStore, sessionStore, getDomain, extractDomainFromURL } from "./common.js";
+import { antisocial1, antisocial2, yoyo1, yoyo2 } from "./yoyo.js";
+import { version, localStore, sessionStore, getDomain, extractDomainFromURL, in_array, binarySearch } from "./common.js";
 
 let requestTypes, synctimer, recentstimer, reenabletimer, useragentinterval, blackList, whiteList, distrustList, trustList, sessionBlackList, sessionWhiteList, locale;
 let langs = {
@@ -392,6 +393,19 @@ async function enabledfp(domainname, fptype) {
 	if (in_array(domainname, fpLists[fptype])) return '1';
 	if (in_array(domainname, fpListsSession[fptype])) return '2';
 	return '-1';
+}
+export function baddies(src, amode, antisocial, lookupmode) {
+	lookupmode = lookupmode || 1;
+	var dmn = extractDomainFromURL(src);
+	var topDomain = getDomain(dmn);
+	if (dmn.indexOf(".") == -1 && src.indexOf(".") != -1) dmn = src;
+	if (antisocial == 'true' && (antisocial2.indexOf(dmn) != -1 || antisocial1.indexOf(topDomain) != -1 || src.indexOf("digg.com/tools/diggthis.js") != -1 || src.indexOf("/googleapis.client__plusone.js") != -1 || src.indexOf("apis.google.com/js/plusone.js") != -1 || src.indexOf(".facebook.com/connect") != -1 || src.indexOf(".facebook.com/plugins") != -1 || src.indexOf(".facebook.com/widgets") != -1 || src.indexOf(".fbcdn.net/connect.php/js") != -1 || src.indexOf(".stumbleupon.com/hostedbadge") != -1 || src.indexOf(".youtube.com/subscribe_widget") != -1 || src.indexOf(".ytimg.com/yt/jsbin/www-subscribe-widget") != -1 || src.indexOf("apis.google.com/js/platform.js") != -1 || src.indexOf("plus.google.com/js/client:plusone.js") != -1 || src.indexOf("linkedin.com/countserv/count/share") != -1))
+		return '2';
+	if ((amode == 'relaxed' && domainCheck(dmn, lookupmode) != '0') || amode == 'strict') {
+		if (binarySearch(yoyo1, topDomain) != -1) return '1';
+		if (binarySearch(yoyo2, dmn) != -1) return '1';
+	}
+	return false;
 }
 export async function domainCheck(domain, req) {
 	if (req === undefined) {
