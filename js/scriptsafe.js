@@ -121,11 +121,11 @@ async function genUserAgent(force) {
 			var uaCount = userAgents.length;
 			if (uaCount == 1) userAgent = userAgents[0];
 			else {
-				window.clearInterval(useragentinterval);
+				clearInterval(useragentinterval);
 				if (await localStore.getItem('useragentinterval') == 'off') userAgent = userAgents[0]; // use only first user agent string if set to off
 				else {
 					if (await localStore.getItem('useragentinterval') == 'interval') {
-						useragentinterval = window.setInterval(async function () { await genUserAgent(1) }, await localStore.getItem('useragentintervalmins') * 60 * 1000);
+						useragentinterval = setInterval(async function () { await genUserAgent(1) }, await localStore.getItem('useragentintervalmins') * 60 * 1000);
 						if (force) userAgent = userAgents[Math.floor(Math.random() * uaCount)];
 					} else if (await localStore.getItem('useragentinterval') == 'request') {
 						userAgent = userAgents[Math.floor(Math.random() * uaCount)];
@@ -340,8 +340,8 @@ async function ScriptSafe(req) {
 	return { cancel: false };
 }
 function updateRecents(list) {
-	window.clearTimeout(recentstimer);
-	recentstimer = window.setTimeout(function () { setRecents(list) }, 1000);
+	clearTimeout(recentstimer);
+	recentstimer = setTimeout(function () { setRecents(list) }, 1000);
 }
 function setRecents(list) {
 	var recentLimit = 25;
@@ -795,7 +795,7 @@ async function revokeTemp() {
 	await sessionStore.setItem('fpBrowserPlugins', JSON.stringify([]));
 }
 async function statuschanger(duration) {
-	window.clearTimeout(reenabletimer);
+	clearTimeout(reenabletimer);
 	if (await localStore.getItem('enable') == 'true') {
 		await localStore.setItem('enable', 'false');
 		chrome.action.setIcon({ path: "../img/IconDisabled.png" });
@@ -1177,7 +1177,7 @@ function ssDecompress(str) {
 }
 export async function freshSync(force) {
 	if (storageapi && await localStore.getItem('syncenable') == 'true') {
-		window.clearTimeout(synctimer);
+		clearTimeout(synctimer);
 		if (force) {
 			await localStore.setItem('sync', 'true');
 			var settingssync = {};
@@ -1323,7 +1323,7 @@ export async function freshSync(force) {
 				});
 			}
 		} else {
-			synctimer = window.setTimeout(async function () { await syncQueue() }, 10000);
+			synctimer = setTimeout(async function () { await syncQueue() }, 10000);
 		}
 		return true;
 	} else {
@@ -1336,7 +1336,7 @@ async function syncQueue() {
 export async function importSyncHandle(mode) {
 	if (storageapi) {
 		if (mode == '1' || await localStore.getItem('syncenable') == 'true' || await localStore.getItem('sync') == 'false') {
-			window.clearTimeout(synctimer);
+			clearTimeout(synctimer);
 			chrome.storage.sync.get(null, async function (changes) {
 				if (typeof changes['lastSync'] !== 'undefined') {
 					if ((mode == '0' && changes['lastSync'] > await localStore.getItem('lastSync')) || (mode == '1' && changes['lastSync'] >= await localStore.getItem('lastSync'))) {
@@ -1344,7 +1344,7 @@ export async function importSyncHandle(mode) {
 							await localStore.setItem('syncenable', 'true');
 							await localStore.setItem('sync', 'true');
 							await importSync(changes);
-							if (mode == '1') window.setTimeout(function () { window.clearTimeout(synctimer); }, 5000);
+							if (mode == '1') setTimeout(function () { clearTimeout(synctimer); }, 5000);
 							if (await localStore.getItem('syncfromnotify') == 'true') chrome.notifications.create('syncnotify', { 'type': 'basic', 'iconUrl': '../img/icon48.png', 'title': 'ScriptSafe - ' + getLocale("importsuccesstitle"), 'message': getLocale("importsuccess") }, function (callback) { updated = true; return true; });
 							return true;
 						} else {
