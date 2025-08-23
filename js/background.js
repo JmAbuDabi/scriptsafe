@@ -20,4 +20,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 		}
 		return true; // async
 	}
+	else {
+		sendResponse({ error: `Method not found: ${method}` });
+	}
 });
