@@ -1043,26 +1043,65 @@ function reinitContext() {
 	});
 }
 async function genContextMenu() {
-	var parent = chrome.contextMenus.create({ "title": "ScriptSafe", "contexts": ["page"] });
+	await chrome.contextMenus.removeAll();
+	chrome.contextMenus.onClicked.addListener(async (info) => {
+		switch (info.menuItemId) {
+			case "allow":
+			case "allowtemp":
+			case "block":
+			case "blocktemp":
+			case "clear":
+			case "distrust":
+			case "trust":
+				contextHandle(info.menuItemId);
+				break;
+			case "allowallblocked":
+			case "blockallallowed":
+				tempPage();
+				break;
+			case "revoketemp":
+				removeTempPage();
+				break;
+			case "revoketempall":
+				removeTempAll();
+				break;
+			case "options":
+				chrome.tabs.create({ url: chrome.runtime.getURL('html/options.html') });
+				break;
+			case "enable":
+				await localStore.setItem("enable", "true");
+				contextHandle('toggle');
+				break;
+			case "disable":
+				await localStore.setItem("enable", "false");
+				contextHandle('toggle');
+				break;
+			default:
+				console.error("Unknown context menu item: " + info.menuItemId);
+				break;
+		}
+	});
+
+	var parent = chrome.contextMenus.create({ id: "ScriptSafe", title: "ScriptSafe", contexts: ["page"] });
 	if (await localStore.getItem('mode') == 'block') {
-		chrome.contextMenus.create({ "title": getLocale("allow"), "parentId": parent, "onclick": async function () { contextHandle('allow'); } });
-		chrome.contextMenus.create({ "title": getLocale("allow") + ' (' + getLocale("temp") + ')', "parentId": parent, "onclick": async function () { contextHandle('allowtemp'); } });
-		chrome.contextMenus.create({ "title": getLocale("allowallblocked"), "parentId": parent, "onclick": tempPage });
-		chrome.contextMenus.create({ "title": getLocale("trust"), "parentId": parent, "onclick": async function () { contextHandle('trust'); } });
+		chrome.contextMenus.create({ id: "allow", title: getLocale("allow"), parentId: parent });
+		chrome.contextMenus.create({ id: "allowtemp", title: getLocale("allow") + ' (' + getLocale("temp") + ')', parentId: parent });
+		chrome.contextMenus.create({ id: "allowallblocked", title: getLocale("allowallblocked"), parentId: parent });
+		chrome.contextMenus.create({ id: "trust", title: getLocale("trust"), parentId: parent });
 	} else {
-		chrome.contextMenus.create({ "title": getLocale("deny"), "parentId": parent, "onclick": async function () { contextHandle('block'); } });
-		chrome.contextMenus.create({ "title": getLocale("deny") + ' (' + getLocale("temp") + ')', "parentId": parent, "onclick": async function () { contextHandle('blocktemp'); } });
-		chrome.contextMenus.create({ "title": getLocale("blockallallowed"), "parentId": parent, "onclick": tempPage });
-		chrome.contextMenus.create({ "title": getLocale("distrust"), "parentId": parent, "onclick": async function () { contextHandle('distrust'); } });
+		chrome.contextMenus.create({ id: "block", title: getLocale("deny"), parentId: parent });
+		chrome.contextMenus.create({ id: "blocktemp", title: getLocale("deny") + ' (' + getLocale("temp") + ')', parentId: parent });
+		chrome.contextMenus.create({ id: "blockallallowed", title: getLocale("blockallallowed"), parentId: parent });
+		chrome.contextMenus.create({ id: "distrust", title: getLocale("distrust"), parentId: parent });
 	}
-	chrome.contextMenus.create({ "parentId": parent, "type": "separator" });
-	chrome.contextMenus.create({ "title": getLocale("clear"), "parentId": parent, "onclick": async function () { contextHandle('clear'); } });
-	chrome.contextMenus.create({ "title": getLocale("revoketemp"), "parentId": parent, "onclick": removeTempPage });
-	chrome.contextMenus.create({ "title": getLocale("revoketempall"), "parentId": parent, "onclick": removeTempAll });
-	chrome.contextMenus.create({ "parentId": parent, "type": "separator" });
-	chrome.contextMenus.create({ "title": getLocale("options"), "parentId": parent, "onclick": function () { chrome.tabs.create({ url: chrome.runtime.getURL('html/options.html') }); } });
-	if (await localStore.getItem("enable") == "false") chrome.contextMenus.create({ "title": getLocale("enabless"), "parentId": parent, "onclick": async function () { await localStore.setItem("enable", "true"); contextHandle('toggle'); } });
-	else chrome.contextMenus.create({ "title": getLocale("disable"), "parentId": parent, "onclick": async function () { await localStore.setItem("enable", "false"); contextHandle('toggle'); } });
+	chrome.contextMenus.create({ id: "separator1", parentId: "ScriptSafe", type: "separator" });
+	chrome.contextMenus.create({ id: "clear", title: getLocale("clear"), parentId: parent });
+	chrome.contextMenus.create({ id: "revoketemp", "title": getLocale("revoketemp"), "parentId": parent });
+	chrome.contextMenus.create({ id: "revoketempall", "title": getLocale("revoketempall"), "parentId": parent });
+	chrome.contextMenus.create({ id: "separator2", parentId: parent, type: "separator" });
+	chrome.contextMenus.create({ id: "options", title: getLocale("options"), parentId: parent });
+	if (await localStore.getItem("enable") == "false") chrome.contextMenus.create({ id: "enable", title: getLocale("enabless"), parentId: parent });
+	else chrome.contextMenus.create({ id: "disable", title: getLocale("disable"), parentId: parent });
 }
 function contextHandle(mode) {
 	chrome.tabs.query({ active: true, currentWindow: true }, async function (tabs) {
