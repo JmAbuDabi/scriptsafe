@@ -896,130 +896,137 @@ chrome.runtime.onConnect.addListener(function (port) {
 		}
 	});
 });
-chrome.runtime.onMessage.addListener(async function (request, sender, sendResponse) {
-	if (request.reqtype == 'get-settings') {
-		var fpListStatus = [];
-		var extractedDomain = extractDomainFromURL(sender.tab.url);
-		for (var i in fpTypes) {
-			fpListStatus[fpTypes[i]] = await enabledfp(extractedDomain, fpTypes[i]);
-		}
-		sendResponse({
-			status: await localStore.getItem('enable'), enable: await enabled(sender.tab.url), fp_canvas: fpListStatus['fpCanvas'], fp_canvasfont: fpListStatus['fpCanvasFont'], fp_audio: fpListStatus['fpAudio'], fp_webgl: fpListStatus['fpWebGL'], fp_battery: fpListStatus['fpBattery'], fp_device: fpListStatus['fpDevice'], fp_gamepad: fpListStatus['fpGamepad'], fp_webvr: fpListStatus['fpWebVR'], fp_bluetooth: fpListStatus['fpBluetooth'], fp_clientrectangles: fpListStatus['fpClientRectangles'], fp_clipboard: fpListStatus['fpClipboard'], fp_browserplugins: fpListStatus['fpBrowserPlugins'], experimental: experimental, mode: await localStore.getItem('mode'), annoyancesmode: await localStore.getItem('annoyancesmode'), antisocial: await localStore.getItem('antisocial'), whitelist: whiteList, blacklist: blackList, whitelistSession: sessionWhiteList, blackListSession: sessionBlackList, script: await localStore.getItem('script'), noscript: await localStore.getItem('noscript'), object: await localStore.getItem('object'), applet: await localStore.getItem('applet'), embed: await localStore.getItem('embed'), iframe: await localStore.getItem('iframe'), frame: await localStore.getItem('frame'), audio: await localStore.getItem('audio'), video: await localStore.getItem('video'), image: await localStore.getItem('image'), annoyances: await localStore.getItem('annoyances'), preservesamedomain: await localStore.getItem('preservesamedomain'), canvas: await localStore.getItem('canvas'), canvasfont: await localStore.getItem('canvasfont'), audioblock: await localStore.getItem('audioblock'), webgl: await localStore.getItem('webgl'), battery: await localStore.getItem('battery'), webrtcdevice: await localStore.getItem('webrtcdevice'), gamepad: await localStore.getItem('gamepad'), webvr: await localStore.getItem('webvr'), bluetooth: await localStore.getItem('bluetooth'), clientrects: await localStore.getItem('clientrects'), timezone: await localStore.getItem('timezone'), browserplugins: await localStore.getItem('browserplugins'), keyboard: await localStore.getItem('keyboard'), keydelta: await localStore.getItem('keydelta'), webbugs: await localStore.getItem('webbugs'), referrer: await localStore.getItem('referrer'), referrerspoofdenywhitelisted: await localStore.getItem('referrerspoofdenywhitelisted'), linktarget: await localStore.getItem('linktarget'), paranoia: await localStore.getItem('paranoia'), clipboard: await localStore.getItem('clipboard'), dataurl: await localStore.getItem('dataurl'), useragent: userAgent, uaspoofallow: await localStore.getItem('uaspoofallow')
-		});
-		if (typeof ITEMS[sender.tab.id] === 'undefined') {
-			resetTabData(sender.tab.id, sender.tab.url);
-		} else {
-			if ((request.iframe != '1' && ((ITEMS[sender.tab.id]['url'] != sender.tab.url && (sender.tab.url.indexOf("#") != -1 || ITEMS[sender.tab.id]['url'].indexOf("#") != -1) && removeHash(sender.tab.url) != removeHash(ITEMS[sender.tab.id]['url'])) || (sender.tab.url.indexOf("#") == -1 && ITEMS[sender.tab.id]['url'].indexOf("#") == -1 && sender.tab.url != ITEMS[sender.tab.id]['url']) || changed) || sender.tab.url.indexOf('https://chrome.google.com/webstore') != -1)) {
-				if (changed && ITEMS[sender.tab.id]['url'] == sender.tab.url) {
-					initCount(sender.tab.id);
-				} else {
-					resetTabData(sender.tab.id, sender.tab.url);
+chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
+	if (request.reqtype == 'background-action') {
+		return false;
+	}
+	(async () => {
+		if (request.reqtype == 'get-settings') {
+			var fpListStatus = [];
+			var extractedDomain = extractDomainFromURL(sender.tab.url);
+			for (var i in fpTypes) {
+				fpListStatus[fpTypes[i]] = await enabledfp(extractedDomain, fpTypes[i]);
+			}
+			sendResponse({
+				status: await localStore.getItem('enable'), enable: await enabled(sender.tab.url), fp_canvas: fpListStatus['fpCanvas'], fp_canvasfont: fpListStatus['fpCanvasFont'], fp_audio: fpListStatus['fpAudio'], fp_webgl: fpListStatus['fpWebGL'], fp_battery: fpListStatus['fpBattery'], fp_device: fpListStatus['fpDevice'], fp_gamepad: fpListStatus['fpGamepad'], fp_webvr: fpListStatus['fpWebVR'], fp_bluetooth: fpListStatus['fpBluetooth'], fp_clientrectangles: fpListStatus['fpClientRectangles'], fp_clipboard: fpListStatus['fpClipboard'], fp_browserplugins: fpListStatus['fpBrowserPlugins'], experimental: experimental, mode: await localStore.getItem('mode'), annoyancesmode: await localStore.getItem('annoyancesmode'), antisocial: await localStore.getItem('antisocial'), whitelist: whiteList, blacklist: blackList, whitelistSession: sessionWhiteList, blackListSession: sessionBlackList, script: await localStore.getItem('script'), noscript: await localStore.getItem('noscript'), object: await localStore.getItem('object'), applet: await localStore.getItem('applet'), embed: await localStore.getItem('embed'), iframe: await localStore.getItem('iframe'), frame: await localStore.getItem('frame'), audio: await localStore.getItem('audio'), video: await localStore.getItem('video'), image: await localStore.getItem('image'), annoyances: await localStore.getItem('annoyances'), preservesamedomain: await localStore.getItem('preservesamedomain'), canvas: await localStore.getItem('canvas'), canvasfont: await localStore.getItem('canvasfont'), audioblock: await localStore.getItem('audioblock'), webgl: await localStore.getItem('webgl'), battery: await localStore.getItem('battery'), webrtcdevice: await localStore.getItem('webrtcdevice'), gamepad: await localStore.getItem('gamepad'), webvr: await localStore.getItem('webvr'), bluetooth: await localStore.getItem('bluetooth'), clientrects: await localStore.getItem('clientrects'), timezone: await localStore.getItem('timezone'), browserplugins: await localStore.getItem('browserplugins'), keyboard: await localStore.getItem('keyboard'), keydelta: await localStore.getItem('keydelta'), webbugs: await localStore.getItem('webbugs'), referrer: await localStore.getItem('referrer'), referrerspoofdenywhitelisted: await localStore.getItem('referrerspoofdenywhitelisted'), linktarget: await localStore.getItem('linktarget'), paranoia: await localStore.getItem('paranoia'), clipboard: await localStore.getItem('clipboard'), dataurl: await localStore.getItem('dataurl'), useragent: userAgent, uaspoofallow: await localStore.getItem('uaspoofallow')
+			});
+			if (typeof ITEMS[sender.tab.id] === 'undefined') {
+				resetTabData(sender.tab.id, sender.tab.url);
+			} else {
+				if ((request.iframe != '1' && ((ITEMS[sender.tab.id]['url'] != sender.tab.url && (sender.tab.url.indexOf("#") != -1 || ITEMS[sender.tab.id]['url'].indexOf("#") != -1) && removeHash(sender.tab.url) != removeHash(ITEMS[sender.tab.id]['url'])) || (sender.tab.url.indexOf("#") == -1 && ITEMS[sender.tab.id]['url'].indexOf("#") == -1 && sender.tab.url != ITEMS[sender.tab.id]['url']) || changed) || sender.tab.url.indexOf('https://chrome.google.com/webstore') != -1)) {
+					if (changed && ITEMS[sender.tab.id]['url'] == sender.tab.url) {
+						initCount(sender.tab.id);
+					} else {
+						resetTabData(sender.tab.id, sender.tab.url);
+					}
 				}
 			}
-		}
-		var fptype;
-		var cleanedUrl = removeParams(sender.tab.url);
-		for (var i in fpListStatus) {
-			if (fpListStatus[i] != '-1') {
-				if (i == 'fpCanvas') fptype = 'Canvas Fingerprint';
-				else if (i == 'fpCanvasFont') fptype = 'Canvas Font Access';
-				else if (i == 'fpAudio') fptype = 'Audio Fingerprint';
-				else if (i == 'fpWebGL') fptype = 'WebGL Fingerprint';
-				else if (i == 'fpBattery') fptype = 'Battery Fingerprint';
-				else if (i == 'fpDevice') fptype = 'Device Enumeration';
-				else if (i == 'fpGamepad') fptype = 'Gamepad Enumeration';
-				else if (i == 'fpWebVR') fptype = 'WebVR Enumeration';
-				else if (i == 'fpBluetooth') fptype = 'Bluetooth Enumeration';
-				else if (i == 'fpClientRectangles') fptype = 'Client Rectangles';
-				else if (i == 'fpClipboard') fptype = 'Clipboard Interference';
-				else if (i == 'fpBrowserPlugins') fptype = 'Browser Plugins Enumeration';
-				if (extractedDomain.substr(0, 4) == 'www.') extractedDomain = extractedDomain.substr(4);
-				ITEMS[sender.tab.id]['allowed'].push([cleanedUrl, fptype, extractedDomain, fpListStatus[i], false, true]);
-				recentlog['allowed'].push([new Date().getTime(), sender.tab.url, fptype, extractedDomain, sender.tab.url, fpListStatus[i], false, true]);
-				updateRecents('allowed');
-			}
-		}
-	} else if (request.reqtype == 'get-list') {
-		if (typeof ITEMS[request.tid] === 'undefined') {
-			sendResponse('reload');
-			return;
-		}
-		var enableval = await domainCheck(request.url);
-		var trustType = trustCheck(extractDomainFromURL(request.url));
-		if (trustType == '1') enableval = 3;
-		else if (trustType == '2') enableval = 4;
-		var sessionfplist = false;
-		for (var i in fpListsSession) {
-			if (fpListsSession[i].length != 0) {
-				sessionfplist = true;
-				break;
-			}
-		}
-		sendResponse({ status: await localStore.getItem('enable'), enable: enableval, mode: await localStore.getItem('mode'), annoyancesmode: await localStore.getItem('annoyancesmode'), antisocial: await localStore.getItem('antisocial'), annoyances: await localStore.getItem('annoyances'), closepage: await localStore.getItem('classicoptions'), rating: await localStore.getItem('rating'), temp: await getSessionList(), tempfp: sessionfplist, blockeditems: ITEMS[request.tid]['blocked'], alloweditems: ITEMS[request.tid]['allowed'], domainsort: await localStore.getItem('domainsort') });
-		changed = true;
-	} else if (request.reqtype == 'update-blocked') {
-		if (request.src) {
-			var cleanedUrl = removeParams(request.src);
-			if (typeof ITEMS[sender.tab.id]['blocked'] === 'undefined') ITEMS[sender.tab.id]['blocked'] = [];
-			if (!UrlInList(cleanedUrl, ITEMS[sender.tab.id]['blocked']) || request.node == 'NOSCRIPT' || request.node == 'Canvas Fingerprint' || request.node == 'Canvas Font Access' || request.node == 'Audio Fingerprint' || request.node == 'WebGL Fingerprint' || request.node == 'Battery Fingerprint' || request.node == 'Device Enumeration' || request.node == 'Gamepad Enumeration' || request.node == 'WebVR Enumeration' || request.node == 'Bluetooth Enumeration' || request.node == 'Spoofed Timezone' || request.node == 'Client Rectangles' || request.node == 'Clipboard Interference' || request.node == 'Data URL' || request.node == 'Browser Plugins Enumeration') {
-				var extractedDomain = extractDomainFromURL(request.src);
-				if (extractedDomain.substr(0, 4) == 'www.') extractedDomain = extractedDomain.substr(4);
-				var extractedTabDomain = extractDomainFromURL(ITEMS[sender.tab.id]['url']);
-				if (request.node == 'NOSCRIPT') {
-					ITEMS[sender.tab.id]['blocked'].push([request.src, request.node, request.src, '-1', '-1', false, false]);
-					recentlog['blocked'].push([new Date().getTime(), request.src, request.node, request.src, ITEMS[sender.tab.id]['url'], '-1', '-1', false, false]);
-					updateRecents('blocked');
-				} else if (request.node == 'Canvas Fingerprint' || request.node == 'Canvas Font Access' || request.node == 'Audio Fingerprint' || request.node == 'WebGL Fingerprint' || request.node == 'Battery Fingerprint' || request.node == 'Device Enumeration' || request.node == 'Gamepad Enumeration' || request.node == 'WebVR Enumeration' || request.node == 'Bluetooth Enumeration' || request.node == 'Spoofed Timezone' || request.node == 'Client Rectangles' || request.node == 'Clipboard Interference' || request.node == 'Data URL' || request.node == 'Browser Plugins Enumeration') {
-					ITEMS[sender.tab.id]['blocked'].push([request.src, request.node, extractedDomain, '-1', '-1', false, true]);
-					recentlog['blocked'].push([new Date().getTime(), request.src, request.node, extractedDomain, ITEMS[sender.tab.id]['url'], '-1', '-1', false, true]);
-					updateRecents('blocked');
-				} else {
-					var blockedDomainCheck = await domainCheck(request.src, 1);
-					var blockedTabDomainCheck = await domainCheck(extractedTabDomain, 1);
-					var blockedDomainBaddieCheck = baddies(request.src, await localStore.getItem('annoyancesmode'), await localStore.getItem('antisocial'), 2);
-					ITEMS[sender.tab.id]['blocked'].push([cleanedUrl, request.node, extractedDomain, blockedDomainCheck, blockedTabDomainCheck, blockedDomainBaddieCheck, false]);
-					recentlog['blocked'].push([new Date().getTime(), request.src, request.node, extractedDomain, ITEMS[sender.tab.id]['url'], blockedDomainCheck, blockedTabDomainCheck, blockedDomainBaddieCheck, false]);
-					updateRecents('blocked');
+			var fptype;
+			var cleanedUrl = removeParams(sender.tab.url);
+			for (var i in fpListStatus) {
+				if (fpListStatus[i] != '-1') {
+					if (i == 'fpCanvas') fptype = 'Canvas Fingerprint';
+					else if (i == 'fpCanvasFont') fptype = 'Canvas Font Access';
+					else if (i == 'fpAudio') fptype = 'Audio Fingerprint';
+					else if (i == 'fpWebGL') fptype = 'WebGL Fingerprint';
+					else if (i == 'fpBattery') fptype = 'Battery Fingerprint';
+					else if (i == 'fpDevice') fptype = 'Device Enumeration';
+					else if (i == 'fpGamepad') fptype = 'Gamepad Enumeration';
+					else if (i == 'fpWebVR') fptype = 'WebVR Enumeration';
+					else if (i == 'fpBluetooth') fptype = 'Bluetooth Enumeration';
+					else if (i == 'fpClientRectangles') fptype = 'Client Rectangles';
+					else if (i == 'fpClipboard') fptype = 'Clipboard Interference';
+					else if (i == 'fpBrowserPlugins') fptype = 'Browser Plugins Enumeration';
+					if (extractedDomain.substr(0, 4) == 'www.') extractedDomain = extractedDomain.substr(4);
+					ITEMS[sender.tab.id]['allowed'].push([cleanedUrl, fptype, extractedDomain, fpListStatus[i], false, true]);
+					recentlog['allowed'].push([new Date().getTime(), sender.tab.url, fptype, extractedDomain, sender.tab.url, fpListStatus[i], false, true]);
+					updateRecents('allowed');
 				}
-				updateCount(sender.tab.id);
 			}
-		}
-	} else if (request.reqtype == 'update-allowed') {
-		if (request.src) {
-			if (typeof ITEMS[sender.tab.id]['allowed'] === 'undefined') ITEMS[sender.tab.id]['allowed'] = [];
-			var cleanedUrl = removeParams(request.src);
-			if (!UrlInList(cleanedUrl, ITEMS[sender.tab.id]['allowed'])) {
-				var extractedDomain = extractDomainFromURL(request.src);
-				if (extractedDomain.substr(0, 4) == 'www.') extractedDomain = extractedDomain.substr(4);
-				var allowedDomainCheck = await domainCheck(request.src, 1);
-				var allowedBaddieCheck = baddies(request.src, await localStore.getItem('annoyancesmode'), await localStore.getItem('antisocial'), 2)
-				ITEMS[sender.tab.id]['allowed'].push([cleanedUrl, request.node, extractedDomain, await domainCheck(request.src, 1), allowedBaddieCheck]);
-				recentlog['allowed'].push([new Date().getTime(), request.src, request.node, extractedDomain, request.src, await domainCheck(request.src, 1), allowedBaddieCheck]);
-				updateRecents('allowed');
+		} else if (request.reqtype == 'get-list') {
+			if (typeof ITEMS[request.tid] === 'undefined') {
+				sendResponse('reload');
+				return;
 			}
-		}
-	} else if (request.reqtype == 'save') {
-		await domainHandler(request.url, request.list);
-		changed = true;
-	} else if (request.reqtype == 'temp') {
-		await tempHandler(request);
-	} else if (request.reqtype == 'remove-temp') {
-		await removeTempHandler(request);
-	} else if (request.reqtype == 'save-fp') {
-		await fpDomainHandler(request.url, request.list, 1);
-		changed = true;
-	} else if (request.reqtype == 'temp-fp') {
-		await fpDomainHandler(request.url, request.list, 1, 1);
-		changed = true;
-	} else if (request.reqtype == 'remove-temp-fp') {
-		await fpDomainHandler(request.url, request.list, -1, 1);
-		changed = true;
-	} else if (request.reqtype == 'refresh-page-icon') {
-		if (request.type == '0') chrome.action.setIcon({ path: "../img/IconAllowed.png", tabId: request.tid });
-		else if (request.type == '1') chrome.action.setIcon({ path: "../img/IconForbidden.png", tabId: request.tid });
-		else if (request.type == '2') chrome.action.setIcon({ path: "../img/IconTemp.png", tabId: request.tid });
-	} else
-		sendResponse({});
+			var enableval = await domainCheck(request.url);
+			var trustType = trustCheck(extractDomainFromURL(request.url));
+			if (trustType == '1') enableval = 3;
+			else if (trustType == '2') enableval = 4;
+			var sessionfplist = false;
+			for (var i in fpListsSession) {
+				if (fpListsSession[i].length != 0) {
+					sessionfplist = true;
+					break;
+				}
+			}
+			sendResponse({ status: await localStore.getItem('enable'), enable: enableval, mode: await localStore.getItem('mode'), annoyancesmode: await localStore.getItem('annoyancesmode'), antisocial: await localStore.getItem('antisocial'), annoyances: await localStore.getItem('annoyances'), closepage: await localStore.getItem('classicoptions'), rating: await localStore.getItem('rating'), temp: await getSessionList(), tempfp: sessionfplist, blockeditems: ITEMS[request.tid]['blocked'], alloweditems: ITEMS[request.tid]['allowed'], domainsort: await localStore.getItem('domainsort') });
+			changed = true;
+		} else if (request.reqtype == 'update-blocked') {
+			if (request.src) {
+				var cleanedUrl = removeParams(request.src);
+				if (typeof ITEMS[sender.tab.id]['blocked'] === 'undefined') ITEMS[sender.tab.id]['blocked'] = [];
+				if (!UrlInList(cleanedUrl, ITEMS[sender.tab.id]['blocked']) || request.node == 'NOSCRIPT' || request.node == 'Canvas Fingerprint' || request.node == 'Canvas Font Access' || request.node == 'Audio Fingerprint' || request.node == 'WebGL Fingerprint' || request.node == 'Battery Fingerprint' || request.node == 'Device Enumeration' || request.node == 'Gamepad Enumeration' || request.node == 'WebVR Enumeration' || request.node == 'Bluetooth Enumeration' || request.node == 'Spoofed Timezone' || request.node == 'Client Rectangles' || request.node == 'Clipboard Interference' || request.node == 'Data URL' || request.node == 'Browser Plugins Enumeration') {
+					var extractedDomain = extractDomainFromURL(request.src);
+					if (extractedDomain.substr(0, 4) == 'www.') extractedDomain = extractedDomain.substr(4);
+					var extractedTabDomain = extractDomainFromURL(ITEMS[sender.tab.id]['url']);
+					if (request.node == 'NOSCRIPT') {
+						ITEMS[sender.tab.id]['blocked'].push([request.src, request.node, request.src, '-1', '-1', false, false]);
+						recentlog['blocked'].push([new Date().getTime(), request.src, request.node, request.src, ITEMS[sender.tab.id]['url'], '-1', '-1', false, false]);
+						updateRecents('blocked');
+					} else if (request.node == 'Canvas Fingerprint' || request.node == 'Canvas Font Access' || request.node == 'Audio Fingerprint' || request.node == 'WebGL Fingerprint' || request.node == 'Battery Fingerprint' || request.node == 'Device Enumeration' || request.node == 'Gamepad Enumeration' || request.node == 'WebVR Enumeration' || request.node == 'Bluetooth Enumeration' || request.node == 'Spoofed Timezone' || request.node == 'Client Rectangles' || request.node == 'Clipboard Interference' || request.node == 'Data URL' || request.node == 'Browser Plugins Enumeration') {
+						ITEMS[sender.tab.id]['blocked'].push([request.src, request.node, extractedDomain, '-1', '-1', false, true]);
+						recentlog['blocked'].push([new Date().getTime(), request.src, request.node, extractedDomain, ITEMS[sender.tab.id]['url'], '-1', '-1', false, true]);
+						updateRecents('blocked');
+					} else {
+						var blockedDomainCheck = await domainCheck(request.src, 1);
+						var blockedTabDomainCheck = await domainCheck(extractedTabDomain, 1);
+						var blockedDomainBaddieCheck = baddies(request.src, await localStore.getItem('annoyancesmode'), await localStore.getItem('antisocial'), 2);
+						ITEMS[sender.tab.id]['blocked'].push([cleanedUrl, request.node, extractedDomain, blockedDomainCheck, blockedTabDomainCheck, blockedDomainBaddieCheck, false]);
+						recentlog['blocked'].push([new Date().getTime(), request.src, request.node, extractedDomain, ITEMS[sender.tab.id]['url'], blockedDomainCheck, blockedTabDomainCheck, blockedDomainBaddieCheck, false]);
+						updateRecents('blocked');
+					}
+					updateCount(sender.tab.id);
+				}
+			}
+		} else if (request.reqtype == 'update-allowed') {
+			if (request.src) {
+				if (typeof ITEMS[sender.tab.id]['allowed'] === 'undefined') ITEMS[sender.tab.id]['allowed'] = [];
+				var cleanedUrl = removeParams(request.src);
+				if (!UrlInList(cleanedUrl, ITEMS[sender.tab.id]['allowed'])) {
+					var extractedDomain = extractDomainFromURL(request.src);
+					if (extractedDomain.substr(0, 4) == 'www.') extractedDomain = extractedDomain.substr(4);
+					var allowedDomainCheck = await domainCheck(request.src, 1);
+					var allowedBaddieCheck = baddies(request.src, await localStore.getItem('annoyancesmode'), await localStore.getItem('antisocial'), 2)
+					ITEMS[sender.tab.id]['allowed'].push([cleanedUrl, request.node, extractedDomain, await domainCheck(request.src, 1), allowedBaddieCheck]);
+					recentlog['allowed'].push([new Date().getTime(), request.src, request.node, extractedDomain, request.src, await domainCheck(request.src, 1), allowedBaddieCheck]);
+					updateRecents('allowed');
+				}
+			}
+		} else if (request.reqtype == 'save') {
+			await domainHandler(request.url, request.list);
+			changed = true;
+		} else if (request.reqtype == 'temp') {
+			await tempHandler(request);
+		} else if (request.reqtype == 'remove-temp') {
+			await removeTempHandler(request);
+		} else if (request.reqtype == 'save-fp') {
+			await fpDomainHandler(request.url, request.list, 1);
+			changed = true;
+		} else if (request.reqtype == 'temp-fp') {
+			await fpDomainHandler(request.url, request.list, 1, 1);
+			changed = true;
+		} else if (request.reqtype == 'remove-temp-fp') {
+			await fpDomainHandler(request.url, request.list, -1, 1);
+			changed = true;
+		} else if (request.reqtype == 'refresh-page-icon') {
+			if (request.type == '0') chrome.action.setIcon({ path: "../img/IconAllowed.png", tabId: request.tid });
+			else if (request.type == '1') chrome.action.setIcon({ path: "../img/IconForbidden.png", tabId: request.tid });
+			else if (request.type == '2') chrome.action.setIcon({ path: "../img/IconTemp.png", tabId: request.tid });
+		} else
+			sendResponse({});
+	})();
+
+	return true; //async
 });
 chrome.runtime.onUpdateAvailable.addListener(function (details) {
 	// do nothing, wait for user to reload browser before updating.

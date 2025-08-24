@@ -105,7 +105,7 @@ export function getBackgroundPage() {
 		get(_, method) {
 			return (...args) => {
 				return new Promise((resolve, reject) => {
-					chrome.runtime.sendMessage({ method, args }, (response) => {
+					chrome.runtime.sendMessage({ reqtype: 'background-action', method, args }, (response) => {
 						if (chrome.runtime.lastError) {
 							return reject(new Error(`Method: ${method}, Args: ${JSON.stringify(args)}, Error: ${chrome.runtime.lastError.message}`))
 						}

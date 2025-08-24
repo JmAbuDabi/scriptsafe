@@ -144,11 +144,11 @@ chrome.runtime.sendMessage({reqtype: "get-settings", iframe: iframe}, function(r
 	}
 	delete savedBeforeloadEvents; // eventually remove
 });
-chrome.runtime.sendMessage({ method: "getWebRTC", args: [] }, function (response) {
+chrome.runtime.sendMessage({ reqtype: 'background-action', method: "getWebRTC", args: [] }, function (response) {
 	if (response.result === null) {
 		let checkedStatusWebRTC = checkWebRTCStatus();
 		if (checkedStatusWebRTC === null) checkedStatusWebRTC = false;
-		chrome.runtime.sendMessage({ method: "setWebRTC", args: [checkWebRTCStatus] });
+		chrome.runtime.sendMessage({ reqtype: 'background-action', method: "setWebRTC", args: [checkWebRTCStatus] });
 	}
 });
 function checkWebRTCStatus() {
