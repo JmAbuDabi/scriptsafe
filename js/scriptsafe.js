@@ -59,7 +59,7 @@ function checkWebRTCHandlingPolicy() {
 	if (typeof chrome.privacy.network.webRTCIPHandlingPolicy === 'undefined') return false;
 	return webrtcsupport;
 }
-async function initWebRTC() {
+export async function initWebRTC() {
 	if (!webrtcsupport) return;
 	if (await localStore.getItem('webrtc') != 'off') {
 		chrome.privacy.network.webRTCIPHandlingPolicy.set({
@@ -344,11 +344,11 @@ function setRecents(list) {
 	var recentsLength = recentlog[list].length;
 	if (recentsLength > recentLimit) recentlog[list] = recentlog[list].slice(recentsLength - recentLimit);
 }
-function getRecents(list) {
+export function getRecents(list) {
 	setRecents(list);
 	return JSON.stringify(recentlog[list]);
 }
-function clearRecents() {
+export function clearRecents() {
 	recentlog['allowed'] = [];
 	recentlog['blocked'] = [];
 }
@@ -445,12 +445,12 @@ export function domainSort(hosts) {
 	}
 	return hosts;
 }
-function trustCheck(domain) {
+export function trustCheck(domain) {
 	if (in_array(domain, trustList)) return '1';
 	if (in_array(domain, distrustList)) return '2';
 	return false;
 }
-async function topHandler(domain, mode) {
+export async function topHandler(domain, mode) {
 	if (domain) {
 		if (!domain.match(/^((25[0-5]|2[0-4][0-9]|1[0-9]{2}|[0-9]{1,2})\.){3}(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[0-9]{1,2})$/g) && !domain.match(/^(?:\[[A-Fa-f0-9:.]+\])(:[0-9]+)?$/g)) domain = '**.' + getDomain(domain);
 		if (mode != '0' && mode != '1') await fpDomainHandler(domain, mode, 1);
@@ -470,7 +470,7 @@ function haystackSearch(needle, haystack) {
 	}
 	return keys;
 }
-async function domainHandler(domain, action, listtype) {
+export async function domainHandler(domain, action, listtype) {
 	if (listtype === undefined)
 		listtype = 0;
 	if (domain) {
@@ -771,7 +771,7 @@ function resetTabData(id, url) {
 		ITEMS[id]['allowed'] = [];
 	}
 }
-async function revokeTemp() {
+export async function revokeTemp() {
 	sessionBlackList = '';
 	sessionWhiteList = '';
 	fpListsSession = [];
@@ -790,7 +790,7 @@ async function revokeTemp() {
 	await sessionStore.setItem('fpClipboard', JSON.stringify([]));
 	await sessionStore.setItem('fpBrowserPlugins', JSON.stringify([]));
 }
-async function statuschanger(duration) {
+export async function statuschanger(duration) {
 	clearTimeout(reenabletimer);
 	if (await localStore.getItem('enable') == 'true') {
 		await localStore.setItem('enable', 'false');
@@ -843,7 +843,7 @@ async function getSessionList() {
 	if (await localStore.getItem('mode') == 'block') return sessionWhiteList;
 	else if (await localStore.getItem('mode') == 'allow') return sessionBlackList;
 }
-async function checkTemp(domain) {
+export async function checkTemp(domain) {
 	return in_array(domain, await getSessionList());
 }
 chrome.tabs.onRemoved.addListener(function (tabid) {
@@ -1040,7 +1040,7 @@ chrome.commands.onCommand.addListener(function (command) {
 		removeTempAll();
 	}
 });
-function reinitContext() {
+export function reinitContext() {
 	chrome.contextMenus.removeAll(async function () {
 		if (await localStore.getItem('showcontext') == 'true') await genContextMenu();
 	});
@@ -1485,7 +1485,7 @@ export function getUpdated() {
 export function setUpdated() {
 	updated = false;
 }
-async function triggerUpdated() {
+export async function triggerUpdated() {
 	updated = true;
 	await freshSync();
 }
@@ -1520,7 +1520,7 @@ export async function cacheLists() {
 	tempWildDomain = tempWildDomain.sort();
 	distrustList = tempWildDomain;
 }
-async function cacheFpLists() {
+export async function cacheFpLists() {
 	for (var i in fpTypes) {
 		var tempList = JSON.parse(await localStore.getItem(fpTypes[i]));
 		var tempDomain = [];

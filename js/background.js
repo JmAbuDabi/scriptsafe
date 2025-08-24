@@ -1,7 +1,9 @@
+import * as Common from './common.js';
 import * as ScriptSafe from './scriptsafe.js';
 
 
 const api = {
+	...Common,
 	...ScriptSafe
 };
 
