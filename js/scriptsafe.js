@@ -1199,8 +1199,9 @@ export async function freshSync(force) {
 			var segment;
 			var jsonstr;
 			var i = 0;
-			for (var k in localStorage) {
-				if (localStorage.hasOwnProperty(k)) {
+			var allKeys = await localStore.getAllItems();
+			for (var k in allKeys) {
+				if (allKeys.hasOwnProperty(k)) {
 					// legacy syncing method - start
 					if (k != "version" && k != "sync" && k != "scriptsafe_settings" && k != "lastSync" && k != "whiteList" && k != "blackList" && k != "useragent" && k != "whiteListCount" && k != "blackListCount" && k != "whiteListCount2" && k != "blackListCount2" && k != "useragentCount2" && k.substr(0, 10) != "whiteList_" && k.substr(0, 10) != "blackList_" && k.substr(0, 2) != "zb" && k.substr(0, 2) != "zw" && k.substr(0, 2) != "sw" && k.substr(0, 2) != "sb" && k.substr(0, 2) != "sf" && k.substr(0, 2) != "su") {
 						// legacy syncing method - end

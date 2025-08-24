@@ -130,6 +130,11 @@ export const localStore = {
 			chrome.storage.local.get(key, (result) => resolve(result[key]));
 		});
 	},
+	getAllItems() {
+		return new Promise(resolve => {
+			chrome.storage.local.get(null, (result) => resolve(result));
+		});
+	},
 	removeItem(key) {
 		return new Promise(resolve => {
 			chrome.storage.local.remove(key, () => resolve());
