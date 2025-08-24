@@ -144,6 +144,27 @@ chrome.runtime.sendMessage({reqtype: "get-settings", iframe: iframe}, function(r
 	}
 	delete savedBeforeloadEvents; // eventually remove
 });
+chrome.runtime.sendMessage({ method: "getWebRTC", args: [] }, function (response) {
+	if (response.result === null) {
+		let checkedStatusWebRTC = checkWebRTCStatus();
+		if (checkedStatusWebRTC === null) checkedStatusWebRTC = false;
+		chrome.runtime.sendMessage({ method: "setWebRTC", args: [checkWebRTCStatus] });
+	}
+});
+function checkWebRTCStatus() {
+	const RTCPeer = self.RTCPeerConnection || self.webkitRTCPeerConnection;
+	if (!RTCPeer) {
+		return null;
+	}
+
+	try {
+		const pc = new RTCPeer();
+		pc.close();
+		return true;
+	} catch (e) {
+		return false;
+	}
+}
 function fingerprintProtection() {
 	injectAnon(function(canvas, canvasfont, audioblock, battery, webgl, webrtcdevice, gamepad, webvr, bluetooth, timezone, clientrects, clipboard, browserplugins){
 		function processFunctions(scope) {

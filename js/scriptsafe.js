@@ -37,7 +37,7 @@ let changed = false;
 let ITEMS = {};
 let experimental = 0;
 let storageapi = false;
-let webrtcsupport = false;
+let webrtcsupport = null;
 let updated = false;
 let userAgent = '';
 export async function refreshRequestTypes() {
@@ -55,6 +55,10 @@ export async function refreshRequestTypes() {
 	if (await localStore.getItem('xml') == 'true' || await localStore.getItem('xml') == 'all')
 		requestTypes.push('xmlhttprequest');
 }
+function checkWebRTCHandlingPolicy() {
+	if (typeof chrome.privacy.network.webRTCIPHandlingPolicy === 'undefined') return false;
+	return webrtcsupport;
+}
 async function initWebRTC() {
 	if (!webrtcsupport) return;
 	if (await localStore.getItem('webrtc') != 'off') {
@@ -70,16 +74,8 @@ async function initWebRTC() {
 export function getWebRTC() {
 	return webrtcsupport;
 }
-function testWebRTC(rtcstatus) {
-	document.getElementById('webrtc').remove();
-	webrtcsupport = rtcstatus;
-}
-function checkWebRTC() {
-	if (typeof chrome.privacy.network.webRTCIPHandlingPolicy === 'undefined') return false;
-	var doc = document.getElementById('webrtc').contentWindow.document;
-	doc.open();
-	doc.write('<script src="../js/webrtctest.js"></script>');
-	doc.close();
+export function setWebRTC(value) {
+	webrtcsupport = value;
 }
 async function mitigate(req) {
 	if (await localStore.getItem("enable") == "false" || (await localStore.getItem('useragentspoof') == 'off' && await localStore.getItem('cookies') == 'false' && await localStore.getItem('referrerspoof') == 'off')) {
@@ -1487,7 +1483,7 @@ async function triggerUpdated() {
 	await freshSync();
 }
 async function init() {
-	webrtcsupport = checkWebRTC();
+	webrtcsupport = checkWebRTCHandlingPolicy();
 	await initWebRTC();
 	await cacheLists();
 	await cacheFpLists();

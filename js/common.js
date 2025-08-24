@@ -163,3 +163,17 @@ export const sessionStore = {
 		});
 	}
 };
+export function checkWebRTCStatus() {
+	const RTCPeer = self.RTCPeerConnection || self.webkitRTCPeerConnection;
+	if (!RTCPeer) {
+		return null;
+	}
+
+	try {
+		const pc = new RTCPeer();
+		pc.close();
+		return true;
+	} catch (e) {
+		return false;
+	}
+}

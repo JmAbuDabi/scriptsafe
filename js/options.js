@@ -1,7 +1,7 @@
 // ScriptSafe - Copyright (C) andryou
 // Distributed under the terms of the GNU General Public License
 // The GNU General Public License can be found in the gpl.txt file. Alternatively, see <http://www.gnu.org/licenses/>.
-import {version, getBackgroundPage} from './common.js';
+import { version, getBackgroundPage, checkWebRTCStatus } from './common.js';
 
 const bkg = getBackgroundPage();
 var settingnames = [];
@@ -393,6 +393,12 @@ async function loadOptions() {
 	loadCheckbox("hashchecking");
 	loadCheckbox("hashallow");
 	loadElement("webrtc");
+	let webrtc = await bkg.getWebRTC();
+	if (webrtc === null) {
+		webrtc = checkWebRTCStatus();
+		if (webrtc === null) webrtc = false;
+		await bkg.setWebRTC(webrtc);
+	}
 	if (!await bkg.getWebRTC()) $("#webrtccell").html('<strong style="color: red;">' + await bkg.getLocale("nowebrtc") + '</strong>');
 	loadElement("preservesamedomain");
 	loadCheckbox("paranoia");
