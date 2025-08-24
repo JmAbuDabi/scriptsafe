@@ -4,6 +4,7 @@
 // Credits and ideas: NotScripts, AdBlock Plus for Chrome, Ghostery, KB SSL Enforcer
 import { antisocial1, antisocial2, yoyo1, yoyo2 } from "./yoyo.js";
 import { version, localStore, sessionStore, getDomain, extractDomainFromURL, in_array, binarySearch } from "./common.js";
+import * as pako from "./pako.esm.mjs";
 
 let requestTypes, synctimer, recentstimer, reenabletimer, useragentinterval, blackList, whiteList, distrustList, trustList, sessionBlackList, sessionWhiteList, locale;
 let langs = {
