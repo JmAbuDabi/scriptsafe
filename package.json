@@ -1,0 +1,23 @@
+{
+  "name": "scriptsafe",
+  "version": "2.0.0.0",
+  "description": "A browser extension that gives users control of the web and more secure browsing while emphasizing simplicity and intuitiveness.",
+  "main": "index.js",
+  "scripts": {
+    "build": "esbuild js/ss.js --bundle --sourcemap --minify --outfile=js/ss.bundle.js --watch"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JmAbuDabi/scriptsafe.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/JmAbuDabi/scriptsafe/issues"
+  },
+  "homepage": "https://github.com/JmAbuDabi/scriptsafe#readme",
+  "devDependencies": {
+    "esbuild": "^0.25.9"
+  }
+}

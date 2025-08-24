@@ -29,9 +29,7 @@
          ],
          "js": [
             "js/jquery.js",
-            "js/common.js",
-            "js/yoyo.js",
-            "js/ss.js"
+            "js/ss.bundle.js"
          ],
          "run_at": "document_start",
          "all_frames": true
