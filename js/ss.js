@@ -4,7 +4,6 @@
 import { thirdParty, getDomain, extractDomainFromURL, in_array, binarySearch } from "./common.js";
 import { antisocial1, antisocial2, yoyo1, yoyo2 } from "./yoyo.js";
 
-let savedBeforeloadEvents = new Array();
 let timer;
 let iframe = 0;
 let clipboard = false;
@@ -57,10 +56,8 @@ let SETTINGS = {
 	"BROWSERPLUGINS": "false",
 	"USERAGENT": "",
 };
-document.addEventListener("beforeload", saveBeforeloadEvent, true); // eventually remove
 if (window.self != window.top) iframe = 1;
 chrome.runtime.sendMessage({ reqtype: "get-settings", iframe: iframe }, function (response) {
-	document.removeEventListener("beforeload", saveBeforeloadEvent, true); // eventually remove
 	if (typeof response === 'object' && response.status == 'true') {
 		SETTINGS['MODE'] = response.mode;
 		SETTINGS['ANNOYANCES'] = response.annoyances;
@@ -74,8 +71,6 @@ chrome.runtime.sendMessage({ reqtype: "get-settings", iframe: iframe }, function
 		SETTINGS['PRESERVESAMEDOMAIN'] = response.preservesamedomain;
 		SETTINGS['EXPERIMENTAL'] = response.experimental;
 		SETTINGS['DOMAINSTATUS'] = domainCheck(window.location.href, 1);
-		if (SETTINGS['EXPERIMENTAL'] == '0' && (((SETTINGS['PRESERVESAMEDOMAIN'] == 'false' || (SETTINGS['PRESERVESAMEDOMAIN'] != 'false' && SETTINGS['DOMAINSTATUS'] == '1')) && response.enable == 'true' && SETTINGS['SCRIPT'] == 'true' && SETTINGS['DOMAINSTATUS'] != '0') || ((SETTINGS['ANNOYANCES'] == 'true' && (SETTINGS['ANNOYANCESMODE'] == 'strict' || (SETTINGS['ANNOYANCESMODE'] == 'relaxed' && SETTINGS['DOMAINSTATUS'] != '0')) && baddies(window.location.hostname, SETTINGS['ANNOYANCESMODE'], SETTINGS['ANTISOCIAL']) == '1') || (SETTINGS['ANTISOCIAL'] == 'true' && baddies(window.location.hostname, SETTINGS['ANNOYANCESMODE'], SETTINGS['ANTISOCIAL']) == '2'))))
-			mitigate();
 		SETTINGS['LISTSTATUS'] = response.enable;
 		SETTINGS['NOSCRIPT'] = response.noscript;
 		SETTINGS['OBJECT'] = response.object;
@@ -141,11 +136,7 @@ chrome.runtime.sendMessage({ reqtype: "get-settings", iframe: iframe }, function
 				clipboardProtect(document);
 			}
 		});
-		document.addEventListener("beforeload", block, true); // eventually remove
-		for (var i = 0; i < savedBeforeloadEvents.length; i++) // eventually remove
-			block(savedBeforeloadEvents[i]); // eventually remove
 	}
-	delete savedBeforeloadEvents; // eventually remove
 });
 chrome.runtime.sendMessage({ reqtype: 'background-action', method: "getWebRTC", args: [] }, function (response) {
 	if (response.result === null) {
@@ -734,64 +725,6 @@ function injectAnon(f, val) {
 	script.textContent = "(" + f + ")(" + val + ");";
 	document.documentElement.appendChild(script);
 }
-/* Fallback Inline Script Handling (if Chrome doesn't support chrome.webRequest API) / */
-function mitigate() { // credit: NotScripts
-	injectAnon(function () {
-		for (var i in window) {
-			try {
-				var jsType = typeof window[i];
-				switch (jsType.toUpperCase()) {
-					case "FUNCTION":
-						if (window[i] !== window.location) {
-							if (window[i] === window.open || (window.showModelessDialog && window[i] === window.showModelessDialog))
-								window[i] = function () { return true; };
-							else if (window[i] === window.onbeforeunload)
-								window.onbeforeunload = null;
-							else if (window[i] === window.onunload)
-								window.onunload = null;
-							else
-								window[i] = function () { return ""; };
-						}
-						break;
-				}
-			} catch (err) { }
-		}
-		for (var i in document) {
-			try {
-				var jsType = typeof document[i];
-				switch (jsType.toUpperCase()) {
-					case "FUNCTION":
-						document[i] = function () { return ""; };
-						break;
-				}
-			} catch (err) { }
-		}
-		try {
-			eval = function () { return ""; };
-			unescape = function () { return ""; };
-			String = function () { return ""; };
-			parseInt = function () { return ""; };
-			parseFloat = function () { return ""; };
-			Number = function () { return ""; };
-			isNaN = function () { return ""; };
-			isFinite = function () { return ""; };
-			escape = function () { return ""; };
-			encodeURIComponent = function () { return ""; };
-			encodeURI = function () { return ""; };
-			decodeURIComponent = function () { return ""; };
-			decodeURI = function () { return ""; };
-			Array = function () { return ""; };
-			Boolean = function () { return ""; };
-			Date = function () { return ""; };
-			Math = function () { return ""; };
-			Number = function () { return ""; };
-			RegExp = function () { return ""; };
-			var oNav = navigator;
-			navigator = function () { return ""; };
-			oNav = null;
-		} catch (err) { }
-	});
-}
 function clearUnloads() { // credit: NotScripts
 	clearTimeout(timer);
 	let keepGoing = (window.onbeforeunload || window.onunload);
@@ -799,90 +732,3 @@ function clearUnloads() { // credit: NotScripts
 	window.onunload = null;
 	if (keepGoing) timer = setTimeout(function () { clearUnloads() }, 5000);
 }
-/* / Fallback Inline Script Handling */
-/* Deprecated beforeload Handling / */
-function saveBeforeloadEvent(e) {
-	savedBeforeloadEvents.push(e);
-}
-function block(event) {
-	var el = event.target;
-	var elSrc = getElSrc(el);
-	if (!elSrc) return;
-	var elType = el.nodeName.toUpperCase();
-	if (!(elType == "A" || elType == "IFRAME" || elType == "FRAME" || (elType == "SCRIPT" && SETTINGS['EXPERIMENTAL'] == '0') || elType == "EMBED" || elType == "OBJECT" || elType == "IMG")) return;
-	elSrc = elSrc.toLowerCase();
-	var absoluteUrl = relativeToAbsoluteUrl(elSrc);
-	if (absoluteUrl.substr(0, 4) != 'http') return;
-	var thirdPartyCheck;
-	var elementStatusCheck;
-	var domainCheckStatus;
-	var $el = $(el);
-	var elWidth = $el.attr('width');
-	var elHeight = $el.attr('height');
-	var elStyle = $el.attr('style');
-	var baddiesCheck = baddies(absoluteUrl, SETTINGS['ANNOYANCESMODE'], SETTINGS['ANTISOCIAL']);
-	if (SETTINGS['DOMAINSTATUS'] == '1' || (SETTINGS['DOMAINSTATUS'] == '-1' && SETTINGS['MODE'] == 'block' && SETTINGS['PARANOIA'] == 'true' && SETTINGS['PRESERVESAMEDOMAIN'] == 'false')) {
-		elementStatusCheck = true;
-		thirdPartyCheck = true;
-		domainCheckStatus = '1';
-	} else {
-		domainCheckStatus = domainCheck(absoluteUrl, 1);
-		var elementDomain = extractDomainFromURL(absoluteUrl);
-		if ((domainCheckStatus == '0' && !(SETTINGS['DOMAINSTATUS'] == '-1' && SETTINGS['MODE'] == 'block' && SETTINGS['PARANOIA'] == 'true')) || (SETTINGS['PRESERVESAMEDOMAIN'] == 'strict' && elementDomain == window.location.hostname)) thirdPartyCheck = false;
-		else if (SETTINGS['PRESERVESAMEDOMAIN'] == 'strict' && elementDomain != window.location.hostname) thirdPartyCheck = true;
-		else thirdPartyCheck = thirdParty(absoluteUrl);
-		if ((SETTINGS['DOMAINSTATUS'] == '-1' && SETTINGS['MODE'] == 'block' && SETTINGS['PARANOIA'] == 'true') || (domainCheckStatus != '0' && (domainCheckStatus == '1' || (domainCheckStatus == '-1' && SETTINGS['MODE'] == 'block'))) || ((SETTINGS['ANNOYANCES'] == 'true' && (SETTINGS['ANNOYANCESMODE'] == 'strict' || (SETTINGS['ANNOYANCESMODE'] == 'relaxed' && domainCheckStatus != '0'))) && baddiesCheck == '1') || (SETTINGS['ANTISOCIAL'] == 'true' && baddiesCheck == '2'))
-			elementStatusCheck = true;
-		else elementStatusCheck = false;
-	}
-	if (elementStatusCheck && (
-		(
-			(
-				(
-					(elType == "IFRAME" && SETTINGS['IFRAME'] == 'true')
-					|| (elType == "FRAME" && SETTINGS['FRAME'] == 'true')
-					|| (elType == "EMBED" && SETTINGS['EMBED'] == 'true')
-					|| (elType == "OBJECT" && SETTINGS['OBJECT'] == 'true')
-					|| (elType == "SCRIPT" && SETTINGS['SCRIPT'] == 'true' && SETTINGS['EXPERIMENTAL'] == '0')
-					|| (elType == "VIDEO" && SETTINGS['VIDEO'] == 'true')
-					|| (elType == "AUDIO" && SETTINGS['AUDIO'] == 'true')
-					|| (elType == "IMG" && SETTINGS['IMAGE'] == 'true')
-					|| (elType == "A" && (SETTINGS['REFERRER'] == 'alldomains' || (SETTINGS['REFERRER'] == 'true' && (SETTINGS['DOMAINSTATUS'] != '0' || SETTINGS['REFERRERSPOOFDENYWHITELISTED'] == 'true'))))
-				)
-				&& (
-					(SETTINGS['PRESERVESAMEDOMAIN'] != 'false' && (thirdPartyCheck || domainCheckStatus == '1' || baddiesCheck))
-					|| SETTINGS['PRESERVESAMEDOMAIN'] == 'false'
-				)
-
-			)
-		)
-		|| (
-			SETTINGS['WEBBUGS'] == 'true'
-			&& (elType == "IMG" || elType == "IFRAME" || elType == "FRAME" || elType == "EMBED" || elType == "OBJECT")
-			&& (thirdPartyCheck || domainCheckStatus == '1' || baddiesCheck)
-			&& (
-				(typeof elWidth !== 'undefined' && elWidth <= 5 && typeof elHeight !== 'undefined' && elHeight <= 5)
-				|| (typeof elStyle !== 'undefined' && elStyle.match(/(.*?;\s*|^\s*?)(height|width)\s*?:\s*?[0-5]\D.*?;\s*(height|width)\s*?:\s*?[0-5]\D/i))
-			)
-		)
-		|| (
-			(SETTINGS['REFERRER'] == 'alldomains' || (SETTINGS['REFERRER'] == 'true' && (SETTINGS['DOMAINSTATUS'] != '0' || SETTINGS['REFERRERSPOOFDENYWHITELISTED'] == 'true'))) && elType == "A" && (thirdPartyCheck || domainCheckStatus == '1' || baddiesCheck)
-		))) {
-		if ((SETTINGS['REFERRER'] == 'alldomains' || (SETTINGS['REFERRER'] == 'true' && (SETTINGS['DOMAINSTATUS'] != '0' || SETTINGS['REFERRERSPOOFDENYWHITELISTED'] == 'true'))) && elType == "A" && (thirdPartyCheck || domainCheckStatus == '1' || baddiesCheck)) {
-			$(el).attr("rel", "noreferrer");
-		} else {
-			event.preventDefault();
-			if (SETTINGS['WEBBUGS'] == 'true' && (thirdPartyCheck || domainCheckStatus == '1' || baddiesCheck) && (elType == "IFRAME" || elType == "FRAME" || elType == "EMBED" || elType == "OBJECT" || elType == "IMG") && ((typeof elWidth !== 'undefined' && elWidth <= 5 && typeof elHeight !== 'undefined' && elHeight <= 5) || (typeof elStyle !== 'undefined' && elStyle.match(/(.*?;\s*|^\s*?)(height|width)\s*?:\s*?[0-5]\D.*?;\s*(height|width)\s*?:\s*?[0-5]\D/i)))) {
-				elType = "WEBBUG";
-			}
-			chrome.runtime.sendMessage({ reqtype: "update-blocked", src: absoluteUrl, node: elType });
-			if (elType == 'VIDEO' || elType == 'AUDIO') removeMedia($el);
-			else $(el).remove();
-		}
-	} else {
-		if (SETTINGS['EXPERIMENTAL'] == '0' && (elType == "IFRAME" || elType == "FRAME" || elType == "EMBED" || elType == "OBJECT" || elType == "SCRIPT")) {
-			chrome.runtime.sendMessage({ reqtype: "update-allowed", src: absoluteUrl, node: elType });
-		}
-	}
-}
-/* / Deprecated beforeload Handling */
