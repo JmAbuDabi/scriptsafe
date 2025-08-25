@@ -3,7 +3,7 @@
 // The GNU General Public License can be found in the gpl.txt file. Alternatively, see <http://www.gnu.org/licenses/>.
 // Credits and ideas: NotScripts, AdBlock Plus for Chrome, Ghostery, KB SSL Enforcer
 import { antisocial1, antisocial2, yoyo1, yoyo2 } from "./yoyo.js";
-import { version, localStore, sessionStore, getDomain, extractDomainFromURL, in_array, binarySearch } from "./common.js";
+import { version, localStore, sessionStore, getDomain, extractDomainFromURL, in_array, binarySearch, confirmExt, alertExt } from "./common.js";
 import * as pako from "./pako.esm.mjs";
 
 let requestTypes, synctimer, recentstimer, reenabletimer, useragentinterval, blackList, whiteList, distrustList, trustList, sessionBlackList, sessionWhiteList, locale;
@@ -511,7 +511,7 @@ export async function domainHandler(domain, action, listtype) {
 				if (whiteInstancesCount || blackInstancesCount) {
 					var lingo = '';
 					if (action == 1) lingo = 'dis';
-					if (confirm('ScriptSafe detected ' + (whiteInstancesCount + blackInstancesCount) + ' existing rule(s) for ' + tempDomain + ' (' + whiteInstancesCount + ' whitelist and ' + blackInstancesCount + ' blacklist).\r\nDo you want to delete them before ' + lingo + 'trusting the entire ' + tempDomain + ' domain in order to avoid conflicts?\r\nNote: this might not necessarily remove all conflicting entries, particularly if they use regex (e.g. d?main.com).')) {
+					if (await confirmExt('ScriptSafe detected ' + (whiteInstancesCount + blackInstancesCount) + ' existing rule(s) for ' + tempDomain + ' (' + whiteInstancesCount + ' whitelist and ' + blackInstancesCount + ' blacklist).\r\nDo you want to delete them before ' + lingo + 'trusting the entire ' + tempDomain + ' domain in order to avoid conflicts?\r\nNote: this might not necessarily remove all conflicting entries, particularly if they use regex (e.g. d?main.com).')) {
 						if (whiteInstancesCount) {
 							for (var x = 0; x < whiteInstancesCount; x++) {
 								tempWhitelist.splice(tempWhitelist.indexOf(whiteInstances[x]), 1);
@@ -523,7 +523,7 @@ export async function domainHandler(domain, action, listtype) {
 							}
 						}
 					} else {
-						if (!confirm('Do you still want to proceed ' + lingo + 'trusting the entire ' + tempDomain + ' domain?')) {
+						if (!await confirmExt('Do you still want to proceed ' + lingo + 'trusting the entire ' + tempDomain + ' domain?')) {
 							return false;
 						}
 					}
@@ -591,14 +591,14 @@ export async function fpDomainHandler(domain, listtype, action, temp) {
 				var instances = haystackSearch(tempDomain, tempList);
 				var instancesCount = instances.length;
 				if (instancesCount) {
-					if (confirm('ScriptSafe detected ' + instancesCount + ' existing rule(s) for ' + tempDomain + '.\r\nDo you want to delete them before trusting the entire ' + tempDomain + ' domain in order to avoid conflicts?\r\nNote: this might not necessarily remove all conflicting entries, particularly if they use regex (e.g. d?main.com).')) {
+					if (await confirmExt('ScriptSafe detected ' + instancesCount + ' existing rule(s) for ' + tempDomain + '.\r\nDo you want to delete them before trusting the entire ' + tempDomain + ' domain in order to avoid conflicts?\r\nNote: this might not necessarily remove all conflicting entries, particularly if they use regex (e.g. d?main.com).')) {
 						if (instancesCount) {
 							for (var x = 0; x < instancesCount; x++) {
 								tempList.splice(tempList.indexOf(instances[x]), 1);
 							}
 						}
 					} else {
-						if (!confirm('Do you still want to proceed trusting the entire ' + tempDomain + ' domain?')) {
+						if (!await confirmExt('Do you still want to proceed trusting the entire ' + tempDomain + ' domain?')) {
 							return false;
 						}
 					}
@@ -1315,12 +1315,12 @@ export async function freshSync(force) {
 			settingssync['lastSync'] = milliseconds;
 			await localStore.setItem('lastSync', milliseconds);
 			if (chrome.storage.sync.QUOTA_BYTES < JSON.stringify(settingssync).length) {
-				alert('ScriptSafe cannot sync your settings as it is greater than the total limit.\r\nHowever, you can manually export and import your settings by going to the Options page.');
+				await alertExt('ScriptSafe cannot sync your settings as it is greater than the total limit.\r\nHowever, you can manually export and import your settings by going to the Options page.');
 			} else {
 				chrome.storage.sync.clear(function () {
 					chrome.storage.sync.set(settingssync, async function () {
 						if (chrome.extension.lastError) {
-							alert(chrome.extension.lastError.message);
+							await alertExt(chrome.extension.lastError.message);
 						} else {
 							if (await localStore.getItem('syncnotify') == 'true') chrome.notifications.create('syncnotify', { 'type': 'basic', 'iconUrl': '../img/icon48.png', 'title': 'ScriptSafe - ' + getLocale("exportsuccesstitle"), 'message': getLocale("exportsuccess") }, function (callback) { return true; });
 						}
@@ -1345,7 +1345,7 @@ export async function importSyncHandle(mode) {
 			chrome.storage.sync.get(null, async function (changes) {
 				if (typeof changes['lastSync'] !== 'undefined') {
 					if ((mode == '0' && changes['lastSync'] > await localStore.getItem('lastSync')) || (mode == '1' && changes['lastSync'] >= await localStore.getItem('lastSync'))) {
-						if (confirm(getLocale("syncdetect"))) {
+						if (await confirmExt(getLocale("syncdetect"))) {
 							await localStore.setItem('syncenable', 'true');
 							await localStore.setItem('sync', 'true');
 							await importSync(changes);
@@ -1355,7 +1355,7 @@ export async function importSyncHandle(mode) {
 						} else {
 							if (mode != '1') {
 								await localStore.setItem('syncenable', 'false');
-								alert(getLocale("syncdisabled"));
+								await alertExt(getLocale("syncdisabled"));
 								await localStore.setItem('sync', 'true');
 							}
 							return false;
@@ -1370,7 +1370,7 @@ export async function importSyncHandle(mode) {
 			});
 		}
 	} else {
-		alert(getLocale("syncnotsupported"));
+		await alertExt(getLocale("syncnotsupported"));
 		await localStore.setItem('sync', 'true');
 		return false;
 	}
@@ -1426,7 +1426,7 @@ async function listsSync() {
 				}
 			}
 		} else {
-			alert('Incomplete fingerprint whitelist data was detected. Very large lists are known to cause issues with syncing.\r\nAs a safety precaution, your fingerprint whitelist has not been updated and syncing has been disabled on this device to prevent overwriting data on other devices.\r\nPlease consider manually exporting your latest settings and importing it into your other devices from the Options page.');
+			await alertExt('Incomplete fingerprint whitelist data was detected. Very large lists are known to cause issues with syncing.\r\nAs a safety precaution, your fingerprint whitelist has not been updated and syncing has been disabled on this device to prevent overwriting data on other devices.\r\nPlease consider manually exporting your latest settings and importing it into your other devices from the Options page.');
 			await localStore.setItem('syncenable', 'false');
 		}
 		await localStore.removeItem('fpCount');
@@ -1474,7 +1474,7 @@ async function listsSyncParse(type) {
 			if (concatlist == '' || concatlistarr.length == 0) await localStore.setItem(type + '', JSON.stringify([]));
 			else await localStore.setItem(type + '', JSON.stringify(concatlistarr));
 		} else {
-			alert('Incomplete ' + type.toLowerCase() + ' data was detected. Very large lists are known to cause issues with syncing.\r\nAs a safety precaution, your ' + type.toLowerCase() + ' has not been updated and syncing has been disabled on this device to prevent overwriting data on other devices.\r\nPlease consider manually exporting your latest settings and importing it into your other devices from the Options page.');
+			await alertExt('Incomplete ' + type.toLowerCase() + ' data was detected. Very large lists are known to cause issues with syncing.\r\nAs a safety precaution, your ' + type.toLowerCase() + ' has not been updated and syncing has been disabled on this device to prevent overwriting data on other devices.\r\nPlease consider manually exporting your latest settings and importing it into your other devices from the Options page.');
 			await localStore.setItem('syncenable', 'false');
 		}
 		if (await optionExists(type + 'Count2')) await localStore.removeItem(type + 'Count2');
@@ -1569,7 +1569,7 @@ async function initLanguage() {
 		await localStore.setItem('locale', 'en_US');
 		if (uiLang != 'en' && uiLang != 'en_GB' && uiLang != 'en_US') {
 			if (typeof langs[uiLang] !== 'undefined') {
-				if (confirm('ScriptSafe detected that your browser is currently set to ' + langs[uiLang] + '.\r\nWould you like to use ScriptSafe in ' + langs[uiLang] + '?\r\nIf you click on "Cancel", English (US) will be set.')) {
+				if (await confirmExt('ScriptSafe detected that your browser is currently set to ' + langs[uiLang] + '.\r\nWould you like to use ScriptSafe in ' + langs[uiLang] + '?\r\nIf you click on "Cancel", English (US) will be set.')) {
 					await localStore.setItem('locale', uiLang);
 				}
 			}

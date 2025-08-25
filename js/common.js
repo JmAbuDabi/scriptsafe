@@ -182,3 +182,46 @@ export function checkWebRTCStatus() {
 		return false;
 	}
 }
+export function alertExt(message, title = 'Scriptsafe alert') {
+	return new Promise((resolve) => {
+		chrome.notifications.create({
+			type: "basic",
+			iconUrl: "../img/icon48.png",
+			title,
+			message,
+		}, (id) => {
+			resolve(true);
+		});
+	});
+}
+export function confirmExt(message, title = 'Scriptsafe confirmation', OKText = 'OK', CancelText = 'Cancel') {
+	return new Promise((resolve) => {
+		chrome.notifications.create({
+			type: "basic",
+			iconUrl: "../img/icon48.png",
+			title,
+			message,
+			buttons: [{ title: OKText }, { title: CancelText }]
+		}, (id) => {
+			function cleanup() {
+				chrome.notifications.onButtonClicked.removeListener(onButtonClick);
+				chrome.notifications.onClosed.removeListener(onClosed);
+				chrome.notifications.clear(id);
+			}
+			function onButtonClick(notifId, buttonIndex) {
+				if (notifId === id) {
+					cleanup();
+					resolve(buttonIndex === 0);
+				}
+			}
+			function onClosed(notifId, byUser) {
+				if (notifId === id) {
+					cleanup();
+					resolve(false);
+				}
+			}
+			chrome.notifications.onButtonClicked.addListener(onButtonClick);
+			chrome.notifications.onClosed.addListener(onClosed);
+		});
+	});
+}
