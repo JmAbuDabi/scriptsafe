@@ -1382,14 +1382,14 @@ async function importSync(changes) {
 		} else if (key == 'scriptsafe_settings') {
 			var settings = changes[key].split("~");
 			if (settings.length > 0) {
-				$.each(settings, async function (i, v) { //$$$
-					if ($.trim(v) != "") {
-						var settingentry = $.trim(v).split("|");
-						if ($.trim(settingentry[1]) != '') {
-							await localStore.setItem($.trim(settingentry[0]), $.trim(settingentry[1]));
+				for (const v of settings) {
+					if (v.trim() !== "") {
+						const settingentry = v.trim().split("|");
+						if (settingentry[1].trim() !== "") {
+							await localStore.setItem(settingentry[0].trim(), settingentry[1].trim());
 						}
 					}
-				});
+				}
 			}
 		}
 	}
@@ -1415,14 +1415,14 @@ async function listsSync() {
 				concatlist = ssDecompress(concatlist);
 				var settings = concatlist.split("~");
 				if (settings.length > 0) {
-					$.each(settings, async function (i, v) {
-						if ($.trim(v) != "") {
-							var settingentry = $.trim(v).split("|");
-							if ($.trim(settingentry[1]) != '') {
-								await localStore.setItem($.trim(settingentry[0]), $.trim(settingentry[1]));
+					for (const v of settings) {
+						if (v.trim() !== "") {
+							const settingentry = v.trim().split("|");
+							if (settingentry[1].trim() !== "") {
+								await localStore.setItem(settingentry[0].trim(), settingentry[1].trim());
 							}
 						}
-					});
+					}
 				}
 			}
 		} else {
