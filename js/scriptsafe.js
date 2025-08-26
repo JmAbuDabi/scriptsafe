@@ -836,65 +836,66 @@ async function getSessionList() {
 async function checkTemp(domain) {
 	return in_array(domain, await getSessionList());
 }
-/*
-chrome.tabs.onRemoved.addListener(function(tabid) {
+chrome.tabs.onRemoved.addListener(function (tabid) {
 	if (typeof ITEMS[tabid] !== 'undefined') delete ITEMS[tabid];
 });
-chrome.tabs.onUpdated.addListener(function(tabid, changeinfo, tab) {
-	if (localStorage['enable'] == 'true') {
+chrome.tabs.onUpdated.addListener(async function (tabid, changeinfo, tab) {
+	if (await localStore.getItem('enable') == 'true') {
 		if (changeinfo.status == 'loading') {
 			var icontype = "Allowed";
-			if (enabled(tab.url) == "true")
+			if (await enabled(tab.url) == "true")
 				icontype = "Forbidden";
 			var extractedDomain = extractDomainFromURL(tab.url);
 			if (in_array(extractedDomain, sessionWhiteList) || in_array(extractedDomain, sessionBlackList))
 				icontype = "Temp";
-			chrome.browserAction.setIcon({path: "../img/Icon"+icontype+".png", tabId: tabid});
+			chrome.browserAction.setIcon({ path: "../img/Icon" + icontype + ".png", tabId: tabid });
 		} else if (changeinfo.status == "complete") {
 			if (typeof ITEMS[tabid] !== 'undefined') {
 				changed = true;
-				if (localStorage['mode'] == 'block' && typeof ITEMS[tabid]['allowed'] !== 'undefined') {
-					for (var i=0, forcount=ITEMS[tabid]['allowed'].length; i<forcount; i++) {
+				if (await localStore.getItem('mode') == 'block' && typeof ITEMS[tabid]['allowed'] !== 'undefined') {
+					for (var i = 0, forcount = ITEMS[tabid]['allowed'].length; i < forcount; i++) {
 						if (in_array(extractDomainFromURL(ITEMS[tabid]['allowed'][i][0]), sessionWhiteList)) {
-							chrome.browserAction.setIcon({path: "../img/IconTemp.png", tabId: tabid});
+							chrome.browserAction.setIcon({ path: "../img/IconTemp.png", tabId: tabid });
 							break;
 						}
 					}
-				} else if (localStorage['mode'] == 'allow' && typeof ITEMS[tabid]['blocked'] !== 'undefined') {
-					for (var i=0, forcount=ITEMS[tabid]['blocked'].length; i<forcount; i++) {
+				} else if (await localStore.getItem('mode') == 'allow' && typeof ITEMS[tabid]['blocked'] !== 'undefined') {
+					for (var i = 0, forcount = ITEMS[tabid]['blocked'].length; i < forcount; i++) {
 						if (in_array(extractDomainFromURL(ITEMS[tabid]['blocked'][i][0]), sessionBlackList)) {
-							chrome.browserAction.setIcon({path: "../img/IconTemp.png", tabId: tabid});
+							chrome.browserAction.setIcon({ path: "../img/IconTemp.png", tabId: tabid });
 							break;
 						}
 					}
 				}
 			}
 		}
-	} else chrome.browserAction.setIcon({path: "../img/IconDisabled.png", tabId: tabid});
+	} else chrome.browserAction.setIcon({ path: "../img/IconDisabled.png", tabId: tabid });
 });
-chrome.runtime.onConnect.addListener(function(port) {
-	port.onMessage.addListener(function(msg) {
+chrome.runtime.onConnect.addListener(function (port) {
+	port.onMessage.addListener(function (msg) {
 		if (port.name == 'popuplifeline') {
 			if (msg.url && msg.tid) {
-				popup=[msg.url, msg.tid];
+				popup = [msg.url, msg.tid];
 			}
 		}
 	});
-	port.onDisconnect.addListener(function() {
+	port.onDisconnect.addListener(async function () {
 		if (popup.length > 0) {
-			if (localStorage['refresh'] == 'true') chrome.tabs.update(popup[1], {url: popup[0]});
-			popup=[];
+			if (await localStore.getItem('refresh') == 'true') chrome.tabs.update(popup[1], { url: popup[0] });
+			popup = [];
 		}
 	});
 });
-chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
+chrome.runtime.onMessage.addListener(async function (request, sender, sendResponse) {
 	if (request.reqtype == 'get-settings') {
 		var fpListStatus = [];
 		var extractedDomain = extractDomainFromURL(sender.tab.url);
 		for (var i in fpTypes) {
-			fpListStatus[fpTypes[i]] = enabledfp(extractedDomain, fpTypes[i]);
+			fpListStatus[fpTypes[i]] = await enabledfp(extractedDomain, fpTypes[i]);
 		}
-		sendResponse({status: localStorage['enable'], enable: enabled(sender.tab.url), fp_canvas: fpListStatus['fpCanvas'], fp_canvasfont: fpListStatus['fpCanvasFont'], fp_audio: fpListStatus['fpAudio'], fp_webgl: fpListStatus['fpWebGL'], fp_battery: fpListStatus['fpBattery'], fp_device: fpListStatus['fpDevice'], fp_gamepad: fpListStatus['fpGamepad'], fp_webvr: fpListStatus['fpWebVR'], fp_bluetooth: fpListStatus['fpBluetooth'], fp_clientrectangles: fpListStatus['fpClientRectangles'], fp_clipboard: fpListStatus['fpClipboard'], fp_browserplugins: fpListStatus['fpBrowserPlugins'], experimental: experimental, mode: localStorage['mode'], annoyancesmode: localStorage['annoyancesmode'], antisocial: localStorage['antisocial'], whitelist: whiteList, blacklist: blackList, whitelistSession: sessionWhiteList, blackListSession: sessionBlackList, script: localStorage['script'], noscript: localStorage['noscript'], object: localStorage['object'], applet: localStorage['applet'], embed: localStorage['embed'], iframe: localStorage['iframe'], frame: localStorage['frame'], audio: localStorage['audio'], video: localStorage['video'], image: localStorage['image'], annoyances: localStorage['annoyances'], preservesamedomain: localStorage['preservesamedomain'], canvas: localStorage['canvas'], canvasfont: localStorage['canvasfont'], audioblock: localStorage['audioblock'], webgl: localStorage['webgl'], battery: localStorage['battery'], webrtcdevice: localStorage['webrtcdevice'], gamepad: localStorage['gamepad'], webvr: localStorage['webvr'], bluetooth: localStorage['bluetooth'], clientrects: localStorage['clientrects'], timezone: localStorage['timezone'], browserplugins: localStorage['browserplugins'], keyboard: localStorage['keyboard'], keydelta: localStorage['keydelta'], webbugs: localStorage['webbugs'], referrer: localStorage['referrer'], referrerspoofdenywhitelisted: localStorage['referrerspoofdenywhitelisted'], linktarget: localStorage['linktarget'], paranoia: localStorage['paranoia'], clipboard: localStorage['clipboard'], dataurl: localStorage['dataurl'], useragent: userAgent, uaspoofallow: localStorage['uaspoofallow']});
+		sendResponse({
+			status: await localStore.getItem('enable'), enable: await enabled(sender.tab.url), fp_canvas: fpListStatus['fpCanvas'], fp_canvasfont: fpListStatus['fpCanvasFont'], fp_audio: fpListStatus['fpAudio'], fp_webgl: fpListStatus['fpWebGL'], fp_battery: fpListStatus['fpBattery'], fp_device: fpListStatus['fpDevice'], fp_gamepad: fpListStatus['fpGamepad'], fp_webvr: fpListStatus['fpWebVR'], fp_bluetooth: fpListStatus['fpBluetooth'], fp_clientrectangles: fpListStatus['fpClientRectangles'], fp_clipboard: fpListStatus['fpClipboard'], fp_browserplugins: fpListStatus['fpBrowserPlugins'], experimental: experimental, mode: await localStore.getItem('mode'), annoyancesmode: await localStore.getItem('annoyancesmode'), antisocial: await localStore.getItem('antisocial'), whitelist: whiteList, blacklist: blackList, whitelistSession: sessionWhiteList, blackListSession: sessionBlackList, script: await localStore.getItem('script'), noscript: await localStore.getItem('noscript'), object: await localStore.getItem('object'), applet: await localStore.getItem('applet'), embed: await localStore.getItem('embed'), iframe: await localStore.getItem('iframe'), frame: await localStore.getItem('frame'), audio: await localStore.getItem('audio'), video: await localStore.getItem('video'), image: await localStore.getItem('image'), annoyances: await localStore.getItem('annoyances'), preservesamedomain: await localStore.getItem('preservesamedomain'), canvas: await localStore.getItem('canvas'), canvasfont: await localStore.getItem('canvasfont'), audioblock: await localStore.getItem('audioblock'), webgl: await localStore.getItem('webgl'), battery: await localStore.getItem('battery'), webrtcdevice: await localStore.getItem('webrtcdevice'), gamepad: await localStore.getItem('gamepad'), webvr: await localStore.getItem('webvr'), bluetooth: await localStore.getItem('bluetooth'), clientrects: await localStore.getItem('clientrects'), timezone: await localStore.getItem('timezone'), browserplugins: await localStore.getItem('browserplugins'), keyboard: await localStore.getItem('keyboard'), keydelta: await localStore.getItem('keydelta'), webbugs: await localStore.getItem('webbugs'), referrer: await localStore.getItem('referrer'), referrerspoofdenywhitelisted: await localStore.getItem('referrerspoofdenywhitelisted'), linktarget: await localStore.getItem('linktarget'), paranoia: await localStore.getItem('paranoia'), clipboard: await localStore.getItem('clipboard'), dataurl: await localStore.getItem('dataurl'), useragent: userAgent, uaspoofallow: await localStore.getItem('uaspoofallow')
+		});
 		if (typeof ITEMS[sender.tab.id] === 'undefined') {
 			resetTabData(sender.tab.id, sender.tab.url);
 		} else {
@@ -922,7 +923,7 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 				else if (i == 'fpClientRectangles') fptype = 'Client Rectangles';
 				else if (i == 'fpClipboard') fptype = 'Clipboard Interference';
 				else if (i == 'fpBrowserPlugins') fptype = 'Browser Plugins Enumeration';
-				if (extractedDomain.substr(0,4) == 'www.') extractedDomain = extractedDomain.substr(4);
+				if (extractedDomain.substr(0, 4) == 'www.') extractedDomain = extractedDomain.substr(4);
 				ITEMS[sender.tab.id]['allowed'].push([cleanedUrl, fptype, extractedDomain, fpListStatus[i], false, true]);
 				recentlog['allowed'].push([new Date().getTime(), sender.tab.url, fptype, extractedDomain, sender.tab.url, fpListStatus[i], false, true]);
 				updateRecents('allowed');
@@ -933,7 +934,7 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 			sendResponse('reload');
 			return;
 		}
-		var enableval = domainCheck(request.url);
+		var enableval = await domainCheck(request.url);
 		var trustType = trustCheck(extractDomainFromURL(request.url));
 		if (trustType == '1') enableval = 3;
 		else if (trustType == '2') enableval = 4;
@@ -944,7 +945,7 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 				break;
 			}
 		}
-		sendResponse({status: localStorage['enable'], enable: enableval, mode: localStorage['mode'], annoyancesmode: localStorage['annoyancesmode'], antisocial: localStorage['antisocial'], annoyances: localStorage['annoyances'], closepage: localStorage['classicoptions'], rating: localStorage['rating'], temp: getSessionList(), tempfp: sessionfplist, blockeditems: ITEMS[request.tid]['blocked'], alloweditems: ITEMS[request.tid]['allowed'], domainsort: localStorage['domainsort']});
+		sendResponse({ status: await localStore.getItem('enable'), enable: enableval, mode: await localStore.getItem('mode'), annoyancesmode: await localStore.getItem('annoyancesmode'), antisocial: await localStore.getItem('antisocial'), annoyances: await localStore.getItem('annoyances'), closepage: await localStore.getItem('classicoptions'), rating: await localStore.getItem('rating'), temp: await getSessionList(), tempfp: sessionfplist, blockeditems: ITEMS[request.tid]['blocked'], alloweditems: ITEMS[request.tid]['allowed'], domainsort: await localStore.getItem('domainsort') });
 		changed = true;
 	} else if (request.reqtype == 'update-blocked') {
 		if (request.src) {
@@ -952,7 +953,7 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 			if (typeof ITEMS[sender.tab.id]['blocked'] === 'undefined') ITEMS[sender.tab.id]['blocked'] = [];
 			if (!UrlInList(cleanedUrl, ITEMS[sender.tab.id]['blocked']) || request.node == 'NOSCRIPT' || request.node == 'Canvas Fingerprint' || request.node == 'Canvas Font Access' || request.node == 'Audio Fingerprint' || request.node == 'WebGL Fingerprint' || request.node == 'Battery Fingerprint' || request.node == 'Device Enumeration' || request.node == 'Gamepad Enumeration' || request.node == 'WebVR Enumeration' || request.node == 'Bluetooth Enumeration' || request.node == 'Spoofed Timezone' || request.node == 'Client Rectangles' || request.node == 'Clipboard Interference' || request.node == 'Data URL' || request.node == 'Browser Plugins Enumeration') {
 				var extractedDomain = extractDomainFromURL(request.src);
-				if (extractedDomain.substr(0,4) == 'www.') extractedDomain = extractedDomain.substr(4);
+				if (extractedDomain.substr(0, 4) == 'www.') extractedDomain = extractedDomain.substr(4);
 				var extractedTabDomain = extractDomainFromURL(ITEMS[sender.tab.id]['url']);
 				if (request.node == 'NOSCRIPT') {
 					ITEMS[sender.tab.id]['blocked'].push([request.src, request.node, request.src, '-1', '-1', false, false]);
@@ -963,9 +964,9 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 					recentlog['blocked'].push([new Date().getTime(), request.src, request.node, extractedDomain, ITEMS[sender.tab.id]['url'], '-1', '-1', false, true]);
 					updateRecents('blocked');
 				} else {
-					var blockedDomainCheck = domainCheck(request.src, 1);
-					var blockedTabDomainCheck = domainCheck(extractedTabDomain, 1);
-					var blockedDomainBaddieCheck = baddies(request.src, localStorage['annoyancesmode'], localStorage['antisocial'], 2);
+					var blockedDomainCheck = await domainCheck(request.src, 1);
+					var blockedTabDomainCheck = await domainCheck(extractedTabDomain, 1);
+					var blockedDomainBaddieCheck = baddies(request.src, await localStore.getItem('annoyancesmode'), await localStore.getItem('antisocial'), 2);
 					ITEMS[sender.tab.id]['blocked'].push([cleanedUrl, request.node, extractedDomain, blockedDomainCheck, blockedTabDomainCheck, blockedDomainBaddieCheck, false]);
 					recentlog['blocked'].push([new Date().getTime(), request.src, request.node, extractedDomain, ITEMS[sender.tab.id]['url'], blockedDomainCheck, blockedTabDomainCheck, blockedDomainBaddieCheck, false]);
 					updateRecents('blocked');
@@ -979,34 +980,34 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 			var cleanedUrl = removeParams(request.src);
 			if (!UrlInList(cleanedUrl, ITEMS[sender.tab.id]['allowed'])) {
 				var extractedDomain = extractDomainFromURL(request.src);
-				if (extractedDomain.substr(0,4) == 'www.') extractedDomain = extractedDomain.substr(4);
-				var allowedDomainCheck = domainCheck(request.src, 1);
-				var allowedBaddieCheck = baddies(request.src, localStorage['annoyancesmode'], localStorage['antisocial'], 2)
-				ITEMS[sender.tab.id]['allowed'].push([cleanedUrl, request.node, extractedDomain, domainCheck(request.src, 1), allowedBaddieCheck]);
-				recentlog['allowed'].push([new Date().getTime(), request.src, request.node, extractedDomain, request.src, domainCheck(request.src, 1), allowedBaddieCheck]);
+				if (extractedDomain.substr(0, 4) == 'www.') extractedDomain = extractedDomain.substr(4);
+				var allowedDomainCheck = await domainCheck(request.src, 1);
+				var allowedBaddieCheck = baddies(request.src, await localStore.getItem('annoyancesmode'), await localStore.getItem('antisocial'), 2)
+				ITEMS[sender.tab.id]['allowed'].push([cleanedUrl, request.node, extractedDomain, await domainCheck(request.src, 1), allowedBaddieCheck]);
+				recentlog['allowed'].push([new Date().getTime(), request.src, request.node, extractedDomain, request.src, await domainCheck(request.src, 1), allowedBaddieCheck]);
 				updateRecents('allowed');
 			}
 		}
 	} else if (request.reqtype == 'save') {
-		domainHandler(request.url, request.list);
+		await domainHandler(request.url, request.list);
 		changed = true;
 	} else if (request.reqtype == 'temp') {
-		tempHandler(request);
+		await tempHandler(request);
 	} else if (request.reqtype == 'remove-temp') {
-		removeTempHandler(request);
+		await removeTempHandler(request);
 	} else if (request.reqtype == 'save-fp') {
-		fpDomainHandler(request.url, request.list, 1);
+		await fpDomainHandler(request.url, request.list, 1);
 		changed = true;
 	} else if (request.reqtype == 'temp-fp') {
-		fpDomainHandler(request.url, request.list, 1, 1);
+		await fpDomainHandler(request.url, request.list, 1, 1);
 		changed = true;
 	} else if (request.reqtype == 'remove-temp-fp') {
-		fpDomainHandler(request.url, request.list, -1, 1);
+		await fpDomainHandler(request.url, request.list, -1, 1);
 		changed = true;
 	} else if (request.reqtype == 'refresh-page-icon') {
-		if (request.type == '0') chrome.browserAction.setIcon({path: "../img/IconAllowed.png", tabId: request.tid});
-		else if (request.type == '1') chrome.browserAction.setIcon({path: "../img/IconForbidden.png", tabId: request.tid});
-		else if (request.type == '2') chrome.browserAction.setIcon({path: "../img/IconTemp.png", tabId: request.tid});
+		if (request.type == '0') chrome.browserAction.setIcon({ path: "../img/IconAllowed.png", tabId: request.tid });
+		else if (request.type == '1') chrome.browserAction.setIcon({ path: "../img/IconForbidden.png", tabId: request.tid });
+		else if (request.type == '2') chrome.browserAction.setIcon({ path: "../img/IconTemp.png", tabId: request.tid });
 	} else
 		sendResponse({});
 });
@@ -1022,7 +1023,6 @@ chrome.commands.onCommand.addListener(function (command) {
 		removeTempAll();
 	}
 });
-*/
 function reinitContext() {
 	chrome.contextMenus.removeAll(async function () {
 		if (await localStore.getItem('showcontext') == 'true') await genContextMenu();
