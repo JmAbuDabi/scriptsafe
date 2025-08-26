@@ -1,7 +1,7 @@
 // ScriptSafe - Copyright (C) andryou
 // Distributed under the terms of the GNU General Public License
 // The GNU General Public License can be found in the gpl.txt file. Alternatively, see <http://www.gnu.org/licenses/>.
-import { version, getBackgroundPage, checkWebRTCStatus } from './common.js';
+import { version, localStore, getBackgroundPage, checkWebRTCStatus } from './common.js';
 
 const bkg = getBackgroundPage();
 var settingnames = [];
@@ -14,7 +14,7 @@ document.addEventListener('DOMContentLoaded', async function () {
 	$.each(langs, function (i, v) {
 		$("#locale").append('<option value="' + i + '">' + v + '</option>');
 	});
-	$("#locale").val(localStorage['locale']).change(saveLang);
+	$("#locale").val(await localStore.getItem('locale')).change(saveLang);
 	$(".save").click(saveOptions);
 	$("#keydelta").blur(function () {
 		if ($(this).val() < 0 || isNaN(parseInt($(this).val()))) {
@@ -67,9 +67,9 @@ document.addEventListener('DOMContentLoaded', async function () {
 		if ($(this).val().indexOf("\n") != -1) $(".useragentrandom").show();
 		else $(".useragentrandom").hide();
 	});
-	syncstatus = localStorage['syncenable'];
+	syncstatus = await localStore.getItem('syncenable');
 	$(".row-offcanvas").show();
-	if (localStorage['optionslist'] == 'true') await viewToggle(0);
+	if (await localStore.getItem('optionslist') == 'true') await viewToggle(0);
 	$('#sidebar').stickyScroll({ container: '#sectionname' });
 	await bkg.setUpdated();
 	setInterval(async function () {
@@ -253,7 +253,7 @@ async function viewToggle(commit) {
 	$("#sidebar, #sectionname").toggle();
 	if ($(".tab-content").hasClass('col-sm-9')) {
 		$("#viewtoggle").text(await bkg.getLocale("groupallsettings")).removeClass('btn-info').addClass('btn-success');
-		if (commit) localStorage['optionslist'] = 'true';
+		if (commit) await localStore.setItem('optionslist', 'true');
 		$(".tab-content").removeClass('col-sm-9').addClass('col-sm-12');
 		$(".tab").each(function () {
 			$(this).prepend('<div class="sectionheading alert alert-success"><h4>' + $("a[href='#" + $(this).attr('id') + "']").attr('rel') + '</h4></div>').show();
@@ -266,7 +266,7 @@ async function viewToggle(commit) {
 		$('#whitelistblacklist .sectionheading').stickyScroll({ topBoundary: $("#whitelistblacklist").offset().top, bottomBoundary: $("#whitelistblacklist").offset().top });
 	} else {
 		$("#viewtoggle").text(await bkg.getLocale("listallsettings")).removeClass('btn-success').addClass('btn-info');
-		if (commit) localStorage['optionslist'] = 'false';
+		if (commit) await localStore.setItem('optionslist', 'false');
 		$(".tab-content").removeClass('col-sm-12').addClass('col-sm-9');
 		$(".tab").hide();
 		$(".tab.active").show();
@@ -323,76 +323,76 @@ async function domainsort() {
 	await listUpdate();
 	await fpListUpdate();
 }
-function loadCheckbox(id) {
-	document.getElementById(id).checked = typeof localStorage[id] == "undefined" ? false : localStorage[id] == "true";
+async function loadCheckbox(id) {
+	document.getElementById(id).checked = typeof (await localStore.getItem(id)) == "undefined" ? false : await localStore.getItem(id) == "true";
 }
-function loadElement(id) {
-	$("#" + id).val(localStorage[id]);
+async function loadElement(id) {
+	$("#" + id).val(await localStore.getItem(id));
 }
-function loadList(id) {
-	$("#" + id).val(JSON.parse(localStorage[id]).join("\n"));
+async function loadList(id) {
+	$("#" + id).val(JSON.parse(await localStore.getItem(id)).join("\n"));
 }
-function saveCheckbox(id) {
-	localStorage[id] = document.getElementById(id).checked;
+async function saveCheckbox(id) {
+	await localStore.setItem(id, document.getElementById(id).checked);
 }
-function saveElement(id) {
-	localStorage[id] = $("#" + id).val().replace(/[~|]/g, '');
+async function saveElement(id) {
+	await localStore.setItem(id, $("#" + id).val().replace(/[~|]/g, ''));
 }
-function saveList(id) {
-	localStorage[id] = JSON.stringify($("#" + id).val().split("\n"));
+async function saveList(id) {
+	await localStore.setItem(id, JSON.stringify($("#" + id).val().split("\n")));
 }
 async function loadOptions() {
 	$("#title").html("ScriptSafe v" + version);
-	loadCheckbox("enable");
-	loadCheckbox("syncenable");
+	await loadCheckbox("enable");
+	await loadCheckbox("syncenable");
 	if (!$("#syncenable").prop('checked')) $("#syncbuttons").hide();
 	else $("#syncbuttons").show();
-	loadCheckbox("syncfromnotify");
-	loadCheckbox("updatenotify");
-	loadCheckbox("syncnotify");
-	loadElement("mode");
-	loadCheckbox("refresh");
-	loadCheckbox("script");
-	loadCheckbox("noscript");
-	loadCheckbox("object");
-	loadCheckbox("applet");
-	loadCheckbox("embed");
-	loadCheckbox("iframe");
-	loadCheckbox("frame");
-	loadCheckbox("audio");
-	loadCheckbox("video");
-	loadCheckbox("image");
-	loadCheckbox("dataurl");
-	loadCheckbox("showcontext");
-	loadElement("xml");
-	loadCheckbox("annoyances");
-	loadElement("annoyancesmode");
-	loadCheckbox("antisocial");
-	loadElement("canvas");
-	loadCheckbox("canvasfont");
-	loadCheckbox("clientrects");
-	loadCheckbox("audioblock");
-	loadCheckbox("webgl");
-	loadCheckbox("battery");
-	loadCheckbox("webrtcdevice");
-	loadCheckbox("gamepad");
-	loadCheckbox("webvr");
-	loadCheckbox("bluetooth");
-	loadElement("timezone");
-	loadCheckbox("keyboard");
-	loadCheckbox("browserplugins");
+	await loadCheckbox("syncfromnotify");
+	await loadCheckbox("updatenotify");
+	await loadCheckbox("syncnotify");
+	await loadElement("mode");
+	await loadCheckbox("refresh");
+	await loadCheckbox("script");
+	await loadCheckbox("noscript");
+	await loadCheckbox("object");
+	await loadCheckbox("applet");
+	await loadCheckbox("embed");
+	await loadCheckbox("iframe");
+	await loadCheckbox("frame");
+	await loadCheckbox("audio");
+	await loadCheckbox("video");
+	await loadCheckbox("image");
+	await loadCheckbox("dataurl");
+	await loadCheckbox("showcontext");
+	await loadElement("xml");
+	await loadCheckbox("annoyances");
+	await loadElement("annoyancesmode");
+	await loadCheckbox("antisocial");
+	await loadElement("canvas");
+	await loadCheckbox("canvasfont");
+	await loadCheckbox("clientrects");
+	await loadCheckbox("audioblock");
+	await loadCheckbox("webgl");
+	await loadCheckbox("battery");
+	await loadCheckbox("webrtcdevice");
+	await loadCheckbox("gamepad");
+	await loadCheckbox("webvr");
+	await loadCheckbox("bluetooth");
+	await loadElement("timezone");
+	await loadCheckbox("keyboard");
+	await loadCheckbox("browserplugins");
 	if (!$("#keyboard").prop('checked')) $(".keydeltarow").hide();
 	else $(".keydeltarow").show();
-	loadElement("keydelta");
+	await loadElement("keydelta");
 	if ($("#keydelta").val() < 0 || isNaN(parseInt($("#keydelta").val()))) {
 		$("#keydelta").val(40);
 		saveElement("keydelta");
 	}
-	loadCheckbox("webbugs");
-	loadCheckbox("utm");
-	loadCheckbox("hashchecking");
-	loadCheckbox("hashallow");
-	loadElement("webrtc");
+	await loadCheckbox("webbugs");
+	await loadCheckbox("utm");
+	await loadCheckbox("hashchecking");
+	await loadCheckbox("hashallow");
+	await loadElement("webrtc");
 	let webrtc = await bkg.getWebRTC();
 	if (webrtc === null) {
 		webrtc = checkWebRTCStatus();
@@ -400,22 +400,22 @@ async function loadOptions() {
 		await bkg.setWebRTC(webrtc);
 	}
 	if (!await bkg.getWebRTC()) $("#webrtccell").html('<strong style="color: red;">' + await bkg.getLocale("nowebrtc") + '</strong>');
-	loadElement("preservesamedomain");
-	loadCheckbox("paranoia");
-	loadCheckbox("clipboard");
-	loadCheckbox("classicoptions");
-	loadElement("referrer");
-	loadCheckbox("rating");
-	loadCheckbox("domainsort");
-	loadElement("linktarget");
-	loadCheckbox("cookies");
-	loadElement("useragentspoof");
-	loadElement("useragentspoof_os");
-	loadList("useragent");
-	loadElement("useragentinterval");
-	loadElement("useragentintervalmins");
-	loadCheckbox("uaspoofallow");
-	if (localStorage['annoyances'] == 'true' || localStorage['cookies'] == 'true') $("#annoyancesmode").removeAttr('disabled');
+	await loadElement("preservesamedomain");
+	await loadCheckbox("paranoia");
+	await loadCheckbox("clipboard");
+	await loadCheckbox("classicoptions");
+	await loadElement("referrer");
+	await loadCheckbox("rating");
+	await loadCheckbox("domainsort");
+	await loadElement("linktarget");
+	await loadCheckbox("cookies");
+	await loadElement("useragentspoof");
+	await loadElement("useragentspoof_os");
+	await loadList("useragent");
+	await loadElement("useragentinterval");
+	await loadElement("useragentintervalmins");
+	await loadCheckbox("uaspoofallow");
+	if (await localStore.getItem('annoyances') == 'true' || await localStore.getItem('cookies') == 'true') $("#annoyancesmode").removeAttr('disabled');
 	else $("#annoyancesmode").attr('disabled', 'true');
 	if ($("#useragentspoof").val() == 'off') $("#useragentspoof_os, #useragentbox, #applytoallow").hide();
 	else if ($("#useragentspoof").val() == 'custom') {
@@ -427,18 +427,18 @@ async function loadOptions() {
 	}
 	if ($("#hashchecking").val() == 'off') $("#applytoallowhash").hide();
 	else $("#applytoallowhash").show();
-	loadCheckbox("referrerspoofdenywhitelisted");
-	if (localStorage['referrerspoof'] != 'same' && localStorage['referrerspoof'] != 'domain' && localStorage['referrerspoof'] != 'off') {
+	await loadCheckbox("referrerspoofdenywhitelisted");
+	if (await localStore.getItem('referrerspoof') != 'same' && await localStore.getItem('referrerspoof') != 'domain' && await localStore.getItem('referrerspoof') != 'off') {
 		$("#referrerspoof").val('custom');
 		$("#customreferrer").show();
-		$("#userref").val(localStorage['referrerspoof']);
+		$("#userref").val(await localStore.getItem('referrerspoof'));
 	} else {
-		loadElement("referrerspoof");
+		await loadElement("referrerspoof");
 		$("#customreferrer").hide();
 	}
 	if ($("#useragent").val().indexOf("\n") == -1) $(".useragentrandom").hide();
 	else $(".useragentrandom").show();
-	if (localStorage['useragentinterval'] == 'interval') $("#useragentintervaloption").show();
+	if (await localStore.getItem('useragentinterval') == 'interval') $("#useragentintervaloption").show();
 	else $("#useragentintervaloption").hide();
 	if ($("#referrerspoof").val() == 'off') $("#applyreferrerspoofdenywhitelisted").hide();
 	else $("#applyreferrerspoofdenywhitelisted").show();
@@ -446,61 +446,61 @@ async function loadOptions() {
 	await fpListUpdate();
 }
 async function saveOptions() {
-	saveCheckbox("enable");
-	saveCheckbox("syncenable");
+	await saveCheckbox("enable");
+	await saveCheckbox("syncenable");
 	if (!$("#syncenable").prop('checked')) $("#syncbuttons").hide();
 	else $("#syncbuttons").show();
-	saveCheckbox("syncnotify");
-	saveCheckbox("syncfromnotify");
-	saveCheckbox("updatenotify");
-	saveElement("mode");
-	saveCheckbox("refresh");
-	saveCheckbox("script");
-	saveCheckbox("noscript");
-	saveCheckbox("object");
-	saveCheckbox("applet");
-	saveCheckbox("embed");
-	saveCheckbox("iframe");
-	saveCheckbox("frame");
-	saveCheckbox("audio");
-	saveCheckbox("video");
-	saveCheckbox("image");
-	saveCheckbox("dataurl");
-	saveCheckbox("showcontext");
-	saveElement("xml");
-	saveCheckbox("annoyances");
-	saveElement("annoyancesmode");
-	saveCheckbox("antisocial");
-	saveElement("canvas");
-	saveCheckbox("canvasfont");
-	saveCheckbox("clientrects");
-	saveCheckbox("audioblock");
-	saveCheckbox("webgl");
-	saveCheckbox("battery");
-	saveCheckbox("webrtcdevice");
-	saveCheckbox("gamepad");
-	saveCheckbox("webvr");
-	saveCheckbox("bluetooth");
-	saveElement("timezone");
-	saveCheckbox("keyboard");
-	saveCheckbox("browserplugins");
+	await saveCheckbox("syncnotify");
+	await saveCheckbox("syncfromnotify");
+	await saveCheckbox("updatenotify");
+	await saveElement("mode");
+	await saveCheckbox("refresh");
+	await saveCheckbox("script");
+	await saveCheckbox("noscript");
+	await saveCheckbox("object");
+	await saveCheckbox("applet");
+	await saveCheckbox("embed");
+	await saveCheckbox("iframe");
+	await saveCheckbox("frame");
+	await saveCheckbox("audio");
+	await saveCheckbox("video");
+	await saveCheckbox("image");
+	await saveCheckbox("dataurl");
+	await saveCheckbox("showcontext");
+	await saveElement("xml");
+	await saveCheckbox("annoyances");
+	await saveElement("annoyancesmode");
+	await saveCheckbox("antisocial");
+	await saveElement("canvas");
+	await saveCheckbox("canvasfont");
+	await saveCheckbox("clientrects");
+	await saveCheckbox("audioblock");
+	await saveCheckbox("webgl");
+	await saveCheckbox("battery");
+	await saveCheckbox("webrtcdevice");
+	await saveCheckbox("gamepad");
+	await saveCheckbox("webvr");
+	await saveCheckbox("bluetooth");
+	await saveElement("timezone");
+	await saveCheckbox("keyboard");
+	await saveCheckbox("browserplugins");
 	if (!$("#keyboard").prop('checked')) $(".keydeltarow").hide();
 	else $(".keydeltarow").show();
-	saveElement("keydelta");
-	saveCheckbox("webbugs");
-	saveCheckbox("utm");
-	saveCheckbox("hashchecking");
-	saveCheckbox("hashallow");
-	saveElement("webrtc");
-	saveElement("preservesamedomain");
-	saveCheckbox("paranoia");
-	saveCheckbox("clipboard");
-	saveCheckbox("classicoptions");
-	saveElement("referrer");
-	saveCheckbox("rating");
-	saveCheckbox("cookies");
-	saveElement("useragentspoof");
-	saveElement("useragentspoof_os");
+	await saveElement("keydelta");
+	await saveCheckbox("webbugs");
+	await saveCheckbox("utm");
+	await saveCheckbox("hashchecking");
+	await saveCheckbox("hashallow");
+	await saveElement("webrtc");
+	await saveElement("preservesamedomain");
+	await saveCheckbox("paranoia");
+	await saveCheckbox("clipboard");
+	await saveCheckbox("classicoptions");
+	await saveElement("referrer");
+	await saveCheckbox("rating");
+	await saveCheckbox("cookies");
+	await saveElement("useragentspoof");
+	await saveElement("useragentspoof_os");
 	var userAgents = $("#useragent").val();
 	if (userAgents) {
 		var validUserAgents = [];
@@ -512,42 +512,42 @@ async function saveOptions() {
 		}
 		$("#useragent").val(validUserAgents.join("\n"));
 	}
-	saveList("useragent");
-	saveElement("useragentinterval");
-	saveElement("useragentintervalmins");
-	saveCheckbox("uaspoofallow");
-	saveCheckbox("referrerspoofdenywhitelisted");
+	await saveList("useragent");
+	await saveElement("useragentinterval");
+	await saveElement("useragentintervalmins");
+	await saveCheckbox("uaspoofallow");
+	await saveCheckbox("referrerspoofdenywhitelisted");
 	if ($("#referrerspoof").val() != 'custom') {
 		saveElement("referrerspoof");
 		$("#customreferrer").hide();
 	} else {
-		if ($("#userref").val() != '') localStorage['referrerspoof'] = $("#userref").val();
+		if ($("#userref").val() != '') await localStore.setItem('referrerspoof', $("#userref").val());
 		else {
 			$("#customreferrer").show();
 			$("#userref").focus;
 		}
 	}
-	saveElement("linktarget");
-	saveCheckbox("domainsort");
-	if (localStorage['annoyances'] == 'true' || localStorage['cookies'] == 'true') $("#annoyancesmode").removeAttr('disabled');
+	await saveElement("linktarget");
+	await saveCheckbox("domainsort");
+	if (await localStore.getItem('annoyances') == 'true' || await localStore.getItem('cookies') == 'true') $("#annoyancesmode").removeAttr('disabled');
 	else $("#annoyancesmode").attr('disabled', 'true');
-	if (localStorage['useragentspoof'] == 'off') $("#useragentspoof_os, #useragentbox, #applytoallow").hide();
-	else if (localStorage['useragentspoof'] == 'custom') {
+	if (await localStore.getItem('useragentspoof') == 'off') $("#useragentspoof_os, #useragentbox, #applytoallow").hide();
+	else if (await localStore.getItem('useragentspoof') == 'custom') {
 		$("#useragentspoof_os").hide();
 		$("#useragentbox, #applytoallow").show();
 	} else {
 		$("#useragentbox").hide();
 		$("#useragentspoof_os, #applytoallow").show();
 	}
-	if (localStorage['hashchecking'] != 'off') $("#applytoallowhash").show();
+	if (await localStore.getItem('hashchecking') != 'off') $("#applytoallowhash").show();
 	else $("#applytoallowhash").hide();
 	if ($("#useragent").val().indexOf("\n") == -1) $(".useragentrandom").hide();
 	else $(".useragentrandom").show();
-	if (localStorage['useragentinterval'] == 'interval') $("#useragentintervaloption").show();
+	if (await localStore.getItem('useragentinterval') == 'interval') $("#useragentintervaloption").show();
 	else $("#useragentintervaloption").hide();
-	if (localStorage['referrerspoof'] != 'off') $("#applyreferrerspoofdenywhitelisted").show();
+	if (await localStore.getItem('referrerspoof') != 'off') $("#applyreferrerspoofdenywhitelisted").show();
 	else $("#applyreferrerspoofdenywhitelisted").hide();
-	updateExport();
+	await updateExport();
 	await bkg.refreshRequestTypes();
 	await bkg.initWebRTC();
 	await bkg.reinitContext();
@@ -559,9 +559,9 @@ async function saveOptions() {
 	}
 }
 async function saveLang() {
-	saveElement("locale");
-	updateExport();
-	await bkg.initLang(localStorage['locale'], 0);
+	await saveElement("locale");
+	await updateExport();
+	await bkg.initLang(await localStore.getItem('locale'), 0);
 	setTimeout(async function () {
 		await i18load();
 		syncstatus = await bkg.freshSync();
@@ -583,17 +583,17 @@ async function settingsImport() {
 		return false;
 	}
 	if (settings.length > 0) {
-		$.each(settings, function (i, v) {
+		$.each(settings, async function (i, v) {
 			if ($.trim(v) != "") {
 				var settingentry = $.trim(v).split("|");
 				if (settingnames.indexOf($.trim(settingentry[0])) != -1 && ($.trim(settingentry[1]) != '' || $.trim(settingentry[0]) == 'useragent')) {
 					if ($.trim(settingentry[0]) == 'whiteList' || $.trim(settingentry[0]) == 'blackList' || $.trim(settingentry[0]) == 'useragent') {
 						var listarray = $.trim(settingentry[1]).replace(/(\[|\]|")/g, "").split(",");
-						if ($.trim(settingentry[0]) == 'whiteList' && listarray.toString() != '') localStorage['whiteList'] = JSON.stringify(listarray);
-						else if ($.trim(settingentry[0]) == 'blackList' && listarray.toString() != '') localStorage['blackList'] = JSON.stringify(listarray);
-						else if ($.trim(settingentry[0]) == 'useragent' && listarray.toString() != '') localStorage['useragent'] = JSON.stringify(listarray);
+						if ($.trim(settingentry[0]) == 'whiteList' && listarray.toString() != '') await localStore.setItem('whiteList', JSON.stringify(listarray));
+						else if ($.trim(settingentry[0]) == 'blackList' && listarray.toString() != '') await localStore.setItem('blackList', JSON.stringify(listarray));
+						else if ($.trim(settingentry[0]) == 'useragent' && listarray.toString() != '') await localStore.setItem('useragent', JSON.stringify(listarray));
 					} else
-						localStorage[$.trim(settingentry[0])] = $.trim(settingentry[1]);
+						await localStore.setItem($.trim(settingentry[0]), $.trim(settingentry[1]));
 				} else {
 					error += $.trim(settingentry[0]) + ", ";
 				}
@@ -607,10 +607,10 @@ async function settingsImport() {
 	await bkg.initWebRTC();
 	await bkg.cacheLists();
 	await bkg.cacheFpLists();
-	await bkg.initLang(localStorage['locale'], 0);
+	await bkg.initLang(await localStore.getItem('locale'), 0);
 	setTimeout(async function () {
 		await i18load();
-		$("#locale").val(localStorage['locale'])
+		$("#locale").val(await localStore.getItem('locale'))
 		syncstatus = await bkg.freshSync();
 		if (!error) {
 			if (syncstatus) notification(await bkg.getLocale("importsuccesssync"));
@@ -635,14 +635,15 @@ function downloadtxt() {
 	document.body.appendChild(downloadLink);
 	downloadLink.click();
 }
-function updateExport() {
+async function updateExport() {
 	settingnames = [];
 	$("#settingsexport").val("");
-	for (var i in localStorage) {
-		if (localStorage.hasOwnProperty(i)) {
+	var allKeys = await localStore.getAllItems();
+	for (var i in allKeys) {
+		if (allKeys.hasOwnProperty(i)) {
 			if (i != "version" && i != "tempregexflag" && i != "whiteListCount" && i != "blackListCount" && i != "whiteListCount2" && i != "blackListCount2" && i.substr(0, 2) != "zb" && i.substr(0, 2) != "zw" && i.substr(0, 2) != "sb" && i.substr(0, 2) != "sw" && i.substr(0, 2) != "sf") {
 				settingnames.push(i);
-				$("#settingsexport").val($("#settingsexport").val() + i + "|" + localStorage[i] + "\n");
+				$("#settingsexport").val($("#settingsexport").val() + i + "|" + await localStore.getItem(i) + "\n");
 			}
 		}
 	}
@@ -662,7 +663,7 @@ async function addList(type) {
 	} else if (!domain.match(/[a-z0-9]/g)) {
 		notification(await bkg.getLocale("domaininvalid2"));
 	} else {
-		if ((localStorage['annoyances'] == 'true' && (localStorage['annoyancesmode'] == 'strict' || (localStorage['annoyancesmode'] == 'relaxed' && await bkg.domainCheck(domain, 1) != '0')) && await bkg.baddies(await bkg.getDomain(domain), localStorage['annoyancesmode'], localStorage['antisocial']) == 1) || (localStorage['antisocial'] == 'true' && await bkg.baddies(await bkg.getDomain(domain), localStorage['annoyancesmode'], localStorage['antisocial']) == '2')) {
+		if ((await localStore.getItem('annoyances') == 'true' && (await localStore.getItem('annoyancesmode') == 'strict' || (await localStore.getItem('annoyancesmode') == 'relaxed' && await bkg.domainCheck(domain, 1) != '0')) && await bkg.baddies(await bkg.getDomain(domain), await localStore.getItem('annoyancesmode'), await localStore.getItem('antisocial')) == 1) || (await localStore.getItem('antisocial') == 'true' && await bkg.baddies(await bkg.getDomain(domain), await localStore.getItem('annoyancesmode'), await localStore.getItem('antisocial')) == '2')) {
 			notification(await bkg.getLocale("domaininvalid3"));
 		} else {
 			var responseflag = await bkg.domainHandler(domain, type);
@@ -793,7 +794,7 @@ async function importbulk(type) {
 		$.each(domains, async function (i, v) {
 			if ($.trim(v) != "") {
 				var domain = $.trim(v).toLowerCase().replace("http://", "").replace("https://", "");
-				if ((localStorage['annoyances'] == 'true' && (localStorage['annoyancesmode'] == 'strict' || (localStorage['annoyancesmode'] == 'relaxed' && await bkg.domainCheck(domain.replace("http://", "").replace("https://", ""), 1) != '0')) && await bkg.baddies(await bkg.getDomain(domain.replace("http://", "").replace("https://", "")), localStorage['annoyancesmode'], localStorage['antisocial']) == 1) || (localStorage['antisocial'] == 'true' && await bkg.baddies(await bkg.getDomain(domain.replace("http://", "").replace("https://", "")), localStorage['annoyancesmode'], localStorage['antisocial']) == '2')) {
+				if ((await localStore.getItem('annoyances') == 'true' && (await localStore.getItem('annoyancesmode') == 'strict' || (await localStore.getItem('annoyancesmode') == 'relaxed' && await bkg.domainCheck(domain.replace("http://", "").replace("https://", ""), 1) != '0')) && await bkg.baddies(await bkg.getDomain(domain.replace("http://", "").replace("https://", "")), await localStore.getItem('annoyancesmode'), await localStore.getItem('antisocial')) == 1) || (await localStore.getItem('antisocial') == 'true' && await bkg.baddies(await bkg.getDomain(domain.replace("http://", "").replace("https://", "")), await localStore.getItem('annoyancesmode'), await localStore.getItem('antisocial')) == '2')) {
 					error += '<li>' + domain.replace("http://", "").replace("https://", "") + ' <b>(provider of unwanted content (see "Block Unwanted Content" and/or "Antisocial Mode")</b></li>';
 				} else {
 					if (domain.match(/^(?:[\-\w\*\?]+(\.[\-\w\*\?]+)*|((25[0-5]|2[0-4][0-9]|1[0-9]{2}|[0-9]{1,2})\.){3}(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[0-9]{1,2})|\[[A-Fa-f0-9:.]+\])?$/g)) {
@@ -823,13 +824,13 @@ async function importbulk(type) {
 	}
 }
 async function listUpdate() {
-	var whiteList = JSON.parse(localStorage['whiteList']);
-	var blackList = JSON.parse(localStorage['blackList']);
+	var whiteList = JSON.parse(await localStore.getItem('whiteList'));
+	var blackList = JSON.parse(await localStore.getItem('blackList'));
 	var whitelistCompiled = '';
 	var whitelistLength = whiteList.length;
 	if (whitelistLength == 0) whitelistCompiled = '[currently empty]';
 	else {
-		if (localStorage['domainsort'] == 'true') whiteList = await bkg.domainSort(whiteList);
+		if (await localStore.getItem('domainsort') == 'true') whiteList = await bkg.domainSort(whiteList);
 		else whiteList.sort();
 		for (var i in whiteList) {
 			if ((whiteList[i][0] == '*' && whiteList[i][1] == '*') || whiteList[i].match(/^(?:(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[0-9]{1,2})\.){3}(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[0-9]{1,2})$/g) || whiteList[i].match(/^(?:\[[A-Fa-f0-9:.]+\])(:[0-9]+)?$/g)) whitelistCompiled += '<div class="listentry"><div class="entryoptions"><a href="javascript:;" class="domainMove i18_blacklistmove" title=\'' + await bkg.getLocale("blacklistmove") + '\' data-domain=\'' + whiteList[i] + '\' data-mode="1"><span class="glyphicon glyphicon-retweet" aria-hidden="true"></span></a> | <a href="javascript:;" style="color:#f00;" class="domainRemover" rel=\'' + whiteList[i] + '\'><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></a></div>' + whiteList[i] + '</div>';
@@ -840,7 +841,7 @@ async function listUpdate() {
 	var blacklistLength = blackList.length;
 	if (blacklistLength == 0) blacklistCompiled = '[currently empty]';
 	else {
-		if (localStorage['domainsort'] == 'true') blackList = await bkg.domainSort(blackList);
+		if (await localStore.getItem('domainsort') == 'true') blackList = await bkg.domainSort(blackList);
 		else blackList.sort();
 		for (var i in blackList) {
 			if ((blackList[i][0] == '*' && blackList[i][1] == '*') || blackList[i].match(/^(?:(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[0-9]{1,2})\.){3}(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[0-9]{1,2})$/g) || blackList[i].match(/^(?:\[[A-Fa-f0-9:.]+\])(:[0-9]+)?$/g)) blacklistCompiled += '<div class="listentry"><div class="entryoptions"><a href="javascript:;" class="domainMove i18_whitelistmove" title=\'' + await bkg.getLocale("whitelistmove") + '\' data-domain=\'' + blackList[i] + '\' data-mode="0"><span class="glyphicon glyphicon-retweet" aria-hidden="true"></span></a> | <a href="javascript:;" style="color:#f00;" class="domainRemover" rel=\'' + blackList[i] + '\'><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></a></div>' + blackList[i] + '</div>';
@@ -855,7 +856,7 @@ async function listUpdate() {
 	$(".domainRemover").click(async function () { await domainRemover($(this).attr('rel')); });
 	$(".topDomainAdd").click(async function () { await topDomainAdd($(this).attr('data-domain'), $(this).attr('data-mode')); });
 	$(".domainMove").click(async function () { await domainMove($(this).attr('data-domain'), $(this).attr('data-mode')); });
-	updateExport();
+	await updateExport();
 }
 async function fpListUpdate() {
 	var fpTypes = ['fpCanvas', 'fpCanvasFont', 'fpAudio', 'fpWebGL', 'fpBattery', 'fpDevice', 'fpGamepad', 'fpWebVR', 'fpBluetooth', 'fpClientRectangles', 'fpClipboard', 'fpBrowserPlugins'];
@@ -865,15 +866,15 @@ async function fpListUpdate() {
 	$(".fpDomainRemover, .fpTopDomainAdd").unbind('click');
 	$(".fpDomainRemover").click(async function () { await domainRemover($(this).attr('rel'), $(this).parent().parent().parent().attr('id')); });
 	$(".fpTopDomainAdd").click(async function () { await topDomainAdd($(this).attr('data-domain'), $(this).parent().parent().parent().attr('id')); });
-	updateExport();
+	await updateExport();
 }
 async function fpListProcess(fpType) {
-	var fpList = JSON.parse(localStorage[fpType]);
+	var fpList = JSON.parse(await localStore.getItem(fpType));
 	var fpListCompiled = '';
 	var fpListLength = fpList.length;
 	if (fpListLength == 0) fpListCompiled = '[currently empty]';
 	else {
-		if (localStorage['domainsort'] == 'true') fpList = await bkg.domainSort(fpList);
+		if (await localStore.getItem('domainsort') == 'true') fpList = await bkg.domainSort(fpList);
 		else fpList.sort();
 		for (var i in fpList) {
 			if (fpList[i][0] == '*' || fpList[i].match(/^(?:(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[0-9]{1,2})\.){3}(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[0-9]{1,2})$/g) || fpList[i].match(/^(?:\[[A-Fa-f0-9:.]+\])(:[0-9]+)?$/g)) fpListCompiled += '<div class="listentry"><div class="entryoptions"><a href="javascript:;" style="color:#f00;" class="fpDomainRemover" rel=\'' + fpList[i] + '\'><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></a></div>' + fpList[i] + '</div>';
@@ -885,7 +886,7 @@ async function fpListProcess(fpType) {
 }
 async function listclear(type) {
 	if (confirm(['Clear whitelist?', 'Clear blacklist?'][type])) {
-		localStorage[['whiteList', 'blackList'][type]] = JSON.stringify([]);
+		await localStore.setItem(['whiteList', 'blackList'][type], JSON.stringify([]));
 		await listUpdate();
 		await bkg.cacheLists();
 		if (await bkg.freshSync(2)) {
