@@ -1505,24 +1505,25 @@ export function getLocale(str) {
 export function getLangs() {
 	return langs;
 }
-/*
-var uiLang = chrome.i18n.getUILanguage().replace(/-/g, '_');
-if (!optionExists("locale")) {
-	localStorage['locale'] = 'en_US';
-	if (uiLang != 'en' && uiLang != 'en_GB' && uiLang != 'en_US') {
-		if (typeof langs[uiLang] !== 'undefined') {
-			if (confirm('ScriptSafe detected that your browser is currently set to ' + langs[uiLang] + '.\r\nWould you like to use ScriptSafe in ' + langs[uiLang] + '?\r\nIf you click on "Cancel", English (US) will be set.')) {
-				localStorage['locale'] = uiLang;
+async function initLanguage() {
+	var uiLang = chrome.i18n.getUILanguage().replace(/-/g, '_');
+	if (!await optionExists("locale")) {
+		await localStore.setItem('locale', 'en_US');
+		if (uiLang != 'en' && uiLang != 'en_GB' && uiLang != 'en_US') {
+			if (typeof langs[uiLang] !== 'undefined') {
+				if (confirm('ScriptSafe detected that your browser is currently set to ' + langs[uiLang] + '.\r\nWould you like to use ScriptSafe in ' + langs[uiLang] + '?\r\nIf you click on "Cancel", English (US) will be set.')) {
+					await localStore.setItem('locale', uiLang);
+				}
 			}
 		}
+	} else {
+		if (typeof langs[uiLang] === 'undefined') {
+			await localStore.setItem('locale', 'en_US');
+		}
 	}
-} else {
-	if (typeof langs[uiLang] === 'undefined') {
-		localStorage['locale'] = 'en_US';
-	}
+	await initLang(await localStore.getItem('locale'), 1);
 }
-initLang(localStorage['locale'], 1);
-*/
+(async () => await initLanguage())();
 async function postLangLoad() {
 	if (!await optionExists("version") || await localStore.getItem("version") != version) {
 		// One-time update existing whitelist/blacklist for new regex support introduced in v1.0.7.0
