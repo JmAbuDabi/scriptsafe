@@ -134,3 +134,25 @@ export function getBackgroundPage() {
 		}
 	});
 }
+export const localStore = {
+	setItem(key, value) {
+		return new Promise(resolve => {
+			chrome.storage.local.set({ [key]: value }, () => resolve());
+		});
+	},
+	getItem(key) {
+		return new Promise(resolve => {
+			chrome.storage.local.get(key, (result) => resolve(result[key]));
+		});
+	},
+	removeItem(key) {
+		return new Promise(resolve => {
+			chrome.storage.local.remove(key, () => resolve());
+		});
+	},
+	clear() {
+		return new Promise(resolve => {
+			chrome.storage.local.clear(() => resolve());
+		});
+	}
+};

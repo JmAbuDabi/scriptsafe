@@ -2,7 +2,7 @@
 // Distributed under the terms of the GNU General Public License
 // The GNU General Public License can be found in the gpl.txt file. Alternatively, see <http://www.gnu.org/licenses/>.
 // Credits and ideas: NotScripts, AdBlock Plus for Chrome, Ghostery, KB SSL Enforcer
-import { version, getDomain, extractDomainFromURL } from "./common.js";
+import { version, localStore, getDomain, extractDomainFromURL } from "./common.js";
 
 let requestTypes, synctimer, recentstimer, reenabletimer, useragentinterval, blackList, whiteList, distrustList, trustList, sessionBlackList, sessionWhiteList, locale;
 let langs = {
@@ -39,26 +39,26 @@ let storageapi = false;
 let webrtcsupport = false;
 let updated = false;
 let userAgent = '';
-export function refreshRequestTypes() {
+export async function refreshRequestTypes() {
 	clearRecents();
-	genUserAgent(1);
+	await genUserAgent(1);
 	requestTypes = ['main_frame'];
-	if (localStorage['iframe'] == 'true' || localStorage['frame'] == 'true')
+	if (await localStore.getItem('iframe') == 'true' || await localStore.getItem('frame') == 'true')
 		requestTypes.push('sub_frame');
-	if (localStorage['object'] == 'true' || localStorage['embed'] == 'true')
+	if (await localStore.getItem('object') == 'true' || await localStore.getItem('embed') == 'true')
 		requestTypes.push('object');
-	if (localStorage['script'] == 'true')
+	if (await localStore.getItem('script') == 'true')
 		requestTypes.push('script');
-	if (localStorage['image'] == 'true' || localStorage['webbugs'] == 'true')
+	if (await localStore.getItem('image') == 'true' || await localStore.getItem('webbugs') == 'true')
 		requestTypes.push('image');
-	if (localStorage['xml'] == 'true' || localStorage['xml'] == 'all')
+	if (await localStore.getItem('xml') == 'true' || await localStore.getItem('xml') == 'all')
 		requestTypes.push('xmlhttprequest');
 }
-function initWebRTC() {
+async function initWebRTC() {
 	if (!webrtcsupport) return;
-	if (localStorage['webrtc'] != 'off') {
+	if (await localStore.getItem('webrtc') != 'off') {
 		chrome.privacy.network.webRTCIPHandlingPolicy.set({
-			value: localStorage['webrtc'],
+			value: await localStore.getItem('webrtc'),
 		});
 	} else {
 		chrome.privacy.network.webRTCIPHandlingPolicy.set({
@@ -80,30 +80,30 @@ function checkWebRTC() {
 	doc.write('<script src="../js/webrtctest.js"></script>');
 	doc.close();
 }
-function mitigate(req) {
-	if (localStorage["enable"] == "false" || (localStorage['useragentspoof'] == 'off' && localStorage['cookies'] == 'false' && localStorage['referrerspoof'] == 'off')) {
+async function mitigate(req) {
+	if (await localStore.getItem("enable") == "false" || (await localStore.getItem('useragentspoof') == 'off' && await localStore.getItem('cookies') == 'false' && await localStore.getItem('referrerspoof') == 'off')) {
 		return;
 	}
 	for (var i = 0, forcount = req.requestHeaders.length; i < forcount; i++) {
 		if (req.requestHeaders[i].name == 'User-Agent' || req.requestHeaders[i].name == 'Referer' || req.requestHeaders[i].name == 'Cookie') {
 			switch (req.requestHeaders[i].name) {
 				case 'Cookie':
-					if (localStorage['cookies'] == 'true' && baddies(req.url, localStorage['annoyancesmode'], localStorage['antisocial']))
+					if (await localStore.getItem('cookies') == 'true' && baddies(req.url, await localStore.getItem('annoyancesmode'), await localStore.getItem('antisocial')))
 						req.requestHeaders[i].value = '';
 					break;
 				case 'Referer':
-					if (localStorage['referrerspoof'] != 'off' && (localStorage['referrerspoofdenywhitelisted'] == 'true' || enabled(req.url) == 'true')) {
-						if (localStorage['referrerspoof'] == 'same')
+					if (await localStore.getItem('referrerspoof') != 'off' && (await localStore.getItem('referrerspoofdenywhitelisted') == 'true' || await enabled(req.url) == 'true')) {
+						if (await localStore.getItem('referrerspoof') == 'same')
 							req.requestHeaders[i].value = req.url;
-						else if (localStorage['referrerspoof'] == 'domain')
+						else if (await localStore.getItem('referrerspoof') == 'domain')
 							req.requestHeaders[i].value = req.url.split("//")[0] + '//' + req.url.split("/")[2];
 						else
-							req.requestHeaders[i].value = localStorage['referrerspoof'];
+							req.requestHeaders[i].value = await localStore.getItem('referrerspoof');
 					}
 					break;
 				case 'User-Agent':
-					if (localStorage['useragentspoof'] != 'off' && (localStorage['uaspoofallow'] == 'true' || enabled(req.url) == 'true')) {
-						if (!userAgent || localStorage['useragentinterval'] == 'request') genUserAgent();
+					if (await localStore.getItem('useragentspoof') != 'off' && (await localStore.getItem('uaspoofallow') == 'true' || await enabled(req.url) == 'true')) {
+						if (!userAgent || await localStore.getItem('useragentinterval') == 'request') await genUserAgent();
 						if (userAgent) req.requestHeaders[i].value = userAgent;
 					}
 					break;
@@ -112,126 +112,126 @@ function mitigate(req) {
 	}
 	return { requestHeaders: req.requestHeaders };
 }
-function genUserAgent(force) {
+async function genUserAgent(force) {
 	var os;
-	if (localStorage['useragentspoof'] == 'custom') {
-		var userAgents = JSON.parse(localStorage['useragent']);
+	if (await localStore.getItem('useragentspoof') == 'custom') {
+		var userAgents = JSON.parse(await localStore.getItem('useragent'));
 		if (userAgents) {
 			var uaCount = userAgents.length;
 			if (uaCount == 1) userAgent = userAgents[0];
 			else {
 				window.clearInterval(useragentinterval);
-				if (localStorage['useragentinterval'] == 'off') userAgent = userAgents[0]; // use only first user agent string if set to off
+				if (await localStore.getItem('useragentinterval') == 'off') userAgent = userAgents[0]; // use only first user agent string if set to off
 				else {
-					if (localStorage['useragentinterval'] == 'interval') {
-						useragentinterval = window.setInterval(function () { genUserAgent(1) }, localStorage['useragentintervalmins'] * 60 * 1000);
+					if (await localStore.getItem('useragentinterval') == 'interval') {
+						useragentinterval = window.setInterval(async function () { await genUserAgent(1) }, await localStore.getItem('useragentintervalmins') * 60 * 1000);
 						if (force) userAgent = userAgents[Math.floor(Math.random() * uaCount)];
-					} else if (localStorage['useragentinterval'] == 'request') {
+					} else if (await localStore.getItem('useragentinterval') == 'request') {
 						userAgent = userAgents[Math.floor(Math.random() * uaCount)];
 					}
 				}
 			}
 		}
 	} else {
-		if (localStorage['useragentspoof_os'] == 'w10') os = 'Windows NT 10.0';
-		else if (localStorage['useragentspoof_os'] == 'w81') os = 'Windows NT 6.3';
-		else if (localStorage['useragentspoof_os'] == 'w8') os = 'Windows NT 6.2';
-		else if (localStorage['useragentspoof_os'] == 'w7') os = 'Windows; U; Windows NT 6.1';
-		else if (localStorage['useragentspoof_os'] == 'wv') os = 'Windows; U; Windows NT 6.0';
-		else if (localStorage['useragentspoof_os'] == 'w2k3') os = 'Windows; U; Windows NT 5.2';
-		else if (localStorage['useragentspoof_os'] == 'wxp') os = 'Windows; U; Windows NT 5.1';
-		else if (localStorage['useragentspoof_os'] == 'w98') os = 'Windows; U; Windows 98';
-		else if (localStorage['useragentspoof_os'] == 'w95') os = 'Windows; U; Windows 95';
-		else if (localStorage['useragentspoof_os'] == 'linux64') os = 'X11; U; Linux x86_64';
-		else if (localStorage['useragentspoof_os'] == 'linux32') os = 'X11; U; Linux x86_32';
-		else if (localStorage['useragentspoof_os'] == 'machighsierra') os = 'Macintosh; U; Intel Mac OS X 10_13';
-		else if (localStorage['useragentspoof_os'] == 'macsierra') os = 'Macintosh; U; Intel Mac OS X 10_12_2';
-		else if (localStorage['useragentspoof_os'] == 'macelcapitan') os = 'Macintosh; U; Intel Mac OS X 10_11_6';
-		else if (localStorage['useragentspoof_os'] == 'macyosemite') os = 'Macintosh; U; Intel Mac OS X 10_10_5';
-		else if (localStorage['useragentspoof_os'] == 'macmavericks') os = 'Macintosh; U; Intel Mac OS X 10_9_5';
-		else if (localStorage['useragentspoof_os'] == 'macmountainlion') os = 'Macintosh; U; Intel Mac OS X 10_8_5';
-		else if (localStorage['useragentspoof_os'] == 'maclion') os = 'Macintosh; U; Intel Mac OS X 10_7_5';
-		else if (localStorage['useragentspoof_os'] == 'macsnow') os = 'Macintosh; U; Intel Mac OS X 10_6_8';
-		else if (localStorage['useragentspoof_os'] == 'freebsd64') os = 'X11; U; FreeBSD amd64';
-		else if (localStorage['useragentspoof_os'] == 'freebsd32') os = 'X11; U; FreeBSD i686';
-		else if (localStorage['useragentspoof_os'] == 'netbsd64') os = 'X11; U; NetBSD amd64';
-		else if (localStorage['useragentspoof_os'] == 'netbsd32') os = 'X11; U; NetBSD i686';
-		else if (localStorage['useragentspoof_os'] == 'openbsd64') os = 'X11; U; OpenBSD i686';
-		else if (localStorage['useragentspoof_os'] == 'openbsd32') os = 'X11; U; OpenBSD i686';
-		else if (localStorage['useragentspoof_os'] == 'chromeos') os = 'X11; U; CrOS i686 0.13.507';
-		if (localStorage['useragentspoof'] == 'chrome63')
+		if (await localStore.getItem('useragentspoof_os') == 'w10') os = 'Windows NT 10.0';
+		else if (await localStore.getItem('useragentspoof_os') == 'w81') os = 'Windows NT 6.3';
+		else if (await localStore.getItem('useragentspoof_os') == 'w8') os = 'Windows NT 6.2';
+		else if (await localStore.getItem('useragentspoof_os') == 'w7') os = 'Windows; U; Windows NT 6.1';
+		else if (await localStore.getItem('useragentspoof_os') == 'wv') os = 'Windows; U; Windows NT 6.0';
+		else if (await localStore.getItem('useragentspoof_os') == 'w2k3') os = 'Windows; U; Windows NT 5.2';
+		else if (await localStore.getItem('useragentspoof_os') == 'wxp') os = 'Windows; U; Windows NT 5.1';
+		else if (await localStore.getItem('useragentspoof_os') == 'w98') os = 'Windows; U; Windows 98';
+		else if (await localStore.getItem('useragentspoof_os') == 'w95') os = 'Windows; U; Windows 95';
+		else if (await localStore.getItem('useragentspoof_os') == 'linux64') os = 'X11; U; Linux x86_64';
+		else if (await localStore.getItem('useragentspoof_os') == 'linux32') os = 'X11; U; Linux x86_32';
+		else if (await localStore.getItem('useragentspoof_os') == 'machighsierra') os = 'Macintosh; U; Intel Mac OS X 10_13';
+		else if (await localStore.getItem('useragentspoof_os') == 'macsierra') os = 'Macintosh; U; Intel Mac OS X 10_12_2';
+		else if (await localStore.getItem('useragentspoof_os') == 'macelcapitan') os = 'Macintosh; U; Intel Mac OS X 10_11_6';
+		else if (await localStore.getItem('useragentspoof_os') == 'macyosemite') os = 'Macintosh; U; Intel Mac OS X 10_10_5';
+		else if (await localStore.getItem('useragentspoof_os') == 'macmavericks') os = 'Macintosh; U; Intel Mac OS X 10_9_5';
+		else if (await localStore.getItem('useragentspoof_os') == 'macmountainlion') os = 'Macintosh; U; Intel Mac OS X 10_8_5';
+		else if (await localStore.getItem('useragentspoof_os') == 'maclion') os = 'Macintosh; U; Intel Mac OS X 10_7_5';
+		else if (await localStore.getItem('useragentspoof_os') == 'macsnow') os = 'Macintosh; U; Intel Mac OS X 10_6_8';
+		else if (await localStore.getItem('useragentspoof_os') == 'freebsd64') os = 'X11; U; FreeBSD amd64';
+		else if (await localStore.getItem('useragentspoof_os') == 'freebsd32') os = 'X11; U; FreeBSD i686';
+		else if (await localStore.getItem('useragentspoof_os') == 'netbsd64') os = 'X11; U; NetBSD amd64';
+		else if (await localStore.getItem('useragentspoof_os') == 'netbsd32') os = 'X11; U; NetBSD i686';
+		else if (await localStore.getItem('useragentspoof_os') == 'openbsd64') os = 'X11; U; OpenBSD i686';
+		else if (await localStore.getItem('useragentspoof_os') == 'openbsd32') os = 'X11; U; OpenBSD i686';
+		else if (await localStore.getItem('useragentspoof_os') == 'chromeos') os = 'X11; U; CrOS i686 0.13.507';
+		if (await localStore.getItem('useragentspoof') == 'chrome63')
 			userAgent = 'Mozilla/5.0 (' + os + ') AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.84 Safari/537.36';
-		else if (localStorage['useragentspoof'] == 'chrome62')
+		else if (await localStore.getItem('useragentspoof') == 'chrome62')
 			userAgent = 'Mozilla/5.0 (' + os + ') AppleWebKit/537.36 (KHTML, like Gecko) Chrome/62.0.3202.94 Safari/537.36';
-		else if (localStorage['useragentspoof'] == 'chrome55')
+		else if (await localStore.getItem('useragentspoof') == 'chrome55')
 			userAgent = 'Mozilla/5.0 (' + os + ') AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.87 Safari/537.36';
-		else if (localStorage['useragentspoof'] == 'chrome50')
+		else if (await localStore.getItem('useragentspoof') == 'chrome50')
 			userAgent = 'Mozilla/5.0 (' + os + ') AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.94 Safari/537.36 OPR/37.0.2178.43';
-		else if (localStorage['useragentspoof'] == 'chrome14')
+		else if (await localStore.getItem('useragentspoof') == 'chrome14')
 			userAgent = 'Mozilla/5.0 (' + os + ') AppleWebKit/535.1 (KHTML, like Gecko) Chrome/14.0.835.94 Safari/535.1';
-		else if (localStorage['useragentspoof'] == 'chrome13')
+		else if (await localStore.getItem('useragentspoof') == 'chrome13')
 			userAgent = 'Mozilla/5.0 (' + os + ') AppleWebKit/535.1 (KHTML, like Gecko) Chrome/13.0.782.43 Safari/535.1';
-		else if (localStorage['useragentspoof'] == 'chrome12')
+		else if (await localStore.getItem('useragentspoof') == 'chrome12')
 			userAgent = 'Mozilla/5.0 (' + os + ') AppleWebKit/534.30 (KHTML, like Gecko) Chrome/12.0.750.0 Safari/534.30';
-		else if (localStorage['useragentspoof'] == 'opera49')
+		else if (await localStore.getItem('useragentspoof') == 'opera49')
 			userAgent = 'Mozilla/5.0 (' + os + ') AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.78 Safari/537.36 OPR/47.0.2631.39';
-		else if (localStorage['useragentspoof'] == 'opera42')
+		else if (await localStore.getItem('useragentspoof') == 'opera42')
 			userAgent = 'Mozilla/5.0 (' + os + ') AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.75 Safari/537.36 OPR/42.0.2393.85';
-		else if (localStorage['useragentspoof'] == 'opera37')
+		else if (await localStore.getItem('useragentspoof') == 'opera37')
 			userAgent = 'Mozilla/5.0 (' + os + ') Presto/2.9.181 Version/12.00';
-		else if (localStorage['useragentspoof'] == 'opera12')
+		else if (await localStore.getItem('useragentspoof') == 'opera12')
 			userAgent = 'Opera/9.80 (' + os + ') Presto/2.9.181 Version/12.00';
-		else if (localStorage['useragentspoof'] == 'opera11')
+		else if (await localStore.getItem('useragentspoof') == 'opera11')
 			userAgent = 'Opera/9.80 (' + os + ') Presto/2.9.168 Version/11.50';
-		else if (localStorage['useragentspoof'] == 'firefox57')
+		else if (await localStore.getItem('useragentspoof') == 'firefox57')
 			userAgent = 'Mozilla/5.0 (' + os + '; rv:57.0) Gecko/20100101 Firefox/57.0';
-		else if (localStorage['useragentspoof'] == 'firefox50')
+		else if (await localStore.getItem('useragentspoof') == 'firefox50')
 			userAgent = 'Mozilla/5.0 (' + os + '; rv:50.0) Gecko/20100101 Firefox/50.0';
-		else if (localStorage['useragentspoof'] == 'firefox48')
+		else if (await localStore.getItem('useragentspoof') == 'firefox48')
 			userAgent = 'Mozilla/5.0 (' + os + '; rv:48.0) Gecko/20100101 Firefox/48.0';
-		else if (localStorage['useragentspoof'] == 'firefox46')
+		else if (await localStore.getItem('useragentspoof') == 'firefox46')
 			userAgent = 'Mozilla/5.0 (' + os + '; rv:44.0) Gecko/20100101 Firefox/44.0';
-		else if (localStorage['useragentspoof'] == 'firefox6')
+		else if (await localStore.getItem('useragentspoof') == 'firefox6')
 			userAgent = 'Mozilla/5.0 (' + os + '; rv:6.0a2) Gecko/20110613 Firefox/6.0a2';
-		else if (localStorage['useragentspoof'] == 'firefox5')
+		else if (await localStore.getItem('useragentspoof') == 'firefox5')
 			userAgent = 'Mozilla/5.0 (' + os + '; rv:5.0) Gecko/20100101 Firefox/5.0';
-		else if (localStorage['useragentspoof'] == 'firefox4')
+		else if (await localStore.getItem('useragentspoof') == 'firefox4')
 			userAgent = 'Mozilla/5.0 (' + os + '; rv:2.0.1) Gecko/20110606 Firefox/4.0.1';
-		else if (localStorage['useragentspoof'] == 'firefox3')
+		else if (await localStore.getItem('useragentspoof') == 'firefox3')
 			userAgent = 'Mozilla/5.0 (' + os + '; rv:1.9.2.9) Gecko/20100913 Firefox/3.6.9';
-		else if (localStorage['useragentspoof'] == 'edge')
+		else if (await localStore.getItem('useragentspoof') == 'edge')
 			userAgent = 'Mozilla/5.0 (' + os + ') AppleWebKit/537.36 (KHTML, like Gecko) 42.0.2311.135 Safari/537.36 Edge/12.246';
-		else if (localStorage['useragentspoof'] == 'ie11')
+		else if (await localStore.getItem('useragentspoof') == 'ie11')
 			userAgent = 'Mozilla/5.0 (' + os + '; Trident/7.0; rv:11.0) like Gecko';
-		else if (localStorage['useragentspoof'] == 'ie10')
+		else if (await localStore.getItem('useragentspoof') == 'ie10')
 			userAgent = 'Mozilla/5.0 (compatible; MSIE 10.0; ' + os + '; Trident/6.0)';
-		else if (localStorage['useragentspoof'] == 'ie9')
+		else if (await localStore.getItem('useragentspoof') == 'ie9')
 			userAgent = 'Mozilla/5.0 (compatible; MSIE 9.0; ' + os + ')';
-		else if (localStorage['useragentspoof'] == 'ie8')
+		else if (await localStore.getItem('useragentspoof') == 'ie8')
 			userAgent = 'Mozilla/4.0 (compatible; MSIE 8.0; ' + os + ')';
-		else if (localStorage['useragentspoof'] == 'ie7')
+		else if (await localStore.getItem('useragentspoof') == 'ie7')
 			userAgent = 'Mozilla/4.0(compatible; MSIE 7.0; ' + os + ')';
-		else if (localStorage['useragentspoof'] == 'ie61')
+		else if (await localStore.getItem('useragentspoof') == 'ie61')
 			userAgent = 'Mozilla/4.0 (compatible; MSIE 6.1; ' + os + ')';
-		else if (localStorage['useragentspoof'] == 'ie60')
+		else if (await localStore.getItem('useragentspoof') == 'ie60')
 			userAgent = 'Mozilla/4.0 (compatible; MSIE 6.0; ' + os + ')';
-		else if (localStorage['useragentspoof'] == 'safari8')
+		else if (await localStore.getItem('useragentspoof') == 'safari8')
 			userAgent = 'Mozilla/5.0 (' + os + ') AppleWebKit/600.7.12 (KHTML, like Gecko) Version/8.0.7 Safari/600.7.12';
-		else if (localStorage['useragentspoof'] == 'safari7')
+		else if (await localStore.getItem('useragentspoof') == 'safari7')
 			userAgent = 'Mozilla/5.0 (' + os + ') AppleWebKit/537.75.14 (KHTML, like Gecko) Version/7.0.3 Safari/7046A194A';
-		else if (localStorage['useragentspoof'] == 'safari5')
+		else if (await localStore.getItem('useragentspoof') == 'safari5')
 			userAgent = 'Mozilla/5.0 (' + os + ') AppleWebKit/533.21.1 (KHTML, like Gecko) Version/5.0.5 Safari/533.21.1';
-		else if (localStorage['useragentspoof'] == 'palemoon256')
+		else if (await localStore.getItem('useragentspoof') == 'palemoon256')
 			userAgent = 'Mozilla/5.0 (' + os + '; rv:25.6) Gecko/20150723 PaleMoon/25.6.0';
-		else if (localStorage['useragentspoof'] == 'palemoon25')
+		else if (await localStore.getItem('useragentspoof') == 'palemoon25')
 			userAgent = 'Mozilla/5.0 (' + os + '; rv:25.1) Gecko/20130308 PaleMoon/25.1';
-		else if (localStorage['useragentspoof'] == 'vivaldi111')
+		else if (await localStore.getItem('useragentspoof') == 'vivaldi111')
 			userAgent = 'Mozilla/5.0 (' + os + ') AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.91 Safari/537.36 Vivaldi/1.92.917.35';
-		else if (localStorage['useragentspoof'] == 'vivaldi')
+		else if (await localStore.getItem('useragentspoof') == 'vivaldi')
 			userAgent = 'Mozilla/5.0 (' + os + ') AppleWebKit/537.36 (KHTML, like Gecko) Chrome/40.0.2214.89 Safari/537.36 Vivaldi/1.0.83.38';
-		else if (localStorage['useragentspoof'] == 'midori')
+		else if (await localStore.getItem('useragentspoof') == 'midori')
 			userAgent = 'Mozilla/5.0 (' + os + ') AppleWebKit/538.15 (KHTML, like Gecko) Chrome/18.0.1025.133 Safari/538.15 Midori/0.5';
-		else if (localStorage['useragentspoof'] == 'qupzilla')
+		else if (await localStore.getItem('useragentspoof') == 'qupzilla')
 			userAgent = 'Mozilla/5.0 (' + os + ') AppleWebKit/533.3 (KHTML, like Gecko) Qupzilla/1.1.5';
 	}
 }
@@ -248,19 +248,19 @@ function UrlInList(url, elems) { // thanks vnagarnaik!
 	}
 	return foundElem;
 }
-function inlineblock(req) {
-	if (req.tabId == -1 || req.url === 'undefined' || localStorage["enable"] == "false") {
+async function inlineblock(req) {
+	if (req.tabId == -1 || req.url === 'undefined' || await localStore.getItem("enable") == "false") {
 		return;
 	}
 	var headers = req.responseHeaders;
 	if (req.type == 'main_frame') {
-		var domainCheckStatus = domainCheck(req.url, 1);
-		if (experimental == '1' && localStorage['preservesamedomain'] == 'false' && localStorage['script'] == 'true' && enabled(req.url) == 'true') {
+		var domainCheckStatus = await domainCheck(req.url, 1);
+		if (experimental == '1' && await localStore.getItem('preservesamedomain') == 'false' && await localStore.getItem('script') == 'true' && await enabled(req.url) == 'true') {
 			headers.push({
 				'name': 'Content-Security-Policy',
 				'value': "script-src 'none'"
 			});
-			recentlog['blocked'].push([new Date().getTime(), req.url, 'PAGE', extractDomainFromURL(req.url), req.url, domainCheckStatus, domainCheckStatus, baddies(req.url, localStorage['annoyancesmode'], localStorage['antisocial'], 2), false]);
+			recentlog['blocked'].push([new Date().getTime(), req.url, 'PAGE', extractDomainFromURL(req.url), req.url, domainCheckStatus, domainCheckStatus, baddies(req.url, await localStore.getItem('annoyancesmode'), await localStore.getItem('antisocial'), 2), false]);
 			updateRecents('blocked');
 		} else {
 			recentlog['allowed'].push([new Date().getTime(), req.url, 'PAGE', extractDomainFromURL(req.url), req.url, domainCheckStatus, 0]);
@@ -269,8 +269,8 @@ function inlineblock(req) {
 	}
 	return { responseHeaders: headers };
 }
-function ScriptSafe(req) {
-	if (req.tabId == -1 || req.url === 'undefined' || localStorage["enable"] == "false" || req.url.substring(0, 4) != 'http') {
+async function ScriptSafe(req) {
+	if (req.tabId == -1 || req.url === 'undefined' || await localStore.getItem("enable") == "false" || req.url.substring(0, 4) != 'http') {
 		resetTabData(req.tabId, req.url);
 		return { cancel: false };
 	}
@@ -283,26 +283,26 @@ function ScriptSafe(req) {
 	else if (reqtype == "main_frame") reqtype = 'page';
 	var thirdPartyCheck;
 	var elementStatusCheck;
-	var baddiesCheck = baddies(req.url, localStorage['annoyancesmode'], localStorage['antisocial'], 2);
+	var baddiesCheck = baddies(req.url, await localStore.getItem('annoyancesmode'), await localStore.getItem('antisocial'), 2);
 	var extractedDomain = extractDomainFromURL(ITEMS[req.tabId]['url']);
 	var extractedReqDomain = extractDomainFromURL(req.url);
-	var domainCheckStatus = domainCheck(req.url, 1);
-	var tabDomainCheckStatus = domainCheck(extractedDomain, 1);
-	if (tabDomainCheckStatus == '1' || (tabDomainCheckStatus == '-1' && localStorage['mode'] == 'block' && localStorage['paranoia'] == 'true' && localStorage['preservesamedomain'] == 'false')) {
+	var domainCheckStatus = await domainCheck(req.url, 1);
+	var tabDomainCheckStatus = await domainCheck(extractedDomain, 1);
+	if (tabDomainCheckStatus == '1' || (tabDomainCheckStatus == '-1' && await localStore.getItem('mode') == 'block' && await localStore.getItem('paranoia') == 'true' && await localStore.getItem('preservesamedomain') == 'false')) {
 		elementStatusCheck = true;
 		thirdPartyCheck = true;
 	} else {
-		if ((domainCheckStatus == '0' && !(tabDomainCheckStatus == '-1' && localStorage['mode'] == 'block' && localStorage['paranoia'] == 'true')) || (localStorage['preservesamedomain'] == 'strict' && extractedDomain == extractedReqDomain)) thirdPartyCheck = false;
-		else if (localStorage['preservesamedomain'] == 'strict' && extractedDomain != extractedReqDomain) thirdPartyCheck = true;
+		if ((domainCheckStatus == '0' && !(tabDomainCheckStatus == '-1' && await localStore.getItem('mode') == 'block' && await localStore.getItem('paranoia') == 'true')) || (await localStore.getItem('preservesamedomain') == 'strict' && extractedDomain == extractedReqDomain)) thirdPartyCheck = false;
+		else if (await localStore.getItem('preservesamedomain') == 'strict' && extractedDomain != extractedReqDomain) thirdPartyCheck = true;
 		else thirdPartyCheck = thirdParty(req.url, extractedDomain);
-		if ((tabDomainCheckStatus == '-1' && localStorage['mode'] == 'block' && localStorage['paranoia'] == 'true') || (domainCheckStatus != '0' && (domainCheckStatus == '1' || (domainCheckStatus == '-1' && localStorage['mode'] == 'block'))) || ((localStorage['annoyances'] == 'true' && (localStorage['annoyancesmode'] == 'strict' || (localStorage['annoyancesmode'] == 'relaxed' && domainCheckStatus != '0'))) && baddiesCheck == '1') || (localStorage['antisocial'] == 'true' && baddiesCheck == '2'))
+		if ((tabDomainCheckStatus == '-1' && await localStore.getItem('mode') == 'block' && await localStore.getItem('paranoia') == 'true') || (domainCheckStatus != '0' && (domainCheckStatus == '1' || (domainCheckStatus == '-1' && await localStore.getItem('mode') == 'block'))) || ((await localStore.getItem('annoyances') == 'true' && (await localStore.getItem('annoyancesmode') == 'strict' || (await localStore.getItem('annoyancesmode') == 'relaxed' && domainCheckStatus != '0'))) && baddiesCheck == '1') || (await localStore.getItem('antisocial') == 'true' && baddiesCheck == '2'))
 			elementStatusCheck = true;
 		else elementStatusCheck = false;
 	}
-	var utmCleanURL = utmClean(req.url);
-	var hashCleanURL = hashTrackingClean(req.url);
+	var utmCleanURL = await utmClean(req.url);
+	var hashCleanURL = await hashTrackingClean(req.url);
 	if (elementStatusCheck && baddiesCheck && reqtype == "image") reqtype = 'webbug';
-	if ((reqtype == "page" && localStorage['mode'] == 'block' && (domainCheckStatus == '1' || ((localStorage['annoyances'] == 'true' && (localStorage['annoyancesmode'] == 'strict' || (localStorage['annoyancesmode'] == 'relaxed' && domainCheckStatus != '0'))) && baddiesCheck == '1') || (localStorage['antisocial'] == 'true' && baddiesCheck == '2'))) || (reqtype == "frame" && (localStorage['iframe'] == 'true' || localStorage['frame'] == 'true')) || (reqtype == "script" && localStorage['script'] == 'true') || (reqtype == "object" && (localStorage['object'] == 'true' || localStorage['embed'] == 'true')) || (reqtype == "image" && localStorage['image'] == 'true') || reqtype == "webbug" || (reqtype == "xmlhttprequest" && ((localStorage['xml'] == 'true' && (thirdPartyCheck || domainCheckStatus == '1' || baddiesCheck)) || localStorage['xml'] == 'all'))) {
+	if ((reqtype == "page" && await localStore.getItem('mode') == 'block' && (domainCheckStatus == '1' || ((await localStore.getItem('annoyances') == 'true' && (await localStore.getItem('annoyancesmode') == 'strict' || (await localStore.getItem('annoyancesmode') == 'relaxed' && domainCheckStatus != '0'))) && baddiesCheck == '1') || (await localStore.getItem('antisocial') == 'true' && baddiesCheck == '2'))) || (reqtype == "frame" && (await localStore.getItem('iframe') == 'true' || await localStore.getItem('frame') == 'true')) || (reqtype == "script" && await localStore.getItem('script') == 'true') || (reqtype == "object" && (await localStore.getItem('object') == 'true' || await localStore.getItem('embed') == 'true')) || (reqtype == "image" && await localStore.getItem('image') == 'true') || reqtype == "webbug" || (reqtype == "xmlhttprequest" && ((await localStore.getItem('xml') == 'true' && (thirdPartyCheck || domainCheckStatus == '1' || baddiesCheck)) || await localStore.getItem('xml') == 'all'))) {
 		// request qualified for filtering, so continue.
 	} else {
 		if (utmCleanURL) return { redirectUrl: utmCleanURL };
@@ -310,7 +310,7 @@ function ScriptSafe(req) {
 		return { cancel: false };
 	}
 	var cleanedUrl = removeParams(req.url);
-	if (elementStatusCheck && ((localStorage['preservesamedomain'] != 'false' && (thirdPartyCheck || domainCheckStatus == '1' || baddiesCheck)) || localStorage['preservesamedomain'] == 'false')) {
+	if (elementStatusCheck && ((await localStore.getItem('preservesamedomain') != 'false' && (thirdPartyCheck || domainCheckStatus == '1' || baddiesCheck)) || await localStore.getItem('preservesamedomain') == 'false')) {
 		if (typeof ITEMS[req.tabId]['blocked'] === 'undefined') ITEMS[req.tabId]['blocked'] = [];
 		if (!UrlInList(cleanedUrl, ITEMS[req.tabId]['blocked'])) {
 			if (extractedReqDomain.substr(0, 4) == 'www.') extractedReqDomain = extractedReqDomain.substr(4);
@@ -355,8 +355,8 @@ function clearRecents() {
 	recentlog['allowed'] = [];
 	recentlog['blocked'] = [];
 }
-function utmClean(url) {
-	if (localStorage['utm'] == "true") {
+async function utmClean(url) {
+	if (await localStore.getItem('utm') == "true") {
 		var paramstart = url.indexOf("?");
 		var sanitized = url;
 		if (paramstart != -1) {
@@ -370,8 +370,8 @@ function utmClean(url) {
 	}
 	return false;
 }
-function hashTrackingClean(url) {
-	if (localStorage['hashchecking'] == "true" && (localStorage['hashallow'] == "true" || enabled(url) == 'true')) {
+async function hashTrackingClean(url) {
+	if (await localStore.getItem('hashchecking') == "true" && (await localStore.getItem('hashallow') == "true" || await enabled(url) == 'true')) {
 		var hashstart = url.indexOf("#");
 		if (hashstart != -1) {
 			if (url.indexOf("=") > hashstart) {
@@ -381,32 +381,32 @@ function hashTrackingClean(url) {
 	}
 	return false;
 }
-function enabled(url) {
-	var domainCheckStatus = domainCheck(url);
-	if (localStorage["enable"] == "true" && domainCheckStatus != '0' && (domainCheckStatus == '1' || (localStorage["mode"] == "block" && domainCheckStatus == '-1')) && url.indexOf('https://chrome.google.com/webstore') == -1 && (url.substring(0, 4) == 'http' || url == 'chrome://newtab/'))
+async function enabled(url) {
+	var domainCheckStatus = await domainCheck(url);
+	if (await localStore.getItem("enable") == "true" && domainCheckStatus != '0' && (domainCheckStatus == '1' || (await localStore.getItem("mode") == "block" && domainCheckStatus == '-1')) && url.indexOf('https://chrome.google.com/webstore') == -1 && (url.substring(0, 4) == 'http' || url == 'chrome://newtab/'))
 		return 'true';
 	return 'false';
 }
-function enabledfp(domainname, fptype) {
-	if ((localStorage['canvas'] == 'false' && fptype == 'fpCanvas') || (localStorage['canvasfont'] == 'false' && fptype == 'fpCanvasFont') || (localStorage['audioblock'] == 'false' && fptype == 'fpAudio') || (localStorage['webgl'] == 'false' && fptype == 'fpWebGL') || (localStorage['battery'] == 'false' && fptype == 'fpBattery') || (localStorage['webrtcdevice'] == 'false' && fptype == 'fpDevice') || (localStorage['gamepad'] == 'false' && fptype == 'fpGamepad') || (localStorage['webvr'] == 'false' && fptype == 'fpWebVR') || (localStorage['bluetooth'] == 'false' && fptype == 'fpBluetooth') || (localStorage['clientrects'] == 'false' && fptype == 'fpClientRectangles') || (localStorage['clipboard'] == 'false' && fptype == 'fpClipboard') || (localStorage['browserplugins'] == 'false' && fptype == 'fpBrowserPlugins')) return '-1';
+async function enabledfp(domainname, fptype) {
+	if ((await localStore.getItem('canvas') == 'false' && fptype == 'fpCanvas') || (await localStore.getItem('canvasfont') == 'false' && fptype == 'fpCanvasFont') || (await localStore.getItem('audioblock') == 'false' && fptype == 'fpAudio') || (await localStore.getItem('webgl') == 'false' && fptype == 'fpWebGL') || (await localStore.getItem('battery') == 'false' && fptype == 'fpBattery') || (await localStore.getItem('webrtcdevice') == 'false' && fptype == 'fpDevice') || (await localStore.getItem('gamepad') == 'false' && fptype == 'fpGamepad') || (await localStore.getItem('webvr') == 'false' && fptype == 'fpWebVR') || (await localStore.getItem('bluetooth') == 'false' && fptype == 'fpBluetooth') || (await localStore.getItem('clientrects') == 'false' && fptype == 'fpClientRectangles') || (await localStore.getItem('clipboard') == 'false' && fptype == 'fpClipboard') || (await localStore.getItem('browserplugins') == 'false' && fptype == 'fpBrowserPlugins')) return '-1';
 	if (in_array(domainname, fpLists[fptype])) return '1';
 	if (in_array(domainname, fpListsSession[fptype])) return '2';
 	return '-1';
 }
-export function domainCheck(domain, req) {
+export async function domainCheck(domain, req) {
 	if (req === undefined) {
-		var baddiesCheck = baddies(domain, localStorage['annoyancesmode'], localStorage['antisocial']);
-		if (((localStorage['annoyances'] == 'true' && localStorage['annoyancesmode'] == 'strict' && baddiesCheck == '1') || (localStorage['antisocial'] == 'true' && baddiesCheck == '2') || (localStorage['annoyances'] == 'true' && localStorage['annoyancesmode'] == 'relaxed' && baddiesCheck))) return '1';
+		var baddiesCheck = baddies(domain, await localStore.getItem('annoyancesmode'), await localStore.getItem('antisocial'));
+		if (((await localStore.getItem('annoyances') == 'true' && await localStore.getItem('annoyancesmode') == 'strict' && baddiesCheck == '1') || (await localStore.getItem('antisocial') == 'true' && baddiesCheck == '2') || (await localStore.getItem('annoyances') == 'true' && await localStore.getItem('annoyancesmode') == 'relaxed' && baddiesCheck))) return '1';
 	}
 	var domainname = extractDomainFromURL(domain);
 	if (req != '2') {
-		if (localStorage['mode'] == 'block' && in_array(domainname, sessionWhiteList)) return '0';
-		if (localStorage['mode'] == 'allow' && in_array(domainname, sessionBlackList)) return '1';
+		if (await localStore.getItem('mode') == 'block' && in_array(domainname, sessionWhiteList)) return '0';
+		if (await localStore.getItem('mode') == 'allow' && in_array(domainname, sessionBlackList)) return '1';
 	}
 	if (in_array(domainname, whiteList)) return '0';
 	if (in_array(domainname, blackList)) return '1';
 	if (req === undefined) {
-		if (localStorage['annoyances'] == 'true' && localStorage['annoyancesmode'] == 'relaxed' && baddiesCheck) return '1';
+		if (await localStore.getItem('annoyances') == 'true' && await localStore.getItem('annoyancesmode') == 'relaxed' && baddiesCheck) return '1';
 	}
 	return '-1';
 }
@@ -440,11 +440,11 @@ function trustCheck(domain) {
 	if (in_array(domain, distrustList)) return '2';
 	return false;
 }
-function topHandler(domain, mode) {
+async function topHandler(domain, mode) {
 	if (domain) {
 		if (!domain.match(/^((25[0-5]|2[0-4][0-9]|1[0-9]{2}|[0-9]{1,2})\.){3}(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[0-9]{1,2})$/g) && !domain.match(/^(?:\[[A-Fa-f0-9:.]+\])(:[0-9]+)?$/g)) domain = '**.' + getDomain(domain);
-		if (mode != '0' && mode != '1') fpDomainHandler(domain, mode, 1);
-		else domainHandler(domain, mode);
+		if (mode != '0' && mode != '1') await fpDomainHandler(domain, mode, 1);
+		else await domainHandler(domain, mode);
 		changed = true;
 		return true;
 	}
@@ -460,17 +460,17 @@ function haystackSearch(needle, haystack) {
 	}
 	return keys;
 }
-function domainHandler(domain, action, listtype) {
+async function domainHandler(domain, action, listtype) {
 	if (listtype === undefined)
 		listtype = 0;
 	if (domain) {
 		action = parseInt(action);
 		// Initialize local storage
 		if (listtype == 0) {
-			if (typeof (localStorage['whiteList']) === 'undefined') localStorage['whiteList'] = JSON.stringify([]);
-			if (typeof (localStorage['blackList']) === 'undefined') localStorage['blackList'] = JSON.stringify([]);
-			var tempWhitelist = JSON.parse(localStorage['whiteList']);
-			var tempBlacklist = JSON.parse(localStorage['blackList']);
+			if (typeof (await localStore.getItem('whiteList')) === 'undefined') await localStore.setItem('whiteList', JSON.stringify([]));
+			if (typeof (await localStore.getItem('blackList')) === 'undefined') await localStore.setItem('blackList', JSON.stringify([]));
+			var tempWhitelist = JSON.parse(await localStore.getItem('whiteList'));
+			var tempBlacklist = JSON.parse(await localStore.getItem('blackList'));
 		} else if (listtype == 1) {
 			if (typeof (sessionStorage['whiteList']) === 'undefined') sessionStorage['whiteList'] = JSON.stringify([]);
 			if (typeof (sessionStorage['blackList']) === 'undefined') sessionStorage['blackList'] = JSON.stringify([]);
@@ -536,9 +536,9 @@ function domainHandler(domain, action, listtype) {
 				break;
 		}
 		if (listtype == 0) {
-			localStorage['whiteList'] = JSON.stringify(tempWhitelist);
-			localStorage['blackList'] = JSON.stringify(tempBlacklist);
-			cacheLists();
+			await localStore.setItem('whiteList', JSON.stringify(tempWhitelist));
+			await localStore.setItem('blackList', JSON.stringify(tempBlacklist));
+			await cacheLists();
 		} else if (listtype == 1) {
 			sessionStorage['whiteList'] = JSON.stringify(tempWhitelist);
 			sessionStorage['blackList'] = JSON.stringify(tempBlacklist);
@@ -552,17 +552,17 @@ function domainHandler(domain, action, listtype) {
 	}
 	return false;
 }
-export function fpDomainHandler(domain, listtype, action, temp) {
+export async function fpDomainHandler(domain, listtype, action, temp) {
 	if (temp === undefined)
 		temp = 0;
 	if (domain) {
 		action = parseInt(action);
 		// Initialize local storage
 		if (temp == 0) {
-			if (typeof (localStorage[listtype]) === 'undefined') localStorage[listtype] = JSON.stringify([]);
-			var tempList = JSON.parse(localStorage[listtype]);
+			if (typeof (await localStore.getItem(listtype)) === 'undefined') await localStore.setItem(listtype, JSON.stringify([]));
+			var tempList = JSON.parse(await localStore.getItem(listtype));
 		} else if (temp == 1) {
-			if (typeof (localStorage[listtype]) === 'undefined') sessionStorage[listtype] = JSON.stringify([]);
+			if (typeof (await localStore.getItem(listtype)) === 'undefined') sessionStorage[listtype] = JSON.stringify([]);
 			var tempList = JSON.parse(sessionStorage[listtype]);
 		}
 		// Remove domain from list
@@ -606,7 +606,7 @@ export function fpDomainHandler(domain, listtype, action, temp) {
 				break;
 		}
 		if (temp == 0) {
-			localStorage[listtype] = JSON.stringify(tempList);
+			await localStore.setItem(listtype, JSON.stringify(tempList));
 			tempList = tempList.sort();
 			fpLists[listtype] = tempList;
 		} else if (temp == 1) {
@@ -619,13 +619,13 @@ export function fpDomainHandler(domain, listtype, action, temp) {
 	}
 	return false;
 }
-function optionExists(opt) {
-	return (typeof localStorage[opt] !== "undefined");
+async function optionExists(opt) {
+	return (typeof (await localStore.getItem(opt)) !== "undefined");
 }
-function defaultOptionValue(opt, val) {
-	if (!optionExists(opt)) localStorage[opt] = val;
+async function defaultOptionValue(opt, val) {
+	if (!await optionExists(opt)) await localStore.setItem(opt, val);
 }
-export function setDefaultOptions(force) {
+export async function setDefaultOptions(force) {
 	var settingNames = {
 		"version": version,
 		"sync": "false",
@@ -692,34 +692,34 @@ export function setDefaultOptions(force) {
 	}
 	if (force) {
 		for (var i in settingNames) {
-			localStorage[i] = settingNames[i];
+			await localStore.setItem(i, settingNames[i]);
 		}
 		updated = true;
 	} else {
 		for (var i in settingNames) {
-			defaultOptionValue(i, settingNames[i]);
+			await defaultOptionValue(i, settingNames[i]);
 		}
 	}
-	if (optionExists("updatemessagenotify")) delete localStorage['updatemessagenotify'];
-	if (optionExists("useragentcustom")) {
-		localStorage['useragent'] = JSON.stringify([localStorage['useragentcustom']]);
-		delete localStorage['useragentcustom'];
+	if (await optionExists("updatemessagenotify")) await localStore.removeItem('updatemessagenotify');
+	if (await optionExists("useragentcustom")) {
+		await localStore.setItem('useragent', JSON.stringify([await localStore.getItem('useragentcustom')]));
+		await localStore.removeItem('useragentcustom');
 	}
-	if ((force && force == '2') || !optionExists("blackList")) localStorage['blackList'] = JSON.stringify([]);
-	if ((force && force == '2') || !optionExists("whiteList")) localStorage['whiteList'] = JSON.stringify(["*.googlevideo.com"]);
-	if ((force && force == '2') || !optionExists("fpCanvas")) localStorage['fpCanvas'] = JSON.stringify([]);
-	if ((force && force == '2') || !optionExists("fpCanvasFont")) localStorage['fpCanvasFont'] = JSON.stringify([]);
-	if ((force && force == '2') || !optionExists("fpAudio")) localStorage['fpAudio'] = JSON.stringify([]);
-	if ((force && force == '2') || !optionExists("fpWebGL")) localStorage['fpWebGL'] = JSON.stringify([]);
-	if ((force && force == '2') || !optionExists("fpBattery")) localStorage['fpBattery'] = JSON.stringify([]);
-	if ((force && force == '2') || !optionExists("fpDevice")) localStorage['fpDevice'] = JSON.stringify([]);
-	if ((force && force == '2') || !optionExists("fpGamepad")) localStorage['fpGamepad'] = JSON.stringify([]);
-	if ((force && force == '2') || !optionExists("fpWebVR")) localStorage['fpWebVR'] = JSON.stringify([]);
-	if ((force && force == '2') || !optionExists("fpBluetooth")) localStorage['fpBluetooth'] = JSON.stringify([]);
-	if ((force && force == '2') || !optionExists("fpClientRectangles")) localStorage['fpClientRectangles'] = JSON.stringify([]);
-	if ((force && force == '2') || !optionExists("fpClipboard")) localStorage['fpClipboard'] = JSON.stringify([]);
-	if ((force && force == '2') || !optionExists("fpBrowserPlugins")) localStorage['fpBrowserPlugins'] = JSON.stringify([]);
-	if ((force && force == '2') || !optionExists("useragent")) localStorage['useragent'] = JSON.stringify([]);
+	if ((force && force == '2') || !await optionExists("blackList")) await localStore.setItem('blackList', JSON.stringify([]));
+	if ((force && force == '2') || !await optionExists("whiteList")) await localStore.setItem('whiteList', JSON.stringify(["*.googlevideo.com"]));
+	if ((force && force == '2') || !await optionExists("fpCanvas")) await localStore.setItem('fpCanvas', JSON.stringify([]));
+	if ((force && force == '2') || !await optionExists("fpCanvasFont")) await localStore.setItem('fpCanvasFont', JSON.stringify([]));
+	if ((force && force == '2') || !await optionExists("fpAudio")) await localStore.setItem('fpAudio', JSON.stringify([]));
+	if ((force && force == '2') || !await optionExists("fpWebGL")) await localStore.setItem('fpWebGL', JSON.stringify([]));
+	if ((force && force == '2') || !await optionExists("fpBattery")) await localStore.setItem('fpBattery', JSON.stringify([]));
+	if ((force && force == '2') || !await optionExists("fpDevice")) await localStore.setItem('fpDevice', JSON.stringify([]));
+	if ((force && force == '2') || !await optionExists("fpGamepad")) await localStore.setItem('fpGamepad', JSON.stringify([]));
+	if ((force && force == '2') || !await optionExists("fpWebVR")) await localStore.setItem('fpWebVR', JSON.stringify([]));
+	if ((force && force == '2') || !await optionExists("fpBluetooth")) await localStore.setItem('fpBluetooth', JSON.stringify([]));
+	if ((force && force == '2') || !await optionExists("fpClientRectangles")) await localStore.setItem('fpClientRectangles', JSON.stringify([]));
+	if ((force && force == '2') || !await optionExists("fpClipboard")) await localStore.setItem('fpClipboard', JSON.stringify([]));
+	if ((force && force == '2') || !await optionExists("fpBrowserPlugins")) await localStore.setItem('fpBrowserPlugins', JSON.stringify([]));
+	if ((force && force == '2') || !await optionExists("useragent")) await localStore.setItem('useragent', JSON.stringify([]));
 	if ((force && force == '2') || typeof sessionStorage['blackList'] === "undefined") sessionStorage['blackList'] = JSON.stringify([]);
 	if ((force && force == '2') || typeof sessionStorage['whiteList'] === "undefined") sessionStorage['whiteList'] = JSON.stringify([]);
 	if ((force && force == '2') || typeof sessionStorage['fpCanvas'] === "undefined") sessionStorage['fpCanvas'] = JSON.stringify([]);
@@ -780,62 +780,63 @@ function revokeTemp() {
 	sessionStorage['fpClipboard'] = JSON.stringify([]);
 	sessionStorage['fpBrowserPlugins'] = JSON.stringify([]);
 }
-function statuschanger(duration) {
+async function statuschanger(duration) {
 	window.clearTimeout(reenabletimer);
-	if (localStorage['enable'] == 'true') {
-		localStorage['enable'] = 'false';
+	if (await localStore.getItem('enable') == 'true') {
+		await localStore.setItem('enable', 'false');
 		chrome.browserAction.setIcon({ path: "../img/IconDisabled.png" });
 		if (duration) {
 			duration = duration * 60 * 1000;
-			reenabletimer = setTimeout(function () { localStorage['enable'] = 'true'; }, duration);
+			reenabletimer = setTimeout(async function () { await localStore.setItem('enable', 'true'); }, duration);
 		}
 	} else {
-		localStorage['enable'] = 'true';
+		await localStore.setItem('enable', 'true');
 		chrome.browserAction.setIcon({ path: "../img/IconForbidden.png" });
 	}
 	reinitContext();
 }
-function tempHandler(request) {
+async function tempHandler(request) {
 	if (typeof request.url === 'object') {
 		for (var i = 0, forcount = request.url.length; i < forcount; i++) {
 			if (request.url[i][0] != 'no.script' && request.url[i][0] != 'web.bug') {
-				var baddiesStatus = baddies(request.url[i], localStorage['annoyancesmode'], localStorage['antisocial']);
-				if ((localStorage['annoyances'] == 'true' && localStorage['annoyancesmode'] == 'strict' && baddiesStatus == 1) || (localStorage['antisocial'] == 'true' && baddiesStatus == '2')) {
+				var baddiesStatus = baddies(request.url[i], await localStore.getItem('annoyancesmode'), await localStore.getItem('antisocial'));
+				if ((await localStore.getItem('annoyances') == 'true' && await localStore.getItem('annoyancesmode') == 'strict' && baddiesStatus == 1) || (await localStore.getItem('antisocial') == 'true' && baddiesStatus == '2')) {
 					// do nothing
 				} else {
-					if (request.mode == 'block') domainHandler(request.url[i], 0, 1);
-					else domainHandler(request.url[i], 1, 1);
+					if (request.mode == 'block') await domainHandler(request.url[i], 0, 1);
+					else await domainHandler(request.url[i], 1, 1);
 				}
 			}
 		}
 	} else {
-		var baddiesStatus = baddies(request.url, localStorage['annoyancesmode'], localStorage['antisocial']);
-		if ((localStorage['annoyances'] == 'true' && localStorage['annoyancesmode'] == 'strict' && baddiesStatus == 1) || (localStorage['antisocial'] == 'true' && baddiesStatus == '2')) {
+		var baddiesStatus = baddies(request.url, await localStore.getItem('annoyancesmode'), await localStore.getItem('antisocial'));
+		if ((await localStore.getItem('annoyances') == 'true' && await localStore.getItem('annoyancesmode') == 'strict' && baddiesStatus == 1) || (await localStore.getItem('antisocial') == 'true' && baddiesStatus == '2')) {
 			// do nothing
 		} else {
-			if (request.mode == 'block') domainHandler(request.url, 0, 1);
-			else domainHandler(request.url, 1, 1);
+			if (request.mode == 'block') await domainHandler(request.url, 0, 1);
+			else await domainHandler(request.url, 1, 1);
 		}
 	}
 	changed = true;
 }
-function removeTempHandler(request) {
+async function removeTempHandler(request) {
 	if (typeof request.url === 'object') {
 		for (var i = 0, forcount = request.url.length; i < forcount; i++) {
-			domainHandler(request.url[i], 2, 1);
+			await domainHandler(request.url[i], 2, 1);
 		}
 	} else {
-		domainHandler(request.url, 2, 1);
+		await domainHandler(request.url, 2, 1);
 	}
 	changed = true;
 }
-function getSessionList() {
-	if (localStorage['mode'] == 'block') return sessionWhiteList;
-	else if (localStorage['mode'] == 'allow') return sessionBlackList;
+async function getSessionList() {
+	if (await localStore.getItem('mode') == 'block') return sessionWhiteList;
+	else if (await localStore.getItem('mode') == 'allow') return sessionBlackList;
 }
-function checkTemp(domain) {
-	return in_array(domain, getSessionList());
+async function checkTemp(domain) {
+	return in_array(domain, await getSessionList());
 }
+/*
 chrome.tabs.onRemoved.addListener(function(tabid) {
 	if (typeof ITEMS[tabid] !== 'undefined') delete ITEMS[tabid];
 });
@@ -1021,97 +1022,98 @@ chrome.commands.onCommand.addListener(function (command) {
 		removeTempAll();
 	}
 });
+*/
 function reinitContext() {
-	chrome.contextMenus.removeAll(function () {
-		if (localStorage['showcontext'] == 'true') genContextMenu();
+	chrome.contextMenus.removeAll(async function () {
+		if (await localStore.getItem('showcontext') == 'true') await genContextMenu();
 	});
 }
-function genContextMenu() {
+async function genContextMenu() {
 	var parent = chrome.contextMenus.create({ "title": "ScriptSafe", "contexts": ["page"] });
-	if (localStorage['mode'] == 'block') {
-		chrome.contextMenus.create({ "title": getLocale("allow"), "parentId": parent, "onclick": function () { contextHandle('allow'); } });
-		chrome.contextMenus.create({ "title": getLocale("allow") + ' (' + getLocale("temp") + ')', "parentId": parent, "onclick": function () { contextHandle('allowtemp'); } });
+	if (await localStore.getItem('mode') == 'block') {
+		chrome.contextMenus.create({ "title": getLocale("allow"), "parentId": parent, "onclick": async function () { contextHandle('allow'); } });
+		chrome.contextMenus.create({ "title": getLocale("allow") + ' (' + getLocale("temp") + ')', "parentId": parent, "onclick": async function () { contextHandle('allowtemp'); } });
 		chrome.contextMenus.create({ "title": getLocale("allowallblocked"), "parentId": parent, "onclick": tempPage });
-		chrome.contextMenus.create({ "title": getLocale("trust"), "parentId": parent, "onclick": function () { contextHandle('trust'); } });
+		chrome.contextMenus.create({ "title": getLocale("trust"), "parentId": parent, "onclick": async function () { contextHandle('trust'); } });
 	} else {
-		chrome.contextMenus.create({ "title": getLocale("deny"), "parentId": parent, "onclick": function () { contextHandle('block'); } });
-		chrome.contextMenus.create({ "title": getLocale("deny") + ' (' + getLocale("temp") + ')', "parentId": parent, "onclick": function () { contextHandle('blocktemp'); } });
+		chrome.contextMenus.create({ "title": getLocale("deny"), "parentId": parent, "onclick": async function () { contextHandle('block'); } });
+		chrome.contextMenus.create({ "title": getLocale("deny") + ' (' + getLocale("temp") + ')', "parentId": parent, "onclick": async function () { contextHandle('blocktemp'); } });
 		chrome.contextMenus.create({ "title": getLocale("blockallallowed"), "parentId": parent, "onclick": tempPage });
-		chrome.contextMenus.create({ "title": getLocale("distrust"), "parentId": parent, "onclick": function () { contextHandle('distrust'); } });
+		chrome.contextMenus.create({ "title": getLocale("distrust"), "parentId": parent, "onclick": async function () { contextHandle('distrust'); } });
 	}
 	chrome.contextMenus.create({ "parentId": parent, "type": "separator" });
-	chrome.contextMenus.create({ "title": getLocale("clear"), "parentId": parent, "onclick": function () { contextHandle('clear'); } });
+	chrome.contextMenus.create({ "title": getLocale("clear"), "parentId": parent, "onclick": async function () { contextHandle('clear'); } });
 	chrome.contextMenus.create({ "title": getLocale("revoketemp"), "parentId": parent, "onclick": removeTempPage });
 	chrome.contextMenus.create({ "title": getLocale("revoketempall"), "parentId": parent, "onclick": removeTempAll });
 	chrome.contextMenus.create({ "parentId": parent, "type": "separator" });
 	chrome.contextMenus.create({ "title": getLocale("options"), "parentId": parent, "onclick": function () { chrome.tabs.create({ url: chrome.runtime.getURL('html/options.html') }); } });
-	if (localStorage["enable"] == "false") chrome.contextMenus.create({ "title": getLocale("enabless"), "parentId": parent, "onclick": function () { localStorage["enable"] = "true"; contextHandle('toggle'); } });
-	else chrome.contextMenus.create({ "title": getLocale("disable"), "parentId": parent, "onclick": function () { localStorage["enable"] = "false"; contextHandle('toggle'); } });
+	if (await localStore.getItem("enable") == "false") chrome.contextMenus.create({ "title": getLocale("enabless"), "parentId": parent, "onclick": async function () { await localStore.setItem("enable", "true"); contextHandle('toggle'); } });
+	else chrome.contextMenus.create({ "title": getLocale("disable"), "parentId": parent, "onclick": async function () { await localStore.setItem("enable", "false"); contextHandle('toggle'); } });
 }
 function contextHandle(mode) {
-	chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+	chrome.tabs.query({ active: true, currentWindow: true }, async function (tabs) {
 		if (tabs[0].url.indexOf('http') == 0) {
 			var tabdomain = extractDomainFromURL(tabs[0].url);
-			var domainCheckStatus = domainCheck(tabs[0].url);
+			var domainCheckStatus = await domainCheck(tabs[0].url);
 			if (mode == 'allow') {
-				domainHandler(tabdomain, 2, 1);
-				domainHandler(tabdomain, 0);
+				await domainHandler(tabdomain, 2, 1);
+				await domainHandler(tabdomain, 0);
 			} else if (mode == 'block') {
-				domainHandler(tabdomain, 2, 1);
-				domainHandler(tabdomain, 1);
-			} else if (mode == 'allowtemp' && domainCheckStatus == '-1') tempHandler({ reqtype: "temp", url: tabdomain, mode: 'block' });
-			else if (mode == 'blocktemp' && domainCheckStatus == '-1') tempHandler({ reqtype: "temp", url: tabdomain, mode: 'allow' });
-			else if (mode == 'trust') topHandler(tabdomain, 0);
-			else if (mode == 'distrust') topHandler(tabdomain, 1);
+				await domainHandler(tabdomain, 2, 1);
+				await domainHandler(tabdomain, 1);
+			} else if (mode == 'allowtemp' && domainCheckStatus == '-1') await tempHandler({ reqtype: "temp", url: tabdomain, mode: 'block' });
+			else if (mode == 'blocktemp' && domainCheckStatus == '-1') await tempHandler({ reqtype: "temp", url: tabdomain, mode: 'allow' });
+			else if (mode == 'trust') await topHandler(tabdomain, 0);
+			else if (mode == 'distrust') await topHandler(tabdomain, 1);
 			else if (mode == 'clear') {
-				if (trustCheck(tabdomain)) domainHandler('**.' + getDomain(tabdomain), 2);
+				if (trustCheck(tabdomain)) await domainHandler('**.' + getDomain(tabdomain), 2);
 				else {
-					domainHandler(tabdomain, 2, 1);
-					domainHandler(tabdomain, 2);
+					await domainHandler(tabdomain, 2, 1);
+					await domainHandler(tabdomain, 2);
 				}
 			} else if (mode == 'toggle') reinitContext();
-			if (localStorage['refresh'] == 'true') chrome.tabs.reload(tabs[0].id);
+			if (await localStore.getItem('refresh') == 'true') chrome.tabs.reload(tabs[0].id);
 		}
 	});
 }
 function tempPage() {
-	chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-		var tempMode = localStorage['mode'];
+	chrome.tabs.query({ active: true, currentWindow: true }, async function (tabs) {
+		var tempMode = await localStore.getItem('mode');
 		if (typeof ITEMS[tabs[0].id][tempMode + 'ed'] === 'undefined') return;
 		var tempDomainList = [];
-		if (domainCheck(tabs[0].url, 2) == '-1') {
-			if ((tempMode == 'block' && enabled(tabs[0].url) == 'true') || (tempMode == 'allow' && enabled(tabs[0].url) == 'false'))
+		if (await domainCheck(tabs[0].url, 2) == '-1') {
+			if ((tempMode == 'block' && await enabled(tabs[0].url) == 'true') || (tempMode == 'allow' && await enabled(tabs[0].url) == 'false'))
 				tempDomainList.push(extractDomainFromURL(tabs[0].url));
 		}
 		ITEMS[tabs[0].id][tempMode + 'ed'].map(function (items) {
 			if (items[3] == '-1') tempDomainList.push(items[2]);
 		});
-		tempHandler({ reqtype: "temp", url: tempDomainList, mode: tempMode });
-		if (localStorage['refresh'] == 'true') chrome.tabs.reload(tabs[0].id);
+		await tempHandler({ reqtype: "temp", url: tempDomainList, mode: tempMode });
+		if (await localStore.getItem('refresh') == 'true') chrome.tabs.reload(tabs[0].id);
 	});
 }
 function removeTempPage() {
-	chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+	chrome.tabs.query({ active: true, currentWindow: true }, async function (tabs) {
 		var tempMode;
-		if (localStorage['mode'] == 'block') tempMode = 'allow';
+		if (await localStore.getItem('mode') == 'block') tempMode = 'allow';
 		else tempMode = 'block';
 		if (typeof ITEMS[tabs[0].id][tempMode + 'ed'] === 'undefined') return;
 		var tempDomainList = [];
-		if (domainCheck(tabs[0].url, 2) == '-1') {
-			if ((tempMode == 'block' && enabled(tabs[0].url) == 'true') || (tempMode == 'allow' && enabled(tabs[0].url) == 'false'))
+		if (await domainCheck(tabs[0].url, 2) == '-1') {
+			if ((tempMode == 'block' && await enabled(tabs[0].url) == 'true') || (tempMode == 'allow' && await enabled(tabs[0].url) == 'false'))
 				tempDomainList.push(extractDomainFromURL(tabs[0].url));
 		}
 		ITEMS[tabs[0].id][tempMode + 'ed'].map(function (items) {
 			tempDomainList.push(items[2]);
 		});
-		removeTempHandler({ reqtype: "remove-temp", url: tempDomainList });
-		if (localStorage['refresh'] == 'true') chrome.tabs.reload(tabs[0].id);
+		await removeTempHandler({ reqtype: "remove-temp", url: tempDomainList });
+		if (await localStore.getItem('refresh') == 'true') chrome.tabs.reload(tabs[0].id);
 	});
 }
 function removeTempAll() {
-	chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+	chrome.tabs.query({ active: true, currentWindow: true }, async function (tabs) {
 		revokeTemp();
-		if (localStorage['refresh'] == 'true') chrome.tabs.reload(tabs[0].id);
+		if (await localStore.getItem('refresh') == 'true') chrome.tabs.reload(tabs[0].id);
 	});
 }
 function ssCompress(str) {
@@ -1120,11 +1122,11 @@ function ssCompress(str) {
 function ssDecompress(str) {
 	return pako.inflate(atob(str), { to: 'string' });
 }
-export function freshSync(force) {
-	if (storageapi && localStorage['syncenable'] == 'true') {
+export async function freshSync(force) {
+	if (storageapi && await localStore.getItem('syncenable') == 'true') {
 		window.clearTimeout(synctimer);
 		if (force) {
-			localStorage['sync'] = 'true';
+			await localStore.setItem('sync', 'true');
 			var settingssync = {};
 			var simplesettings = '';
 			var newlimit = chrome.storage.sync.QUOTA_BYTES_PER_ITEM - 6 - 13;
@@ -1149,11 +1151,11 @@ export function freshSync(force) {
 						// new syncing method - start
 						//if (k != "version" && k != "sync" && k != "scriptsafe_settings" && k != "lastSync" && k != "whiteList" && k != "blackList" && k != "useragent" && k != "whiteListCount" && k != "blackListCount" && k != "whiteListCount2" && k != "blackListCount2" && k != "useragentCount2" && k.substr(0, 10) != "whiteList_" && k.substr(0, 10) != "blackList_" && k.substr(0, 2) != "zb" && k.substr(0, 2) != "zw" && k.substr(0, 2) != "sw" && k.substr(0, 2) != "sb" && k.substr(0, 2) != "sf" && k.substr(0, 2) != "su" && k.substr(0, 2) != "fp") {
 						// new syncing method - end
-						simplesettings += k + "|" + localStorage[k] + "~";
+						simplesettings += k + "|" + await localStore.getItem(k) + "~";
 						// new syncing method - start
 						/*
 						} else if (k.substr(0, 2) == "fp" && k != "fpCount") {
-							fpsettings += k+"|"+localStorage[k]+"~";
+							fpsettings += k+"|"+await localStore.getItem(k)+"~";
 						*/
 						// new syncing method - end
 					}
@@ -1167,13 +1169,13 @@ export function freshSync(force) {
 			}
 			settingssync['scriptsafe_settings'] = simplesettings.slice(0, -1);
 			if (zarr['zw'].length) {
-				for (var x = 0, forcount = zarr['zw'].length; x < forcount; x++) delete localStorage[zarr['zw'][x]];
+				for (var x = 0, forcount = zarr['zw'].length; x < forcount; x++) await localStore.removeItem(zarr['zw'][x]);
 			}
 			if (zarr['sw'].length) {
-				for (var x = 0, forcount = zarr['sw'].length; x < forcount; x++) delete localStorage[zarr['sw'][x]];
+				for (var x = 0, forcount = zarr['sw'].length; x < forcount; x++)      await localStore.removeItem(zarr['sw'][x]);
 			}
 			// legacy syncing method - start
-			jsonstr = JSON.parse(localStorage['whiteList']).toString();
+			jsonstr = JSON.parse(await localStore.getItem('whiteList')).toString();
 			i = 0;
 			limit = (chrome.storage.sync.QUOTA_BYTES_PER_ITEM - Math.ceil(jsonstr.length / (chrome.storage.sync.QUOTA_BYTES_PER_ITEM - 4)) - 4);
 			while (jsonstr.length > 0) {
@@ -1186,7 +1188,7 @@ export function freshSync(force) {
 			// legacy syncing method - end
 			// new syncing method - start
 			/*
-			jsonstr = ssCompress(JSON.parse(localStorage['whiteList']).toString());
+			jsonstr = ssCompress(JSON.parse(await localStore.getItem('whiteList')).toString());
 			i = 0;
 			while (jsonstr.length > 0) {
 				segment = jsonstr.substr(0, newlimit);
@@ -1196,16 +1198,16 @@ export function freshSync(force) {
 			}
 			settingssync['whiteListCount2'] = i;
 			if (zarr['zb'].length) {
-				for (var x = 0, forcount=zarr['zb'].length; x < forcount; x++) delete localStorage[zarr['zb'][x]];
+				for (var x = 0, forcount=zarr['zb'].length; x < forcount; x++) await localStore.removeItem(zarr['zb'][x]);
 			}
 			if (zarr['sb'].length) {
-				for (var x = 0, forcount=zarr['sb'].length; x < forcount; x++) delete localStorage[zarr['sb'][x]];
+				for (var x = 0, forcount=zarr['sb'].length; x < forcount; x++) await localStore.removeItem(zarr['sb'][x]);
 			}
 			*/
 			// new syncing method - end
 			// legacy syncing method - start
 			i = 0;
-			jsonstr = JSON.parse(localStorage['blackList']).toString();
+			jsonstr = JSON.parse(await localStore.getItem('blackList')).toString();
 			limit = (chrome.storage.sync.QUOTA_BYTES_PER_ITEM - Math.ceil(jsonstr.length / (chrome.storage.sync.QUOTA_BYTES_PER_ITEM - 4)) - 4);
 			while (jsonstr.length > 0) {
 				segment = jsonstr.substr(0, limit);
@@ -1217,7 +1219,7 @@ export function freshSync(force) {
 			// legacy syncing method - end
 			// new syncing method - start
 			/*
-				jsonstr = ssCompress(JSON.parse(localStorage['blackList']).toString());
+				jsonstr = ssCompress(JSON.parse(await localStore.getItem('blackList')).toString());
 				i = 0;
 				while (jsonstr.length > 0) {
 					segment = jsonstr.substr(0, newlimit);
@@ -1227,7 +1229,7 @@ export function freshSync(force) {
 				}
 				settingssync['blackListCount2'] = i;
 				if (zarr['sf'].length) {
-					for (var x = 0, forcount=zarr['sf'].length; x < forcount; x++) delete localStorage[zarr['sf'][x]];
+					for (var x = 0, forcount=zarr['sf'].length; x < forcount; x++) await localStore.removeItem(zarr['sf'][x]);
 				}
 				i = 0;
 				jsonstr = ssCompress(fpsettings.slice(0,-1));
@@ -1240,9 +1242,9 @@ export function freshSync(force) {
 				settingssync['fpCount'] = i;
 			*/
 			// new syncing method - end
-			jsonstr = ssCompress(JSON.parse(localStorage['useragent']).toString());
+			jsonstr = ssCompress(JSON.parse(await localStore.getItem('useragent')).toString());
 			if (zarr['su'].length) {
-				for (var x = 0, forcount = zarr['su'].length; x < forcount; x++) delete localStorage[zarr['su'][x]];
+				for (var x = 0, forcount = zarr['su'].length; x < forcount; x++) await localStore.removeItem(zarr['su'][x]);
 			}
 			i = 0;
 			while (jsonstr.length > 0) {
@@ -1253,101 +1255,101 @@ export function freshSync(force) {
 			}
 			settingssync['useragentCount2'] = i;
 			settingssync['lastSync'] = milliseconds;
-			localStorage['lastSync'] = milliseconds;
+			await localStore.setItem('lastSync', milliseconds);
 			if (chrome.storage.sync.QUOTA_BYTES < JSON.stringify(settingssync).length) {
 				alert('ScriptSafe cannot sync your settings as it is greater than the total limit.\r\nHowever, you can manually export and import your settings by going to the Options page.');
 			} else {
 				chrome.storage.sync.clear(function () {
-					chrome.storage.sync.set(settingssync, function () {
+					chrome.storage.sync.set(settingssync, async function () {
 						if (chrome.extension.lastError) {
 							alert(chrome.extension.lastError.message);
 						} else {
-							if (localStorage['syncnotify'] == 'true') chrome.notifications.create('syncnotify', { 'type': 'basic', 'iconUrl': '../img/icon48.png', 'title': 'ScriptSafe - ' + getLocale("exportsuccesstitle"), 'message': getLocale("exportsuccess") }, function (callback) { return true; });
+							if (await localStore.getItem('syncnotify') == 'true') chrome.notifications.create('syncnotify', { 'type': 'basic', 'iconUrl': '../img/icon48.png', 'title': 'ScriptSafe - ' + getLocale("exportsuccesstitle"), 'message': getLocale("exportsuccess") }, function (callback) { return true; });
 						}
 					});
 				});
 			}
 		} else {
-			synctimer = window.setTimeout(function () { syncQueue() }, 10000);
+			synctimer = window.setTimeout(async function () { await syncQueue() }, 10000);
 		}
 		return true;
 	} else {
 		return false;
 	}
 }
-function syncQueue() {
-	freshSync(true);
+async function syncQueue() {
+	await freshSync(true);
 }
 export async function importSyncHandle(mode) {
 	if (storageapi) {
-		if (mode == '1' || localStorage['syncenable'] == 'true' || localStorage['sync'] == 'false') {
+		if (mode == '1' || await localStore.getItem('syncenable') == 'true' || await localStore.getItem('sync') == 'false') {
 			window.clearTimeout(synctimer);
 			chrome.storage.sync.get(null, async function (changes) {
 				if (typeof changes['lastSync'] !== 'undefined') {
-					if ((mode == '0' && changes['lastSync'] > localStorage['lastSync']) || (mode == '1' && changes['lastSync'] >= localStorage['lastSync'])) {
+					if ((mode == '0' && changes['lastSync'] > await localStore.getItem('lastSync')) || (mode == '1' && changes['lastSync'] >= await localStore.getItem('lastSync'))) {
 						if (confirm(getLocale("syncdetect"))) {
-							localStorage['syncenable'] = 'true';
-							localStorage['sync'] = 'true';
+							await localStore.setItem('syncenable', 'true');
+							await localStore.setItem('sync', 'true');
 							await importSync(changes);
 							if (mode == '1') window.setTimeout(function () { window.clearTimeout(synctimer); }, 5000);
-							if (localStorage['syncfromnotify'] == 'true') chrome.notifications.create('syncnotify', { 'type': 'basic', 'iconUrl': '../img/icon48.png', 'title': 'ScriptSafe - ' + getLocale("importsuccesstitle"), 'message': getLocale("importsuccess") }, function (callback) { updated = true; return true; });
+							if (await localStore.getItem('syncfromnotify') == 'true') chrome.notifications.create('syncnotify', { 'type': 'basic', 'iconUrl': '../img/icon48.png', 'title': 'ScriptSafe - ' + getLocale("importsuccesstitle"), 'message': getLocale("importsuccess") }, function (callback) { updated = true; return true; });
 							return true;
 						} else {
 							if (mode != '1') {
-								localStorage['syncenable'] = 'false';
+								await localStore.setItem('syncenable', 'false');
 								alert(getLocale("syncdisabled"));
-								localStorage['sync'] = 'true';
+								await localStore.setItem('sync', 'true');
 							}
 							return false;
 						}
 					}
 				}
-				if (mode == '1' || (localStorage['sync'] == 'false' && mode == '0')) {
-					localStorage['syncenable'] = 'false';
-					localStorage['sync'] = 'true';
+				if (mode == '1' || (await localStore.getItem('sync') == 'false' && mode == '0')) {
+					await localStore.setItem('syncenable', 'false');
+					await localStore.setItem('sync', 'true');
 					return false;
 				}
 			});
 		}
 	} else {
 		alert(getLocale("syncnotsupported"));
-		localStorage['sync'] = 'true';
+		await localStore.setItem('sync', 'true');
 		return false;
 	}
 }
 async function importSync(changes) {
 	for (var key in changes) {
 		if (key != 'scriptsafe_settings') {
-			localStorage[key] = changes[key];
+			await localStore.setItem(key, changes[key]);
 		} else if (key == 'scriptsafe_settings') {
 			var settings = changes[key].split("~");
 			if (settings.length > 0) {
-				$.each(settings, function (i, v) { //$$$
+				$.each(settings, async function (i, v) { //$$$
 					if ($.trim(v) != "") {
 						var settingentry = $.trim(v).split("|");
 						if ($.trim(settingentry[1]) != '') {
-							localStorage[$.trim(settingentry[0])] = $.trim(settingentry[1]);
+							await localStore.setItem($.trim(settingentry[0]), $.trim(settingentry[1]));
 						}
 					}
 				});
 			}
 		}
 	}
-	await initLang(localStorage['locale'], 0);
-	listsSync();
+	await initLang(await localStore.getItem('locale'), 0);
+	await listsSync();
 }
-function listsSync() {
-	listsSyncParse('whiteList');
-	listsSyncParse('blackList');
-	listsSyncParse('useragent');
-	if (optionExists('fpCount')) {
+async function listsSync() {
+	await listsSyncParse('whiteList');
+	await listsSyncParse('blackList');
+	await listsSyncParse('useragent');
+	if (await optionExists('fpCount')) {
 		var concatlist = '';
 		var listerror = false;
-		for (var i = 0, forcount = localStorage['fpCount']; i < forcount; i++) {
-			if (localStorage['sf' + i]) {
-				if (localStorage['sf' + i].substr(0, 13) == localStorage['lastSync']) concatlist += localStorage['sf' + i].substr(13);
+		for (var i = 0, forcount = await localStore.getItem('fpCount'); i < forcount; i++) {
+			if (await localStore.getItem('sf' + i)) {
+				if ((await localStore.getItem('sf' + i)).substr(0, 13) == await localStore.getItem('lastSync')) concatlist += (await localStore.getItem('sf' + i)).substr(13);
 				else listerror = true;
-				delete localStorage['sf' + i];
+				await localStore.removeItem('sf' + i);
 			}
 		}
 		if (!listerror) {
@@ -1355,11 +1357,11 @@ function listsSync() {
 				concatlist = ssDecompress(concatlist);
 				var settings = concatlist.split("~");
 				if (settings.length > 0) {
-					$.each(settings, function (i, v) {
+					$.each(settings, async function (i, v) {
 						if ($.trim(v) != "") {
 							var settingentry = $.trim(v).split("|");
 							if ($.trim(settingentry[1]) != '') {
-								localStorage[$.trim(settingentry[0])] = $.trim(settingentry[1]);
+								await localStore.setItem($.trim(settingentry[0]), $.trim(settingentry[1]));
 							}
 						}
 					});
@@ -1367,39 +1369,39 @@ function listsSync() {
 			}
 		} else {
 			alert('Incomplete fingerprint whitelist data was detected. Very large lists are known to cause issues with syncing.\r\nAs a safety precaution, your fingerprint whitelist has not been updated and syncing has been disabled on this device to prevent overwriting data on other devices.\r\nPlease consider manually exporting your latest settings and importing it into your other devices from the Options page.');
-			localStorage['syncenable'] = 'false';
+			await localStore.setItem('syncenable', 'false');
 		}
-		delete localStorage['fpCount'];
+		await localStore.removeItem('fpCount');
 	}
-	cacheLists();
-	cacheFpLists();
+	await cacheLists();
+	await cacheFpLists();
 }
-function listsSyncParse(type) {
-	if (optionExists(type + 'Count') || optionExists(type + 'Count2')) {
+async function listsSyncParse(type) {
+	if (await optionExists(type + 'Count') || await optionExists(type + 'Count2')) {
 		var lsName = type.substr(0, 1);
 		var concatlist = '';
 		var concatlistarr = [];
 		var counttype;
 		var listerror = false;
-		if (optionExists(type + 'Count2')) counttype = type + 'Count2';
+		if (await optionExists(type + 'Count2')) counttype = type + 'Count2';
 		else counttype = type + 'Count';
 		concatlist = '';
-		if (localStorage[counttype] != '0') {
-			for (var i = 0, forcount = localStorage[counttype]; i < forcount; i++) {
+		if (await localStore.getItem(counttype) != '0') {
+			for (var i = 0, forcount = await localStore.getItem(counttype); i < forcount; i++) {
 				if (counttype == type + 'Count2') {
-					if (localStorage['s' + lsName + i]) {
-						if (localStorage['s' + lsName + i].substr(0, 13) == localStorage['lastSync']) concatlist += localStorage['s' + lsName + i].substr(13);
+					if (await localStore.getItem('s' + lsName + i)) {
+						if ((await localStore.getItem('s' + lsName + i)).substr(0, 13) == await localStore.getItem('lastSync')) concatlist += (await localStore.getItem('s' + lsName + i)).substr(13);
 						else {
 							listerror = true;
 						}
-						delete localStorage['s' + lsName + i];
+						await localStore.removeItem('s' + lsName + i);
 					} else {
 						listerror = true;
 					}
 				} else if (counttype == type + 'Count') {
-					if (localStorage['z' + lsName + i]) {
-						concatlist += localStorage['z' + lsName + i];
-						delete localStorage['z' + lsName + i];
+					if (await localStore.getItem('z' + lsName + i)) {
+						concatlist += await localStore.getItem('z' + lsName + i);
+						await localStore.removeItem('z' + lsName + i);
 					} else {
 						listerror = true;
 					}
@@ -1411,14 +1413,14 @@ function listsSyncParse(type) {
 			}
 		}
 		if (!listerror) {
-			if (concatlist == '' || concatlistarr.length == 0) localStorage[type + ''] = JSON.stringify([]);
-			else localStorage[type + ''] = JSON.stringify(concatlistarr);
+			if (concatlist == '' || concatlistarr.length == 0) await localStore.setItem(type + '', JSON.stringify([]));
+			else await localStore.setItem(type + '', JSON.stringify(concatlistarr));
 		} else {
 			alert('Incomplete ' + type.toLowerCase() + ' data was detected. Very large lists are known to cause issues with syncing.\r\nAs a safety precaution, your ' + type.toLowerCase() + ' has not been updated and syncing has been disabled on this device to prevent overwriting data on other devices.\r\nPlease consider manually exporting your latest settings and importing it into your other devices from the Options page.');
-			localStorage['syncenable'] = 'false';
+			await localStore.setItem('syncenable', 'false');
 		}
-		if (optionExists(type + 'Count2')) delete localStorage[type + 'Count2'];
-		if (optionExists(type + 'Count')) delete localStorage[type + 'Count'];
+		if (await optionExists(type + 'Count2')) await localStore.removeItem(type + 'Count2');
+		if (await optionExists(type + 'Count')) await localStore.removeItem(type + 'Count');
 	}
 }
 export function getUpdated() {
@@ -1427,19 +1429,19 @@ export function getUpdated() {
 export function setUpdated() {
 	updated = false;
 }
-function triggerUpdated() {
+async function triggerUpdated() {
 	updated = true;
-	freshSync();
+	await freshSync();
 }
-function init() {
+async function init() {
 	webrtcsupport = checkWebRTC();
-	initWebRTC();
-	cacheLists();
-	cacheFpLists();
-	if (localStorage['showcontext'] == 'true') genContextMenu();
+	await initWebRTC();
+	await cacheLists();
+	await cacheFpLists();
+	if (await localStore.getItem('showcontext') == 'true') await genContextMenu();
 }
-export function cacheLists() {
-	var tempList = JSON.parse(localStorage['whiteList']);
+export async function cacheLists() {
+	var tempList = JSON.parse(await localStore.getItem('whiteList'));
 	var tempDomain = [];
 	var tempWildDomain = [];
 	tempList.map(function (domain) {
@@ -1450,7 +1452,7 @@ export function cacheLists() {
 	whiteList = tempDomain;
 	tempWildDomain = tempWildDomain.sort();
 	trustList = tempWildDomain;
-	tempList = JSON.parse(localStorage['blackList']);
+	tempList = JSON.parse(await localStore.getItem('blackList'));
 	tempDomain = [];
 	tempWildDomain = [];
 	tempList.map(function (domain) {
@@ -1462,9 +1464,9 @@ export function cacheLists() {
 	tempWildDomain = tempWildDomain.sort();
 	distrustList = tempWildDomain;
 }
-function cacheFpLists() {
+async function cacheFpLists() {
 	for (var i in fpTypes) {
-		var tempList = JSON.parse(localStorage[fpTypes[i]]);
+		var tempList = JSON.parse(await localStore.getItem(fpTypes[i]));
 		var tempDomain = [];
 		tempList.map(function (domain) {
 			tempDomain.push(domain);
@@ -1503,6 +1505,7 @@ export function getLocale(str) {
 export function getLangs() {
 	return langs;
 }
+/*
 var uiLang = chrome.i18n.getUILanguage().replace(/-/g, '_');
 if (!optionExists("locale")) {
 	localStorage['locale'] = 'en_US';
@@ -1519,46 +1522,47 @@ if (!optionExists("locale")) {
 	}
 }
 initLang(localStorage['locale'], 1);
+*/
 async function postLangLoad() {
-	if (!optionExists("version") || localStorage["version"] != version) {
+	if (!await optionExists("version") || await localStore.getItem("version") != version) {
 		// One-time update existing whitelist/blacklist for new regex support introduced in v1.0.7.0
-		if (!optionExists("tempregexflag")) {
-			if (optionExists("version")) {
-				var tempList = JSON.parse(localStorage['blackList']);
+		if (!await optionExists("tempregexflag")) {
+			if (await optionExists("version")) {
+				var tempList = JSON.parse(await localStore.getItem('blackList'));
 				var tempNewList = [];
 				if (tempList.length) {
 					tempList.map(function (domain) {
 						if (domain.substr(0, 2) == '*.') tempNewList.push('*' + domain);
 						else tempNewList.push(domain);
 					});
-					localStorage['blackList'] = JSON.stringify(tempNewList);
+					await localStore.setItem('blackList', JSON.stringify(tempNewList));
 				}
-				tempList = JSON.parse(localStorage['whiteList']);
+				tempList = JSON.parse(await localStore.getItem('whiteList'));
 				if (tempList.length) {
 					tempNewList = [];
 					tempList.map(function (domain) {
 						if (domain.substr(0, 2) == '*.') tempNewList.push('*' + domain);
 						else tempNewList.push(domain);
 					});
-					localStorage['whiteList'] = JSON.stringify(tempNewList);
+					await localStore.setItem('whiteList', JSON.stringify(tempNewList));
 				}
 			}
-			localStorage['tempregexflag'] = "true";
-			syncQueue();
+			await localStore.setItem('tempregexflag', "true");
+			await syncQueue();
 		}
-		if (localStorage["updatenotify"] == "true") {
+		if (await localStore.getItem("updatenotify") == "true") {
 			chrome.tabs.create({ url: chrome.runtime.getURL('html/updated.html') });
 		}
-		localStorage["version"] = version;
+		await localStore.setItem("version", version);
 	}
-	setDefaultOptions();
+	await setDefaultOptions();
 	if (typeof chrome.storage !== 'undefined') {
 		storageapi = true;
 	}
 	if (typeof chrome.webRequest !== 'undefined') {
 		if (experimental == 0) experimental = 1;
 		var requestUrls = ["http://*/*", "https://*/*"];
-		refreshRequestTypes();
+		await refreshRequestTypes();
 		if (typeof chrome.webRequest !== 'undefined') {
 			chrome.webRequest.onBeforeRequest.addListener(ScriptSafe, { "types": requestTypes, "urls": requestUrls }, ['blocking']);
 			chrome.webRequest.onBeforeSendHeaders.addListener(mitigate, { "types": requestTypes, "urls": requestUrls }, ['requestHeaders', 'blocking']);
@@ -1566,13 +1570,13 @@ async function postLangLoad() {
 		}
 	}
 	if (storageapi) {
-		chrome.storage.onChanged.addListener(function (changes, namespace) {
-			if (namespace == 'sync' && localStorage['syncenable'] == 'true') {
+		chrome.storage.onChanged.addListener(async function (changes, namespace) {
+			if (namespace == 'sync' && await localStore.getItem('syncenable') == 'true') {
 				if (typeof changes['lastSync'] !== 'undefined') {
-					if (changes['lastSync'].newValue && changes['lastSync'].newValue > localStorage['lastSync']) {
+					if (changes['lastSync'].newValue && changes['lastSync'].newValue > await localStore.getItem('lastSync')) {
 						chrome.storage.sync.get(null, async function (changes) {
 							await importSync(changes);
-							if (localStorage['syncfromnotify'] == 'true') chrome.notifications.create('syncnotify', { 'type': 'basic', 'iconUrl': '../img/icon48.png', 'title': 'ScriptSafe - ' + getLocale("importsuccesstitle"), 'message': getLocale("importsuccess") }, function (callback) { updated = true; return true; });
+							if (await localStore.getItem('syncfromnotify') == 'true') chrome.notifications.create('syncnotify', { 'type': 'basic', 'iconUrl': '../img/icon48.png', 'title': 'ScriptSafe - ' + getLocale("importsuccesstitle"), 'message': getLocale("importsuccess") }, function (callback) { updated = true; return true; });
 						});
 					}
 				}
@@ -1580,5 +1584,5 @@ async function postLangLoad() {
 		});
 		await importSyncHandle(0);
 	}
-	init();
+	await init();
 }
