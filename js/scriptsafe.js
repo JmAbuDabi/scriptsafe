@@ -1174,10 +1174,27 @@ function removeTempAll() {
 	});
 }
 function ssCompress(str) {
-	return btoa(pako.deflate(str, { to: 'string' }));
+	try {
+		const encoder = new TextEncoder();
+		const compressed = pako.deflate(encoder.encode(str));
+		const binary = String.fromCharCode(...compressed);
+		return btoa(binary);
+	} catch (e) {
+		console.error('ssCompress error:', e);
+		return null;
+	}
 }
-function ssDecompress(str) {
-	return pako.inflate(atob(str), { to: 'string' });
+function ssDecompress(base64) {
+	try {
+		const binary = atob(base64);
+		const bytes = Uint8Array.from(binary, c => c.charCodeAt(0));
+		const decompressed = pako.inflate(bytes);
+		const decoder = new TextDecoder();
+		return decoder.decode(decompressed);
+	} catch (e) {
+		console.error('ssDecompress error:', e);
+		return null;
+	}
 }
 export async function freshSync(force) {
 	if (storageapi && await localStore.getItem('syncenable') == 'true') {
