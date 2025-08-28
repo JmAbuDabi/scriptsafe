@@ -1,14 +1,14 @@
 // ScriptSafe - Copyright (C) andryou
 // Distributed under the terms of the GNU General Public License
 // The GNU General Public License can be found in the gpl.txt file. Alternatively, see <http://www.gnu.org/licenses/>.
-var version = '2.0.0.0';
-var port = chrome.runtime.connect({ name: "popuplifeline" });
-var bkg = getBackgroundPage();
-var closepage, mode, taburl, tabid, tabdomain;
-var selected = false;
-var intemp = false;
-var blocked = [];
-var allowed = [];
+import { version, getBackgroundPage } from "./common.js";
+let port = chrome.runtime.connect({ name: "popuplifeline" });
+let bkg = getBackgroundPage();
+let closepage, mode, taburl, tabid, tabdomain;
+let selected = false;
+let intemp = false;
+let blocked = [];
+let allowed = [];
 const statuschange = async function () {
 	$(this).hide();
 	const disable = await bkg.getLocale("disable");
@@ -638,24 +638,4 @@ async function save(url, el, type) {
 		}
 	}
 	selected = false;
-}
-
-function getBackgroundPage() {
-	return new Proxy({}, {
-		get(_, method) {
-			return (...args) => {
-				return new Promise((resolve, reject) => {
-					chrome.runtime.sendMessage({ method, args }, (response) => {
-						if (chrome.runtime.lastError) {
-							return reject(new Error(chrome.runtime.lastError.message));
-						}
-						if (response?.error) {
-							return reject(new Error(response.error));
-						}
-						resolve(response?.result);
-					});
-				});
-			};
-		}
-	});
 }
