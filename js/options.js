@@ -333,7 +333,7 @@ async function loadList(id) {
 	$("#" + id).val(JSON.parse(await localStore.getItem(id)).join("\n"));
 }
 async function saveCheckbox(id) {
-	await localStore.setItem(id, document.getElementById(id).checked);
+	await localStore.setItem(id, $("#" + id).prop("checked").toString());
 }
 async function saveElement(id) {
 	await localStore.setItem(id, $("#" + id).val().replace(/[~|]/g, ''));
