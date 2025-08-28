@@ -1,7 +1,7 @@
 // ScriptSafe - Copyright (C) andryou
 // Distributed under the terms of the GNU General Public License
 // The GNU General Public License can be found in the gpl.txt file. Alternatively, see <http://www.gnu.org/licenses/>.
-import { thirdParty, getDomain, extractDomainFromURL, in_array, binarySearch } from "./common.js";
+import { thirdParty, getDomain, extractDomainFromURL, in_array, binarySearch, checkWebRTCStatus } from "./common.js";
 import { antisocial1, antisocial2, yoyo1, yoyo2 } from "./yoyo.js";
 
 let timer;
@@ -145,20 +145,6 @@ chrome.runtime.sendMessage({ reqtype: 'background-action', method: "getWebRTC", 
 		chrome.runtime.sendMessage({ reqtype: 'background-action', method: "setWebRTC", args: [checkWebRTCStatus] });
 	}
 });
-function checkWebRTCStatus() {
-	const RTCPeer = self.RTCPeerConnection || self.webkitRTCPeerConnection;
-	if (!RTCPeer) {
-		return null;
-	}
-
-	try {
-		const pc = new RTCPeer();
-		pc.close();
-		return true;
-	} catch (e) {
-		return false;
-	}
-}
 function fingerprintProtection() {
 	injectAnon(function (canvas, canvasfont, audioblock, battery, webgl, webrtcdevice, gamepad, webvr, bluetooth, timezone, clientrects, clipboard, browserplugins) {
 		function processFunctions(scope) {
