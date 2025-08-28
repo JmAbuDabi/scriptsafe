@@ -1,10 +1,10 @@
 // ScriptSafe - Copyright (C) andryou
 // Distributed under the terms of the GNU General Public License
 // The GNU General Public License can be found in the gpl.txt file. Alternatively, see <http://www.gnu.org/licenses/>.
-'use strict';
-var version = '2.0.0.0';
-var bkg = getBackgroundPage();
-var syncstatus;
+import {version, getBackgroundPage} from "./common.js";
+
+let bkg = getBackgroundPage();
+let syncstatus;
 
 document.addEventListener('DOMContentLoaded', async function () {
 	await loadOptions();
@@ -246,23 +246,3 @@ const handleclick = async function () {
 	await bkg.clearRecents();
 	notification(await bkg.getLocale("settingssave"));
 };
-
-function getBackgroundPage() {
-	return new Proxy({}, {
-		get(_, method) {
-			return (...args) => {
-				return new Promise((resolve, reject) => {
-					chrome.runtime.sendMessage({ method, args }, (response) => {
-						if (chrome.runtime.lastError) {
-							return reject(new Error(chrome.runtime.lastError.message));
-						}
-						if (response?.error) {
-							return reject(new Error(response.error));
-						}
-						resolve(response?.result);
-					});
-				});
-			};
-		}
-	});
-}
