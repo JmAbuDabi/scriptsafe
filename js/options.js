@@ -583,22 +583,22 @@ async function settingsImport() {
 		return false;
 	}
 	if (settings.length > 0) {
-		$.each(settings, async function (i, v) {
-			if ($.trim(v) != "") {
-				var settingentry = $.trim(v).split("|");
-				if (settingnames.indexOf($.trim(settingentry[0])) != -1 && ($.trim(settingentry[1]) != '' || $.trim(settingentry[0]) == 'useragent')) {
-					if ($.trim(settingentry[0]) == 'whiteList' || $.trim(settingentry[0]) == 'blackList' || $.trim(settingentry[0]) == 'useragent') {
-						var listarray = $.trim(settingentry[1]).replace(/(\[|\]|")/g, "").split(",");
+		for (const v of settings) {
+			if (v.trim() != "") {
+				var settingentry = v.trim().split("|");
+				if (settingnames.indexOf(settingentry[0].trim()) != -1 && (settingentry[1].trim() != '' || settingentry[0].trim() == 'useragent')) {
+					if (settingentry[0].trim() == 'whiteList' || settingentry[0].trim() == 'blackList' || settingentry[0].trim() == 'useragent') {
+						var listarray = settingentry[1].trim().replace(/(\[|\]|")/g, "").split(",");
 						if ($.trim(settingentry[0]) == 'whiteList' && listarray.toString() != '') await localStore.setItem('whiteList', JSON.stringify(listarray));
 						else if ($.trim(settingentry[0]) == 'blackList' && listarray.toString() != '') await localStore.setItem('blackList', JSON.stringify(listarray));
 						else if ($.trim(settingentry[0]) == 'useragent' && listarray.toString() != '') await localStore.setItem('useragent', JSON.stringify(listarray));
 					} else
-						await localStore.setItem($.trim(settingentry[0]), $.trim(settingentry[1]));
+						await localStore.setItem(settingentry[0].trim(), settingentry[1].trim());
 				} else {
 					error += $.trim(settingentry[0]) + ", ";
 				}
 			}
-		});
+		}
 	}
 	await loadOptions();
 	await listUpdate();
@@ -791,9 +791,9 @@ async function importbulk(type) {
 		return false;
 	}
 	if (domains.length > 0) {
-		$.each(domains, async function (i, v) {
-			if ($.trim(v) != "") {
-				var domain = $.trim(v).toLowerCase().replace("http://", "").replace("https://", "");
+		for (const v of domains) {
+			if (v.trim() != "") {
+				var domain = v.trim().toLowerCase().replace("http://", "").replace("https://", "");
 				if ((await localStore.getItem('annoyances') == 'true' && (await localStore.getItem('annoyancesmode') == 'strict' || (await localStore.getItem('annoyancesmode') == 'relaxed' && await bkg.domainCheck(domain.replace("http://", "").replace("https://", ""), 1) != '0')) && await bkg.baddies(await bkg.getDomain(domain.replace("http://", "").replace("https://", "")), await localStore.getItem('annoyancesmode'), await localStore.getItem('antisocial')) == 1) || (await localStore.getItem('antisocial') == 'true' && await bkg.baddies(await bkg.getDomain(domain.replace("http://", "").replace("https://", "")), await localStore.getItem('annoyancesmode'), await localStore.getItem('antisocial')) == '2')) {
 					error += '<li>' + domain.replace("http://", "").replace("https://", "") + ' <b>(provider of unwanted content (see "Block Unwanted Content" and/or "Antisocial Mode")</b></li>';
 				} else {
@@ -804,7 +804,7 @@ async function importbulk(type) {
 					}
 				}
 			}
-		});
+		}
 	}
 	await listUpdate();
 	if (!error) {
