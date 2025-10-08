@@ -85,33 +85,35 @@ async function mitigate(req) {
 	if (await localStore.getItem("enable") == "false" || (await localStore.getItem('useragentspoof') == 'off' && await localStore.getItem('cookies') == 'false' && await localStore.getItem('referrerspoof') == 'off')) {
 		return;
 	}
+	let ruleIds = [];
 	for (var i = 0, forcount = req.requestHeaders.length; i < forcount; i++) {
+		console.log(req.requestHeaders[i].name);
 		if (req.requestHeaders[i].name == 'User-Agent' || req.requestHeaders[i].name == 'Referer' || req.requestHeaders[i].name == 'Cookie') {
 			switch (req.requestHeaders[i].name) {
 				case 'Cookie':
 					if (await localStore.getItem('cookies') == 'true' && baddies(req.url, await localStore.getItem('annoyancesmode'), await localStore.getItem('antisocial')))
-						req.requestHeaders[i].value = '';
+						ruleIds.push(await declarativeRules.generateHeaderBlockingRule('Cookie', req.url, req.type, ''));
 					break;
 				case 'Referer':
 					if (await localStore.getItem('referrerspoof') != 'off' && (await localStore.getItem('referrerspoofdenywhitelisted') == 'true' || await enabled(req.url) == 'true')) {
 						if (await localStore.getItem('referrerspoof') == 'same')
-							req.requestHeaders[i].value = req.url;
+							ruleIds.push(await declarativeRules.generateHeaderBlockingRule('Referer', req.url, req.type, req.url));
 						else if (await localStore.getItem('referrerspoof') == 'domain')
-							req.requestHeaders[i].value = req.url.split("//")[0] + '//' + req.url.split("/")[2];
+							ruleIds.push(await declarativeRules.generateHeaderBlockingRule('Referer', req.url, req.type, req.url.split("//")[0] + '//' + req.url.split("/")[2]));
 						else
-							req.requestHeaders[i].value = await localStore.getItem('referrerspoof');
+							ruleIds.push(await declarativeRules.generateHeaderBlockingRule('Referer', req.url, req.type, await localStore.getItem('referrerspoof')));
 					}
 					break;
 				case 'User-Agent':
 					if (await localStore.getItem('useragentspoof') != 'off' && (await localStore.getItem('uaspoofallow') == 'true' || await enabled(req.url) == 'true')) {
 						if (!userAgent || await localStore.getItem('useragentinterval') == 'request') await genUserAgent();
-						if (userAgent) req.requestHeaders[i].value = userAgent;
+						if (userAgent) ruleIds.push(await declarativeRules.generateHeaderBlockingRule('User-Agent', req.url, req.type, userAgent));
 					}
 					break;
 			}
 		}
 	}
-	return { requestHeaders: req.requestHeaders };
+	if (!ruleIds) { await itemsMutex.withLock(() => ITEMS[req.tabId]['rules'].push(...ruleIds)); }
 }
 async function genUserAgent(force) {
 	var os;
@@ -406,7 +408,23 @@ export function baddies(src, amode, antisocial, lookupmode) {
 	var dmn = extractDomainFromURL(src);
 	var topDomain = getDomain(dmn);
 	if (dmn.indexOf(".") == -1 && src.indexOf(".") != -1) dmn = src;
-	if (antisocial == 'true' && (antisocial2.indexOf(dmn) != -1 || antisocial1.indexOf(topDomain) != -1 || src.indexOf("digg.com/tools/diggthis.js") != -1 || src.indexOf("/googleapis.client__plusone.js") != -1 || src.indexOf("apis.google.com/js/plusone.js") != -1 || src.indexOf(".facebook.com/connect") != -1 || src.indexOf(".facebook.com/plugins") != -1 || src.indexOf(".facebook.com/widgets") != -1 || src.indexOf(".fbcdn.net/connect.php/js") != -1 || src.indexOf(".stumbleupon.com/hostedbadge") != -1 || src.indexOf(".youtube.com/subscribe_widget") != -1 || src.indexOf(".ytimg.com/yt/jsbin/www-subscribe-widget") != -1 || src.indexOf("apis.google.com/js/platform.js") != -1 || src.indexOf("plus.google.com/js/client:plusone.js") != -1 || src.indexOf("linkedin.com/countserv/count/share") != -1))
+	if (antisocial == 'true'
+		&& (antisocial2.indexOf(dmn) != -1
+			|| antisocial1.indexOf(topDomain) != -1
+			|| src.indexOf("digg.com/tools/diggthis.js") != -1
+			|| src.indexOf("/googleapis.client__plusone.js") != -1
+			|| src.indexOf("apis.google.com/js/plusone.js") != -1
+			|| src.indexOf(".facebook.com/connect") != -1
+			|| src.indexOf(".facebook.com/plugins") != -1
+			|| src.indexOf(".facebook.com/widgets") != -1
+			|| src.indexOf(".fbcdn.net/connect.php/js") != -1
+			|| src.indexOf(".stumbleupon.com/hostedbadge") != -1
+			|| src.indexOf(".youtube.com/subscribe_widget") != -1
+			|| src.indexOf(".ytimg.com/yt/jsbin/www-subscribe-widget") != -1
+			|| src.indexOf("apis.google.com/js/platform.js") != -1
+			|| src.indexOf("plus.google.com/js/client:plusone.js") != -1
+			|| src.indexOf("linkedin.com/countserv/count/share") != -1
+		))
 		return '2';
 	if ((amode == 'relaxed' && domainCheck(dmn, lookupmode) != '0') || amode == 'strict') {
 		if (binarySearch(yoyo1, topDomain) != -1) return '1';
@@ -964,6 +982,8 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
 					}
 				}
 			} else if (request.reqtype == 'get-list') {
+				console.log('get-list');
+				console.log(ITEMS);
 				if (typeof ITEMS[request.tid] === 'undefined') {
 					sendResponse('reload');
 					return;
@@ -979,7 +999,21 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
 						break;
 					}
 				}
-				sendResponse({ status: await localStore.getItem('enable'), enable: enableval, mode: await localStore.getItem('mode'), annoyancesmode: await localStore.getItem('annoyancesmode'), antisocial: await localStore.getItem('antisocial'), annoyances: await localStore.getItem('annoyances'), closepage: await localStore.getItem('classicoptions'), rating: await localStore.getItem('rating'), temp: await getSessionList(), tempfp: sessionfplist, blockeditems: ITEMS[request.tid]['blocked'], alloweditems: ITEMS[request.tid]['allowed'], domainsort: await localStore.getItem('domainsort') });
+				sendResponse({
+					status: await localStore.getItem('enable'),
+					enable: enableval,
+					mode: await localStore.getItem('mode'),
+					annoyancesmode: await localStore.getItem('annoyancesmode'),
+					antisocial: await localStore.getItem('antisocial'),
+					annoyances: await localStore.getItem('annoyances'),
+					closepage: await localStore.getItem('classicoptions'),
+					rating: await localStore.getItem('rating'),
+					temp: await getSessionList(),
+					tempfp: sessionfplist,
+					blockeditems: ITEMS[request.tid]['blocked'],
+					alloweditems: ITEMS[request.tid]['allowed'],
+					domainsort: await localStore.getItem('domainsort')
+				});
 				changed = true;
 			} else if (request.reqtype == 'update-blocked') {
 				if (request.src) {
@@ -1665,8 +1699,8 @@ async function postLangLoad() {
 		await refreshRequestTypes();
 		if (typeof chrome.webRequest !== 'undefined') {
 			chrome.webRequest.onBeforeRequest.addListener(ScriptSafe, { "types": requestTypes, "urls": requestUrls });
-			chrome.webRequest.onBeforeSendHeaders.addListener(mitigate, { "types": requestTypes, "urls": requestUrls }, ['requestHeaders', 'blocking']);
-			chrome.webRequest.onHeadersReceived.addListener(inlineblock, { "types": requestTypes, "urls": requestUrls }, ['responseHeaders', 'blocking']);
+			chrome.webRequest.onBeforeSendHeaders.addListener(mitigate, { "types": requestTypes, "urls": requestUrls }, ['requestHeaders']);
+			// chrome.webRequest.onHeadersReceived.addListener(inlineblock, { "types": requestTypes, "urls": requestUrls }, ['responseHeaders', 'blocking']);
 		}
 	}
 	if (storageapi) {

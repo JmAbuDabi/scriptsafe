@@ -136,3 +136,24 @@ export async function generateRedirectingUrlRule(url, redirectUrl, reqtype) {
 		});
 	});
 }
+export async function generateHeaderBlockingRule(header, url, reqtype, value) {
+	const currentRule = await ruleIdGen.next();
+	return new Promise((resolve, reject) => {
+		chrome.declarativeNetRequest.updateDynamicRules({
+			addRules: [{
+				id: currentRule,
+				priority: 1,
+				action: {
+					type: "modifyHeaders",
+					requestHeaders: [{ header, operation: "set", value }]
+				},
+				condition: { urlFilter: url, resourceTypes: [reqtype] }
+			}]
+		}, () => {
+			if (chrome.runtime.lastError) {
+				console.error(`Failed to generate rule for ${header}:`, chrome.runtime.lastError);
+				reject(chrome.runtime.lastError);
+			} else resolve(currentRule);
+		});
+	});
+}
